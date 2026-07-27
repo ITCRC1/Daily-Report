@@ -170,6 +170,13 @@ ocupación 59,1 %. Si eso cuadra, la base y el backend están bien enganchados.
 
 - **Si el build del backend elige otra versión de Python**, forzala con
   `railway variable set -s backend "NIXPACKS_PYTHON_VERSION=3.12"`.
+- **El healthcheck del frontend NO puede apuntar a `/`**: `app/page.tsx` hace
+  `redirect("/data-input")`, así que la raíz devuelve **307** y Railway la toma
+  como caída. Por eso apunta a `/data-input`, que responde 200. (Costó dos
+  deploys fallidos: el build compilaba bien y el healthcheck moría igual.)
+- **`$PORT` en el `startCommand` va con default** (`${PORT:-3000}`): si el
+  servicio no lo tiene definido, `next start --port` se queda sin valor, Next no
+  arranca y no hay nada escuchando.
 - **`POST /ingest/{fecha}`** (el que lee de `goldens/inputs/`) no sirve en
   Railway: los goldens no viajan en el build del backend. En producción la carga
   es por **Tab 1 → upload**, que escribe en el volumen `/data`.
