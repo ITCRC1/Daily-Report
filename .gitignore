@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Env / secrets
+.env
+.env.local
+*.local
+
+# Node / Next
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/.vercel/
+
+# DB / data
+*.sqlite
+pgdata/
+
+# Datos REALES de produccion — NUNCA al repo (es publico).
+# El dump trae 58.284 filas: folios de huespedes, revenue, presupuestos y los
+# password_hash de app_user. Los .xlsx de seed son el presupuesto y el revenue
+# real del hotel. Todo esto vive en la carpeta local y en el servidor, no en git.
+# El README de backups SI se versiona (explica como restaurar).
+db/backups/*.sql
+db/seed_data/
+
+# Goldens: los .xlsm/.xlsx crudos NO se versionan por peso; el README sí.
+goldens/*.xlsm
+goldens/*.xlsx
+goldens/*.xls
+goldens/inputs/
+
+# Uploads reales de usuarios (Tab 1) — datos operativos, no se versionan.
+uploads/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+tsconfig.tsbuildinfo
+db/backups/.prod_conn
+# Log de credenciales (texto plano) — SOLO local, nunca a GitHub ni al backup
+CREDENTIALS.local.md

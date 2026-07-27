@@ -1,0 +1,6 @@
+# Lo que NO se sube al build del frontend (railway up frontend -s frontend).
+node_modules/
+.next/
+out/
+.vercel/
+.env.local

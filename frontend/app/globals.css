@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: #0F1118;
+  color: #E6E8EF;
+}
+
+/* Impresión profesional de reportes (Tab 3 y siguientes) -- el diseño oscuro
+   de pantalla no sirve para papel: se resetea todo a fondo blanco/texto
+   oscuro dentro de <main>, se preserva el significado semántico de
+   rojo/verde/ámbar (variaciones), y se fuerza horizontal (las tablas de
+   11+ columnas no entran en vertical). */
+@media print {
+  @page {
+    size: landscape;
+    margin: 6mm 6mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #111318 !important;
+    font-size: 8px !important;
+  }
+
+  header, nav, button {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  main, main * {
+    background: #ffffff !important;
+    color: #111318 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Todo lo que no sea tabla se achica -- a tamaño de pantalla 4 hojas no
+     entraban en 2 (pedido explícito del usuario: solo 2, la 1ra con
+     header+KPIs+tabla principal y la 2da con todo lo demás). Con la
+     compresión inicial (7.5px) cada hoja usaba ~45% del alto disponible, así
+     que se subió un poco el tamaño para que se lea mejor sin perder las 2
+     hojas -- medido real: page1≈327px, page2≈356px sobre ~770px de alto
+     útil en horizontal con 6mm de margen. */
+  main * {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+  }
+  main .print-header-block * { font-size: revert !important; }
+  main .print-header-block .print-title { font-size: 20px !important; line-height: 1.1 !important; }
+  main .print-header-block .print-date { font-size: 34px !important; line-height: 1.1 !important; }
+  main .print-header-block .print-subtitle { font-size: 11px !important; }
+  main .print-header-block { margin-bottom: 5px !important; padding-bottom: 5px !important; gap: 1px !important; }
+
+  /* La regla "main * { font-size: 11px }" de arriba aplastaba estos títulos
+     a tamaño de texto normal -- quedaban en negrita pero sin destacar (§
+     pedido del usuario: que se vean grandes/en negrita como el título del
+     reporte). Se les da un tamaño explícito, más chico que el título
+     principal pero claramente por encima del cuerpo de las tablas. */
+  main .print-section-title { font-size: 16px !important; margin-top: 4px !important; margin-bottom: 4px !important; }
+  main .print-table-title { font-size: 13px !important; }
+  main .print-kpi-label { font-size: 9px !important; }
+
+  main .space-y-4 > * + * { margin-top: 5px !important; }
+  main .space-y-3 > * + * { margin-top: 3px !important; }
+  main .grid { gap: 3px !important; }
+  main .rounded-lg, main .rounded { border-radius: 3px !important; }
+  main .p-4 { padding: 4px 7px !important; }
+  main .px-3 { padding-left: 5px !important; padding-right: 5px !important; }
+  main .py-2, main .py-1\.5, main .py-2\.5 { padding-top: 2px !important; padding-bottom: 2px !important; }
+
+  main [class*="border-white"] {
+    border-color: #cbd0da !important;
+  }
+
+  main [class*="text-red"],
+  main [class*="text-rose"] { color: #b3261e !important; }
+  main [class*="text-emerald"] { color: #0f7a3d !important; }
+  main [class*="text-amber"] { color: #9a6300 !important; }
+  main [class*="text-sky"] { color: #0a5c9c !important; }
+  main [class*="bg-amber"] { background: #fdf1d6 !important; }
+
+  main table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+  main th, main td {
+    border: 1px solid #cbd0da !important;
+    padding: 2px 5px !important;
+    white-space: nowrap;
+  }
+  main th {
+    text-align: center !important;
+    background: #eef0f4 !important;
+    font-weight: 700 !important;
+  }
+
+  /* 8.3 Daily Heatmap: ~40 columnas (31 días + Forecast/Budget + Var). Con el
+     padding normal de celda (2px 5px) el ancho revienta la hoja y el
+     contenedor overflow-x-auto la recorta. En impresión: quitar el recorte,
+     comprimir fuente/padding para que entre completa (100%), y forzar todo el
+     texto a negro sólido -- los fondos de riesgo (rojo/verde/ámbar) no se
+     imprimen, así que el texto claro sobre ellos quedaba ilegible. */
+  main .print-heatmap-wrap {
+    overflow: visible !important;
+    border: none !important;
+  }
+  main .print-heatmap {
+    width: 100% !important;
+    font-size: 6.5px !important;
+  }
+  main .print-heatmap th,
+  main .print-heatmap td {
+    padding: 1px 1px !important;
+    width: auto !important;
+    min-width: 0 !important;
+    color: #000 !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd0da !important;
+  }
+  main .print-heatmap thead th { font-size: 6px !important; }
+  /* La 1ra columna (mes) y las de Forecast/Budget necesitan algo más de aire
+     que las 31 columnas de día. */
+  main .print-heatmap td:first-child,
+  main .print-heatmap th:first-child { text-align: left !important; padding-left: 2px !important; }
+
+  /* 8.5 / 8.6 charts SVG: los ejes (meses en X, valores/% en Y), las
+     gridlines y las etiquetas de valor usan fill/stroke blanco
+     semitransparente pensado para el fondo oscuro de pantalla -- sobre la
+     hoja blanca del PDF quedan invisibles ("no se ven las coordenadas"). Los
+     atributos fill/stroke inline de SVG tienen especificidad 0, así que
+     estos selectores de atributo los sobrescriben. Se oscurecen SOLO los
+     blanquecinos; los colores con significado (barras azul/naranja, GAP
+     rojo, línea de media móvil) se dejan intactos y ya imprimen bien. */
+  main svg text[fill="#ffffff66"],
+  main svg text[fill="#ffffff99"],
+  main svg text[fill="#ffffffcc"] { fill: #333333 !important; }
+  main svg text[fill="#7aa0e0"] { fill: #2f5597 !important; }
+  main svg line[stroke="#ffffff14"],
+  main svg line[stroke="#ffffff12"] { stroke: #c8cdd8 !important; }
+
+  /* Página 1 = encabezado + KPIs + tabla principal. Página 2 = todo lo demás
+     (On-Property + Room Statistics + Months to Day + Otros). Un solo corte
+     explícito -- no usar "avoid-break" en cada tabla chica, con todo tan
+     comprimido ya entran solas y forzar "avoid" puede generar una 3ra hoja. */
+  .print-page-break {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  /* --- Reporte multi-sección (Tab 9 · Daily Extendido 9.1–9.8) -------------
+     La vista de impresión apila TODAS las secciones habilitadas. Cada una
+     arranca en hoja nueva salvo la primera (usar break-BEFORE en las
+     siguientes y no break-after en todas evita una hoja final en blanco). */
+  .no-print { display: none !important; }
+  .print-head { display: block !important; }
+  /* Encabezado del reporte: título y fecha al MISMO tamaño, grandes y
+     centrados (pedido del owner). La fecha no es un subtítulo secundario,
+     identifica el reporte. */
+  main .print-head { text-align: center !important; }
+  main .print-head h1,
+  main .print-head p { font-size: 26px !important; font-weight: 700 !important; line-height: 1.25 !important; text-align: center !important; }
+  main .print-head p { margin-bottom: 8px !important; }
+
+  .print-section + .print-section {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  /* Los wrappers de tabla usan overflow-x-auto para el scroll en pantalla; en
+     papel eso RECORTA las tablas anchas (9.5 quedó en 13 columnas con Covers
+     y Avg Check). En impresión no hay scroll: hay que dejarlas fluir. */
+  main .overflow-x-auto { overflow: visible !important; }
+
+  /* Encabezado de tabla repetido en cada hoja y filas que no se parten. */
+  main thead { display: table-header-group !important; }
+  main tr { break-inside: avoid; page-break-inside: avoid; }
+
+  /* Los cubiertos de 9.5 son <input> editables: en papel van como texto. */
+  main input {
+    border: none !important;
+    padding: 0 !important;
+    text-align: right !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+
+  /* Cada sección del reporte de Tab 9 debe entrar COMPLETA en su hoja. Con el
+     tamaño general (11px / padding 2px 5px) el 9.1 se pasaba por una sola
+     fila y mandaba "Total Revenues POR" (con el thead repetido) a una 2da
+     hoja. Se comprime solo DENTRO de .print-report para no tocar el tuning
+     ya afinado de Tab 3 y del heatmap 8.3. */
+  main .print-report *,
+  main .print-report th,
+  main .print-report td { font-size: 9.5px !important; line-height: 1.15 !important; }
+  main .print-report th,
+  main .print-report td { padding: 0.5px 4px !important; }
+  main .print-report .print-section-title { font-size: 12px !important; margin: 2px 0 !important; }
+  main .print-report .space-y-2 > * + * { margin-top: 2px !important; }
+  main .print-report p { margin: 0 !important; }
+
+  /* Que no se parta a mitad: si entra, la sección va entera en una hoja. */
+  main .print-report .print-section { break-inside: avoid; page-break-inside: avoid; }
+}

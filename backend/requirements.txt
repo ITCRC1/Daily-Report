@@ -1,0 +1,18 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+sqlalchemy==2.0.36
+greenlet==3.5.3                # requerido por el engine async de SQLAlchemy -- local lo tenía como
+                                # dependencia transitiva de otro paquete, en Railway no estaba listado
+asyncpg==0.30.0
+psycopg2-binary==2.9.10        # driver sync para Alembic
+alembic==1.14.0
+pydantic==2.10.3
+pydantic-settings==2.6.1
+python-dotenv==1.0.1
+python-multipart==0.0.17       # uploads (ingesta por batch)
+openpyxl==3.1.5                # lectura de goldens / Excel + export .xlsx (etapa 8)
+fpdf2==2.8.2                    # export PDF ejecutivo (etapa 8)
+lxml==5.3.0                    # parsers Opera XML (auditoria.py)
+pytest==8.3.4
+pytest-asyncio==0.24.0
+httpx==0.28.1

@@ -1,0 +1,10 @@
+# Lo que NO se sube al build del backend (railway up backend -s backend).
+# .gitignore ya excluye .venv/.env/__pycache__; esto es el cinturón extra
+# para que el contexto de build no arrastre nada innecesario ni secretos.
+.env
+.env.*
+.venv/
+__pycache__/
+.pytest_cache/
+tests/
+reference/

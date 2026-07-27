@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:15
+    container_name: daily_ops_db
+    environment:
+      POSTGRES_USER: daily_ops
+      POSTGRES_PASSWORD: daily_ops
+      POSTGRES_DB: daily_ops
+    ports:
+      - "5433:5432"   # host 5433 -> evita chocar con un Postgres local en 5432
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U daily_ops -d daily_ops"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
