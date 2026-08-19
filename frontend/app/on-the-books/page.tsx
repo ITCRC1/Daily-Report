@@ -75,7 +75,7 @@ function QuarterBar({ collapsed, toggle }: { collapsed: number[]; toggle: (q: nu
         const c = collapsed.includes(q);
         return (
           <button key={q} onClick={() => toggle(q)}
-            className={`rounded px-2 py-0.5 font-mono ${c ? "bg-accent/30 text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}
+            className={`rounded px-2 py-0.5 font-mono ${c ? "bg-accent/30 text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}
             title={c ? `Expand Q${q}` : `Collapse Q${q} into its total`}>
             {c ? "＋" : "－"} Q{q}
           </button>
@@ -204,7 +204,7 @@ export default function OnTheBooksPage() {
             </button>
           )}
           <button onClick={recalc}
-            className="rounded bg-accent/80 px-2.5 py-1 text-ink hover:bg-accent"
+            className="rounded bg-accent/80 px-2.5 py-1 text-white hover:bg-accent"
             title="Re-pull the report from the backend (recomputes live from the database)">
             ↻ Recalculate
           </button>
@@ -215,7 +215,7 @@ export default function OnTheBooksPage() {
       <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2">
         {SUBTABS.map((s) => (
           <button key={s.id} onClick={() => setTab(s.id)}
-            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
+            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}>
             {s.label}
           </button>
         ))}
@@ -348,17 +348,17 @@ function ONTBReport({ data }: { data: Report }) {
             {hasWoW ? (
               <tr className="border-t border-ink/8 font-medium">
                 <td className={`${tdL} sticky left-0 z-10 bg-[#f9f9f7]`}>
-                  OTB Δ <span className="text-ink/55">({data.compare_snapshot_date} → {data.snapshot_date})</span>
+                  OTB Δ <span className="text-ink/60">({data.compare_snapshot_date} → {data.snapshot_date})</span>
                 </td>
                 {cols.map((c, i) => {
                   const v = c.kind === "m" ? (c.month.otb_move ?? 0) : qsum(c.months, (d) => d.otb_move ?? 0);
                   return (
-                    <td key={i} className={`px-2 py-1 text-right ${c.kind === "q" ? qbg : ""} ${v < 0 ? "text-red-600" : v > 0 ? "text-emerald-600" : "text-ink/55"}`}>
+                    <td key={i} className={`px-2 py-1 text-right ${c.kind === "q" ? qbg : ""} ${v < 0 ? "text-red-600" : v > 0 ? "text-emerald-600" : "text-ink/60"}`}>
                       {v > 0 ? "+" : ""}{v === 0 ? "$0" : `$${money(v)}`}
                     </td>
                   );
                 })}
-                <td className={`px-2 py-1 text-right border-l border-ink/10 ${move! < 0 ? "text-red-600" : move! > 0 ? "text-emerald-600" : "text-ink/55"}`}>
+                <td className={`px-2 py-1 text-right border-l border-ink/10 ${move! < 0 ? "text-red-600" : move! > 0 ? "text-emerald-600" : "text-ink/60"}`}>
                   {move! > 0 ? "+" : ""}${money(move!)}
                 </td>
               </tr>
@@ -447,8 +447,8 @@ function Dashboard({ data }: { data: Report }) {
           <tbody>
             {groupHead("Total Revenue")}
             {Row("Revenue Budget", "text-sky-700", budget, sumB)}
-            {Row("OTB Revenue (OPERA file)", "text-ink/55", otbRev, sumOTB)}
-            {Row("＋ On-Property (12.6% est.)", "text-ink/55", onProp, sumOnProp)}
+            {Row("OTB Revenue (OPERA file)", "text-ink/60", otbRev, sumOTB)}
+            {Row("＋ On-Property (12.6% est.)", "text-ink/60", onProp, sumOnProp)}
             {Row("＝ Revenue Forecast", "text-emerald-700 font-medium", forecast, sumF)}
             {Row("NET GAP", "", (d) => d.net_gap, sumG, true)}
 
@@ -459,7 +459,7 @@ function Dashboard({ data }: { data: Report }) {
           </tbody>
         </table>
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         <b>Revenue Forecast = OTB Revenue (del archivo de OPERA) ＋ On-Property.</b> On-Property = 12.6% del rooms
         forecast, estimado por el sistema — NO viene en el archivo, por eso la suma cruda del reporte de OPERA da
         el renglón OTB, no el forecast total. Rooms Only compara el budget de habitaciones vs lo que está on the books (sin on-property).
@@ -474,7 +474,7 @@ function Card({ label, value, tone, sub }: { label: string; value: string; tone:
     <div className="rounded-lg border border-ink/10 bg-[#f2f1ec] p-3">
       <div className="text-[11px] uppercase tracking-wide text-ink/60">{label}</div>
       <div className={`mt-1 text-lg font-bold ${c}`}>{value}</div>
-      {sub && <div className="mt-0.5 text-[10px] text-ink/55">{sub}</div>}
+      {sub && <div className="mt-0.5 text-[10px] text-ink/60">{sub}</div>}
     </div>
   );
 }
@@ -491,9 +491,9 @@ type HeatData = { year: number; snapshot_date: string | null; months: HeatMonth[
 
 const RISK_BG: Record<string, string> = {
   CRITICAL: "bg-red-900 text-red-100",
-  HIGH: "bg-red-600/80 text-ink",
+  HIGH: "bg-red-600/80 text-white",
   MID: "bg-amber-500/80 text-black",
-  OK: "bg-emerald-600/80 text-ink",
+  OK: "bg-emerald-600/80 text-white",
 };
 
 function Heatmap({ year, asOf, refreshKey }: { year: number; asOf: string; refreshKey: number }) {
@@ -521,14 +521,14 @@ function Heatmap({ year, asOf, refreshKey }: { year: number; asOf: string; refre
             <span key={k} className={`rounded px-1.5 py-0.5 ${RISK_BG[k]}`}>{k}</span>
           ))}
         </span>
-        <span className="text-ink/55">Action: OK→HOLD · MID→WATCH · HIGH→RATE · CRITICAL→PUSH</span>
+        <span className="text-ink/60">Action: OK→HOLD · MID→WATCH · HIGH→RATE · CRITICAL→PUSH</span>
       </div>
       <div className="print-heatmap-wrap overflow-x-auto rounded-lg border border-ink/10">
         <table className="print-heatmap text-[10px]">
           <thead className="bg-[#fcfcfb]">
             <tr>
               <th rowSpan={2} className="sticky left-0 bg-[#fcfcfb] px-2 py-1 text-left text-ink/70">Month</th>
-              {Array.from({ length: 31 }, (_, i) => <th rowSpan={2} key={i} className="w-7 px-0.5 py-1 text-center text-ink/55 align-bottom">{i + 1}</th>)}
+              {Array.from({ length: 31 }, (_, i) => <th rowSpan={2} key={i} className="w-7 px-0.5 py-1 text-center text-ink/60 align-bottom">{i + 1}</th>)}
               <th colSpan={4} className="border-l border-ink/12 px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-emerald-700">Forecast (OTB)</th>
               <th colSpan={4} className="border-l border-ink/12 px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-sky-700">Budget</th>
               <th rowSpan={2} className="border-l border-ink/12 px-2 py-1 text-right align-bottom text-ink/70">Occ&nbsp;Var</th>
@@ -574,7 +574,7 @@ function Heatmap({ year, asOf, refreshKey }: { year: number; asOf: string; refre
           </tbody>
         </table>
       </div>
-      <p className="text-[11px] text-ink/55">Numbers = daily occupancy %. Right columns = monthly Noches / Pax / ADR / Occ% for <span className="text-emerald-700">Forecast (OTB)</span> vs <span className="text-sky-700">Budget</span>, plus occupancy variance (percentage points). Hover a cell for rooms sold/available and the recommended action.</p>
+      <p className="text-[11px] text-ink/60">Numbers = daily occupancy %. Right columns = monthly Noches / Pax / ADR / Occ% for <span className="text-emerald-700">Forecast (OTB)</span> vs <span className="text-sky-700">Budget</span>, plus occupancy variance (percentage points). Hover a cell for rooms sold/available and the recommended action.</p>
     </div>
   );
 }
@@ -620,7 +620,7 @@ function Pacing({ refreshKey, year }: { refreshKey: number; year: number }) {
           </div>
         ))}
       </div>
-      <p className="text-[11px] text-ink/55">Right column = change vs the previous snapshot (week-over-week booking pace).</p>
+      <p className="text-[11px] text-ink/60">Right column = change vs the previous snapshot (week-over-week booking pace).</p>
     </div>
   );
 }
@@ -699,7 +699,7 @@ function RevenueTrend({ data }: { data: Report }) {
           <span className="flex items-center gap-1"><span className="inline-block h-0.5 w-5" style={{ background: "#d03b3b" }} /> 2-per. Moving Avg (Forecast)</span>
         </div>
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Forecast = On-The-Books total revenue (snapshot {data.snapshot_date}). GAP = Budget shortfall vs Forecast. Hover a bar for the exact amount.
       </p>
     </div>
@@ -801,7 +801,7 @@ function Analisis2027({ asOf, refreshKey }: { asOf: string; refreshKey: number }
           <div className="flex items-center gap-1">
             {(["total", "rooms"] as const).map((mk) => (
               <button key={mk} onClick={() => setMetric(mk)}
-                className={`rounded px-2.5 py-1 text-[11px] ${metric === mk ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
+                className={`rounded px-2.5 py-1 text-[11px] ${metric === mk ? "bg-accent text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}>
                 {mk === "total" ? "Full Revenue" : "Rooms Revenue"}
               </button>
             ))}
@@ -893,7 +893,7 @@ function Analisis2027({ asOf, refreshKey }: { asOf: string; refreshKey: number }
         <div className="rounded-lg border border-ink/10 bg-[#f2f1ec] px-3 py-2"><span className="text-ink/60">OTB 2027:</span> <b className="text-orange-300">${money(total27)}</b></div>
         <div className="rounded-lg border border-ink/10 bg-[#f2f1ec] px-3 py-2"><span className="text-ink/60">OTB 2027 vs Budget:</span> <b className={gapBudget >= 0 ? "text-emerald-700" : "text-red-600"}>{gapBudget >= 0 ? "+" : "−"}${money(Math.abs(gapBudget))}</b></div>
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         {metricLbl} por {cols.length === 12 ? "mes" : "período"} (snapshot {y27.snapshot_date ?? asOf}): <span className="text-sky-700">Budget 2027</span> · <span className="text-ink/75">OTB 2026</span> · <span className="text-orange-300">OTB 2027</span>. Toggle <b>Full/Rooms Revenue</b> y colapsá cuartos (＋Q) para ver el total del trimestre. Las líneas gruesas separan los cuartos; la columna <b>Full Year</b> (tras la línea gruesa) es el total anual y usa su <b>propia escala</b> (eje derecho), para no aplastar los meses. "OTB 2027 vs Budget" = cuánto falta reservar para llegar al presupuesto.
       </p>
     </div>
@@ -948,7 +948,7 @@ function OccupancyTrend({ data }: { data: Report }) {
           <span className="flex items-center gap-1"><span className="inline-block h-0.5 w-5" style={{ background: "#eb6834" }} /> % Forecast (OTB) {data.year}</span>
         </div>
       </div>
-      <p className="text-[11px] text-ink/55">Monthly occupancy: Budget vs On-The-Books forecast (snapshot {data.snapshot_date}).</p>
+      <p className="text-[11px] text-ink/60">Monthly occupancy: Budget vs On-The-Books forecast (snapshot {data.snapshot_date}).</p>
     </div>
   );
 }
@@ -1031,7 +1031,7 @@ function VariancePie({ data }: { data: Report }) {
           </div>
         </div>
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Only months where On-The-Books is <b>below</b> budget (NET GAP &lt; 0). Shows which months drive the year&apos;s revenue shortfall — where the remaining risk sits (snapshot {data.snapshot_date}).
       </p>
     </div>

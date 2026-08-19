@@ -198,21 +198,21 @@ function YearBudget() {
             className="w-24 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
         </label>
         <button onClick={downloadTemplate}
-          className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink hover:bg-ink/8">
+          className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-white hover:bg-ink/8">
           📥 Download {year} template
         </button>
-        <label className="cursor-pointer rounded bg-accent px-3 py-1.5 text-xs font-medium text-ink">
+        <label className="cursor-pointer rounded bg-accent px-3 py-1.5 text-xs font-medium text-white">
           {uploading ? "Uploading…" : "📤 Upload filled template"}
           <input type="file" accept=".xlsx" className="hidden" disabled={uploading}
             onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
         </label>
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Cycle: download the template (comes pre-filled with what&apos;s already loaded for the year), fill
         it out in Excel, and upload it again — this fully replaces that year&apos;s budget ("annual reset").
       </p>
       {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
 
       {byDept.size > 0 ? (
         <div className="overflow-x-auto rounded-lg border border-ink/10">
@@ -405,15 +405,15 @@ function RoomStatsYtd() {
           </button>
         ) : (
           <div className="flex gap-1.5">
-            <button onClick={saveOpenings} disabled={saving} className="rounded bg-accent px-2.5 py-1 text-[11px] text-ink disabled:opacity-50">
+            <button onClick={saveOpenings} disabled={saving} className="rounded bg-accent px-2.5 py-1 text-[11px] text-white disabled:opacity-50">
               {saving ? "Saving…" : "Save cutoff"}
             </button>
             <button onClick={() => setEditing(false)} className="rounded bg-ink/5 px-2.5 py-1 text-[11px] text-ink/75">Cancel</button>
           </div>
         )}
-        {loading && <span className="text-xs text-ink/55">Loading…</span>}
+        {loading && <span className="text-xs text-ink/60">Loading…</span>}
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Real accumulation (fact_room_stat, statroomtype XML ingestion from Tab 1) on top of an editable YTD
         anchor per category — the anchor represents the accumulated total up to its date; any day ingested
         AFTER the anchor is summed automatically, with nothing to re-load. Adjust the anchor here whenever
@@ -652,7 +652,7 @@ function WeekCalendarPanel() {
 
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Rangos semanales que usa <span className="text-ink/75">Tab 4 · Weekly Revenue</span> (resuelve la semana
         de una fecha por rango: inicio ≤ fecha ≤ fin). Editá la <span className="text-ink/75">fecha de inicio y
         de fin</span> de una semana para generarla con un rango distinto — el reporte se sincroniza solo. El{" "}
@@ -671,7 +671,7 @@ function WeekCalendarPanel() {
 
       {error && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{error}</div>}
       {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
-      {loading && <div className="text-xs text-ink/55">Cargando…</div>}
+      {loading && <div className="text-xs text-ink/60">Cargando…</div>}
 
       <div className="overflow-x-auto rounded-lg border border-ink/10">
         <table className="w-full text-sm">
@@ -708,7 +708,7 @@ function WeekCalendarPanel() {
                     {isEd ? (
                       <div className="flex gap-1">
                         <button onClick={() => save(r)} disabled={saving}
-                          className="rounded bg-accent px-2 py-1 text-[11px] text-ink disabled:opacity-50">Guardar</button>
+                          className="rounded bg-accent px-2 py-1 text-[11px] text-white disabled:opacity-50">Guardar</button>
                         <button onClick={() => setEditing(null)}
                           className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75">✕</button>
                       </div>
@@ -808,14 +808,14 @@ function EditableTable({ cols, endpoint }: { cols: Col[]; endpoint: string }) {
       <div className="flex items-center justify-between">
         <span className="text-xs text-ink/60">{rows.length} row{rows.length === 1 ? "" : "s"}</span>
         {editing !== "new" && (
-          <button onClick={startCreate} className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-ink">
+          <button onClick={startCreate} className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-white">
             + Add
           </button>
         )}
       </div>
 
       {error && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{error}</div>}
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
 
       <div className="overflow-x-auto rounded-lg border border-ink/10">
         <table className="w-full text-sm">
@@ -836,7 +836,7 @@ function EditableTable({ cols, endpoint }: { cols: Col[]; endpoint: string }) {
                 ))}
                 <td className={td}>
                   <div className="flex gap-1">
-                    <button onClick={save} disabled={saving} className="rounded bg-accent px-2 py-1 text-[11px] text-ink disabled:opacity-50">Save</button>
+                    <button onClick={save} disabled={saving} className="rounded bg-accent px-2 py-1 text-[11px] text-white disabled:opacity-50">Save</button>
                     <button onClick={cancel} className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75">✕</button>
                   </div>
                 </td>
@@ -857,7 +857,7 @@ function EditableTable({ cols, endpoint }: { cols: Col[]; endpoint: string }) {
                 <td className={td}>
                   {editing === r.id ? (
                     <div className="flex gap-1">
-                      <button onClick={save} disabled={saving} className="rounded bg-accent px-2 py-1 text-[11px] text-ink disabled:opacity-50">Save</button>
+                      <button onClick={save} disabled={saving} className="rounded bg-accent px-2 py-1 text-[11px] text-white disabled:opacity-50">Save</button>
                       <button onClick={cancel} className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75">✕</button>
                     </div>
                   ) : (
@@ -962,7 +962,7 @@ function ParamsPanel() {
                     <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] text-amber-700">personalizado</span>
                   )}
                 </div>
-                <p className="mt-1 text-[11px] text-ink/55">{p.help}</p>
+                <p className="mt-1 text-[11px] text-ink/60">{p.help}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <input
                     value={draft[p.key] ?? ""}
@@ -972,7 +972,7 @@ function ParamsPanel() {
                   <button
                     onClick={() => save(p.key)}
                     disabled={!dirty}
-                    className="rounded bg-accent px-3 py-1 text-xs text-ink disabled:opacity-40"
+                    className="rounded bg-accent px-3 py-1 text-xs text-white disabled:opacity-40"
                   >
                     Save
                   </button>
@@ -993,7 +993,7 @@ function ParamsPanel() {
           })}
         </div>
       ))}
-      {loading && <p className="text-xs text-ink/55">Cargando…</p>}
+      {loading && <p className="text-xs text-ink/60">Cargando…</p>}
     </div>
   );
 }
@@ -1011,7 +1011,7 @@ export default function MasterDataPage() {
       <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2">
         {SUBTABS.map((s) => (
           <button key={s.id} onClick={() => setTab(s.id)}
-            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
+            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}>
             {s.label}
           </button>
         ))}

@@ -23,20 +23,25 @@ export default function TopNav() {
   const tabs = NAV_TABS.filter((t) => !disabled.includes(t.id));
 
   return (
-    <header className="sticky top-0 z-10 border-b border-ink/10 bg-[#f9f9f7] print:hidden">
+    <header className="sticky top-0 z-10 bg-[#1a1a19] print:hidden">
       <div className="flex items-center justify-between px-5 py-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold tracking-wide text-ink">DAILY-OPS</span>
-          <span className="rounded bg-accent/20 px-2 py-0.5 text-[11px] text-accent">COWLCR</span>
+          <span className="text-sm font-bold tracking-wide text-white">DAILY-OPS</span>
+          <span className="rounded bg-white/10 px-2 py-0.5 text-[11px] font-medium text-white/70">COWLCR</span>
         </div>
         <div className="flex items-center gap-3">
           <DaySelector />
           <Link href="/admin" title="Admin — prender/apagar tabs"
-            className={`rounded px-2 py-1 text-xs ${pathname === "/admin" ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/60 hover:text-ink"}`}>
+            className={`rounded px-2 py-1 text-xs transition ${pathname === "/admin"
+              ? "bg-accent text-white"
+              : "text-white/60 hover:bg-white/10 hover:text-white"}`}>
             ⚙
           </Link>
         </div>
       </div>
+      {/* Los tabs inactivos van SIN fondo. Antes tenían una caja casi del mismo
+          color que la barra: se veían borrosos, sin forma. Ahora la caja
+          aparece solo en el activo y en hover, y el estado se lee de una. */}
       <nav className="flex flex-wrap gap-1 px-3 pb-2">
         {tabs.map((t) => {
           const active = pathname === t.href;
@@ -46,8 +51,8 @@ export default function TopNav() {
               href={t.href}
               className={`rounded px-3 py-1.5 text-xs transition ${
                 active
-                  ? "bg-accent text-ink"
-                  : "bg-[#fcfcfb] text-ink/75 hover:text-ink"
+                  ? "bg-accent font-medium text-white"
+                  : "text-white/65 hover:bg-white/10 hover:text-white"
               }`}
             >
               {t.label}

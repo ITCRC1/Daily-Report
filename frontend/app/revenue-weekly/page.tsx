@@ -152,12 +152,12 @@ export default function RevenueWeeklyPage() {
         <>
           <div className="rounded-xl border border-ink/10 bg-gradient-to-br from-[#fcfcfb] to-[#f2f1ec] p-5 shadow-lg">
             <div className="grid grid-cols-4 gap-4 text-center text-sm">
-              <div><div className="print-kpi-label text-[11px] font-bold uppercase tracking-wide text-ink/55">Week</div><div className="mt-1 text-lg font-bold text-emerald-600">W{data.week.iso_week}</div></div>
-              <div><div className="print-kpi-label text-[11px] font-bold uppercase tracking-wide text-ink/55">Start</div><div className="mt-1 text-lg font-bold text-ink">{data.week.week_start}</div></div>
-              <div><div className="print-kpi-label text-[11px] font-bold uppercase tracking-wide text-ink/55">End</div><div className="mt-1 text-lg font-bold text-ink">{data.week.week_end}</div></div>
-              <div><div className="print-kpi-label text-[11px] font-bold uppercase tracking-wide text-ink/55">Days loaded</div><div className="mt-1 text-lg font-bold text-ink">{data.days_loaded_week} wk / {data.days_loaded_ytd} YTD</div></div>
+              <div><div className="print-kpi-label text-[11px] font-bold uppercase tracking-wide text-ink/60">Week</div><div className="mt-1 text-lg font-bold text-emerald-600">W{data.week.iso_week}</div></div>
+              <div><div className="print-kpi-label text-[11px] font-bold uppercase tracking-wide text-ink/60">Start</div><div className="mt-1 text-lg font-bold text-ink">{data.week.week_start}</div></div>
+              <div><div className="print-kpi-label text-[11px] font-bold uppercase tracking-wide text-ink/60">End</div><div className="mt-1 text-lg font-bold text-ink">{data.week.week_end}</div></div>
+              <div><div className="print-kpi-label text-[11px] font-bold uppercase tracking-wide text-ink/60">Days loaded</div><div className="mt-1 text-lg font-bold text-ink">{data.days_loaded_week} wk / {data.days_loaded_ytd} YTD</div></div>
             </div>
-            <div className="mt-3 text-center text-xs text-ink/55">{data.week.label}</div>
+            <div className="mt-3 text-center text-xs text-ink/60">{data.week.label}</div>
           </div>
 
           <div className="print:hidden rounded-lg border border-sky-500/20 bg-sky-500/5 px-4 py-2.5 text-center text-[11px] text-sky-700/80">
@@ -191,11 +191,11 @@ export default function RevenueWeeklyPage() {
                       {isTotal || r.indent || r.unit ? r.center : `Revenue – ${r.center}`}
                     </td>
                     <td className={`${tdN} border-l-2 border-ink/25 ${valueColor(r.weekly_actual)}`}>{fmtRow(r.weekly_actual, r.unit)}</td>
-                    <td className={`${tdN} ${r.weekly_budget < 0 ? "text-rose-600" : "text-ink/55"}`}>{fmtRow(r.weekly_budget, r.unit)}</td>
+                    <td className={`${tdN} ${r.weekly_budget < 0 ? "text-rose-600" : "text-ink/60"}`}>{fmtRow(r.weekly_budget, r.unit)}</td>
                     <td className={`${tdN} ${varColor(r.weekly_var)}`}>{fmtRow(r.weekly_var, r.unit === "count" ? "count" : r.unit === "percent" ? "percent" : "currency")}</td>
                     <td className={`${tdN} ${varColor(r.weekly_var_pct)}`}>{pct(r.weekly_var_pct)}</td>
                     <td className={`${tdN} border-l-2 border-ink/25 ${valueColor(r.ytd_actual)}`}>{fmtRow(r.ytd_actual, r.unit)}</td>
-                    <td className={`${tdN} ${r.ytd_budget < 0 ? "text-rose-600" : "text-ink/55"}`}>{fmtRow(r.ytd_budget, r.unit)}</td>
+                    <td className={`${tdN} ${r.ytd_budget < 0 ? "text-rose-600" : "text-ink/60"}`}>{fmtRow(r.ytd_budget, r.unit)}</td>
                     <td className={`${tdN} ${varColor(r.ytd_var)}`}>{fmtRow(r.ytd_var, r.unit === "count" ? "count" : r.unit === "percent" ? "percent" : "currency")}</td>
                     <td className={`${tdN} ${varColor(r.ytd_var_pct)}`}>{pct(r.ytd_var_pct)}</td>
                   </tr>

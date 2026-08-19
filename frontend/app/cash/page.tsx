@@ -59,7 +59,7 @@ function BreakdownTable({ title, rows }: { title: string; rows: Record<string, n
     <div>
       <div className="mb-1 text-[11px] uppercase tracking-wide text-ink/60">{title}</div>
       {entries.length === 0 ? (
-        <div className="rounded-lg border border-ink/10 bg-[#fcfcfb]/50 p-3 text-xs text-ink/55">No activity.</div>
+        <div className="rounded-lg border border-ink/10 bg-[#fcfcfb]/50 p-3 text-xs text-ink/60">No activity.</div>
       ) : (
         <table className="w-full rounded-lg border border-ink/10 text-xs">
           <tbody>
@@ -111,7 +111,7 @@ function SplitTable({ title, rows }: { title: string; rows: Split }) {
     <div>
       <div className="mb-1 text-[11px] uppercase tracking-wide text-ink/60">{title}</div>
       {entries.length === 0 ? (
-        <div className="rounded-lg border border-ink/10 bg-[#fcfcfb]/50 p-3 text-xs text-ink/55">No activity.</div>
+        <div className="rounded-lg border border-ink/10 bg-[#fcfcfb]/50 p-3 text-xs text-ink/60">No activity.</div>
       ) : (
         <table className="w-full rounded-lg border border-ink/10 text-xs">
           <thead>
@@ -128,7 +128,7 @@ function SplitTable({ title, rows }: { title: string; rows: Split }) {
                 <tr key={k} className="border-t border-ink/8">
                   <td className={td}>
                     {k}
-                    {!isReal && <span className="ml-2 rounded bg-ink/5 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-ink/55">excluido</span>}
+                    {!isReal && <span className="ml-2 rounded bg-ink/5 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-ink/60">excluido</span>}
                   </td>
                   <td className={`${tdN} ${v.real ? "text-emerald-600" : "text-ink/40"}`}>{v.real ? `$${money(v.real)}` : "—"}</td>
                   <td className={`${tdN} ${v.non ? "text-ink/70" : "text-ink/40"}`}>{v.non ? `$${money(v.non)}` : "—"}</td>
@@ -161,7 +161,7 @@ function RealCashComposition({ p }: { p: Pivot }) {
             cuentas por cobrar (AR) y cargos internos. Referencia para el ajuste en 5.2.
           </p>
         </div>
-        <span className="text-ink/55">{open ? "▾" : "▸"}</span>
+        <span className="text-ink/60">{open ? "▾" : "▸"}</span>
       </button>
       {open && (
         <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -253,7 +253,7 @@ function DailyCashFromOperation() {
           <nav className="flex gap-1 border-b border-ink/10 pb-2">
             {(Object.keys(TAB_LABEL) as TabId[]).map((t) => (
               <button key={t} onClick={() => setTab(t)} disabled={t !== "today" && t !== "mtd" && !weekData}
-                className={`rounded px-3 py-1 text-xs disabled:opacity-30 ${tab === t ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
+                className={`rounded px-3 py-1 text-xs disabled:opacity-30 ${tab === t ? "bg-accent text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}>
                 {TAB_LABEL[t]}
               </button>
             ))}
@@ -286,7 +286,7 @@ export default function CashPage() {
       <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2">
         {SUBTABS.map((s) => (
           <button key={s.id} onClick={() => setTab(s.id)}
-            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
+            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}>
             {s.label}
           </button>
         ))}

@@ -44,7 +44,7 @@ export default function CompsDailyTable() {
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Control diario de comps / in-house por tipo de habitación. El <span className="text-amber-700">saldo de arranque</span> es
         el YTD a 30-Jun (Tab 7.8 = línea Comps de Tab 6.6, 243/346); cada día suma los comps reales del XML STATISTICS
         (COM/INHOUSE), y el acumulado corrido debe cuadrar con la línea Comps de 6.6.
@@ -52,13 +52,13 @@ export default function CompsDailyTable() {
       <div className="flex items-center gap-1">
         {(["rn", "pax"] as const).map((m) => (
           <button key={m} onClick={() => setMetric(m)}
-            className={`rounded px-2.5 py-1 text-[11px] ${metric === m ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
+            className={`rounded px-2.5 py-1 text-[11px] ${metric === m ? "bg-accent text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}>
             {m === "rn" ? "Room Nights" : "Pax"}
           </button>
         ))}
       </div>
       {err && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{err}</div>}
-      {loading && <div className="text-xs text-ink/55">Cargando…</div>}
+      {loading && <div className="text-xs text-ink/60">Cargando…</div>}
       {data && (
         <div className="overflow-x-auto rounded-xl border border-ink/10 shadow-lg">
           <table className="w-full text-sm">

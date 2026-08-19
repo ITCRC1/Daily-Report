@@ -58,13 +58,13 @@ export default function CashMonthlySummary() {
             className="w-24 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
         </label>
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Cards / Transfers / Cash / SINPE in their native transaction currency (never converted) — built
         day by day from real ingested Integrity data, same source as the rest of Tab 5. A month with no
         ingested days shows $0.00, same as any other view before data is loaded.
       </p>
 
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
       {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
 
       {unmappedCurrency.length > 0 && (

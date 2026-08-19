@@ -123,7 +123,7 @@ export default function DepositLedger({ anchor: businessDate }: { anchor: string
         </label>
       </div>
 
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Deposited/Applied come automatically from Integrity for any day already audited (credits/debits to
         the "ADELANTO HPDS LODGING" suspense account — 🔒 read-only, matches Tab 2 exactly). Days with no
         audit yet (e.g. before Daily-Ops went live) are ✏️ manual entry as a fallback. Balance = running
@@ -131,7 +131,7 @@ export default function DepositLedger({ anchor: businessDate }: { anchor: string
         Tab 2.3 (that one is Opera&apos;s guest-advance PMS ledger — a different concept entirely).
       </p>
 
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
       {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
 
       <div className="rounded-lg border border-ink/10 bg-[#fcfcfb]/60 p-3">
@@ -166,7 +166,7 @@ export default function DepositLedger({ anchor: businessDate }: { anchor: string
             <label className="flex flex-col gap-1 text-[11px] text-ink/70">
               Balance ($)
               <div className="flex items-center gap-1">
-                <span className="text-ink/55">$</span>
+                <span className="text-ink/60">$</span>
                 <input type="number" step="0.01" autoFocus value={openingDraft.balance_usd}
                   onChange={(e) => setOpeningDraft((p) => ({ ...p, balance_usd: e.target.value }))}
                   className={numInput} />
@@ -180,7 +180,7 @@ export default function DepositLedger({ anchor: businessDate }: { anchor: string
                 className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
             </label>
             <button onClick={saveOpening}
-              className="rounded bg-accent px-3 py-1.5 text-[11px] font-medium text-ink hover:opacity-90">
+              className="rounded bg-accent px-3 py-1.5 text-[11px] font-medium text-white hover:opacity-90">
               Save
             </button>
             <button onClick={() => setEditingOpening(false)}

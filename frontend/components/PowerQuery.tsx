@@ -139,7 +139,7 @@ export default function PowerQuery({ anchor }: { anchor: string }) {
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Open column-picker report builder over the already-ingested tables — pick a dataset, choose which
         columns to show, optionally narrow by date, and run it. In the spirit of Opera Cloud&apos;s Reporting
         &amp; Analytics, but strictly over our own data (never a live Opera Cloud connection).
@@ -154,7 +154,7 @@ export default function PowerQuery({ anchor }: { anchor: string }) {
             </button>
           ))}
         </nav>
-        <div className="flex items-center gap-2 text-[11px] text-ink/55">
+        <div className="flex items-center gap-2 text-[11px] text-ink/60">
           {lastRefreshedAt && <span>Last refreshed: {lastRefreshedAt}</span>}
           <button onClick={forceRefresh}
             className="rounded bg-ink/5 px-2.5 py-1 text-[11px] text-ink/75 hover:bg-ink/8 hover:text-ink">
@@ -182,7 +182,7 @@ export default function PowerQuery({ anchor }: { anchor: string }) {
             className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1.5 text-ink" />
         </label>
         <button onClick={run} disabled={loading}
-          className="rounded bg-accent px-4 py-1.5 text-xs font-medium text-ink disabled:opacity-50">
+          className="rounded bg-accent px-4 py-1.5 text-xs font-medium text-white disabled:opacity-50">
           {loading ? "Running…" : "▶ Run Query"}
         </button>
         {ran && rows.length > 0 && (

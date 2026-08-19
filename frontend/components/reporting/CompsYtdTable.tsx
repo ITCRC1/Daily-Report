@@ -38,7 +38,7 @@ export default function CompsYtdTable() {
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Comps / In-House por tipo de habitación, mes a mes. Ene–Jun = histórico del Excel (arranque, reconcilia con
         la línea <span className="text-amber-700">Comps</span> del ancla de Tab 6.6 = 243 RN / 346 Pax); Jul en
         adelante se <span className="text-emerald-700">actualiza solo con la ingesta diaria</span> (cada comp cae en
@@ -47,13 +47,13 @@ export default function CompsYtdTable() {
       <div className="flex items-center gap-1">
         {(["rn", "pax"] as const).map((m) => (
           <button key={m} onClick={() => setMetric(m)}
-            className={`rounded px-2.5 py-1 text-[11px] ${metric === m ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
+            className={`rounded px-2.5 py-1 text-[11px] ${metric === m ? "bg-accent text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}>
             {m === "rn" ? "Room Nights" : "Pax"}
           </button>
         ))}
       </div>
       {err && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{err}</div>}
-      {loading && <div className="text-xs text-ink/55">Cargando…</div>}
+      {loading && <div className="text-xs text-ink/60">Cargando…</div>}
       {data && (
         <div className="overflow-x-auto rounded-xl border border-ink/10 shadow-lg">
           <table className="w-full text-sm">

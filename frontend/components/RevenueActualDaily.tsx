@@ -73,7 +73,7 @@ export default function RevenueActualDaily({ allowUpload = true }: { allowUpload
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
         {allowUpload && (
-          <label className="cursor-pointer rounded bg-accent px-3 py-1.5 text-xs font-medium text-ink">
+          <label className="cursor-pointer rounded bg-accent px-3 py-1.5 text-xs font-medium text-white">
             {uploading ? "Uploading…" : "📤 Upload daily grid (Actual)"}
             <input type="file" accept=".xlsx" className="hidden" disabled={uploading}
               onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
@@ -86,14 +86,14 @@ export default function RevenueActualDaily({ allowUpload = true }: { allowUpload
         )}
       </div>
       {allowUpload && (
-        <p className="text-[11px] text-ink/55">
+        <p className="text-[11px] text-ink/60">
           Bulk upload from an already-aggregated daily grid (the "Actual" sheet of the Weekly workbook, one
           day per row) — doesn&apos;t replace the real day-by-day ingestion (Tabs 1-2), it&apos;s a shortcut to
           backfill history. Only replaces the days present in the uploaded file.
         </p>
       )}
       {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
 
       {dates.length > 0 ? (
         <div className="max-h-[700px] overflow-auto rounded-lg border border-ink/10">

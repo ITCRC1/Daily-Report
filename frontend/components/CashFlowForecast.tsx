@@ -77,7 +77,7 @@ export default function CashFlowForecast({ year }: { year: number }) {
     } catch (e: any) { setErr(String(e)); } finally { setSaving(false); }
   };
 
-  if (!meta) return <div className="text-xs text-ink/55">{err ? `(${err})` : "Loading…"}</div>;
+  if (!meta) return <div className="text-xs text-ink/60">{err ? `(${err})` : "Loading…"}</div>;
 
   const cols = [meta.opening_label, ...meta.months, "Total"];
   const inp = "w-[92px] rounded border border-ink/10 bg-[#f9f9f7] px-1.5 py-1 text-right tabular-nums text-ink/90 focus:border-accent focus:outline-none";
@@ -116,12 +116,12 @@ export default function CashFlowForecast({ year }: { year: number }) {
           {dirty && <span className="text-amber-700/80">unsaved changes</span>}
           {msg && <span className="text-emerald-600">{msg}</span>}
           <button onClick={save} disabled={saving || !dirty}
-            className={`rounded px-3 py-1 ${dirty ? "bg-accent text-ink hover:brightness-110" : "bg-ink/5 text-ink/55"}`}>
+            className={`rounded px-3 py-1 ${dirty ? "bg-accent text-white hover:brightness-110" : "bg-ink/5 text-ink/60"}`}>
             {saving ? "Saving…" : "Save"}
           </button>
         </div>
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Editable: <b>Net Change in Cash</b> de cada mes y el saldo de arranque (Ending Cash de {meta.opening_label}).
         Beginning/Ending Cash y los totales se calculan solos (roll-forward). {loading && "· cargando…"}
       </p>

@@ -43,7 +43,7 @@ export default function RoomStatsPeriodTable({ anchor }: { anchor: string }) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <PeriodTabs value={period} onChange={setPeriod} />
-        <div className="flex items-center gap-2 text-[11px] text-ink/55">
+        <div className="flex items-center gap-2 text-[11px] text-ink/60">
           {lastRefreshedAt && <span>Last refreshed: {lastRefreshedAt}</span>}
           <button onClick={forceRefresh}
             className="rounded bg-ink/5 px-2.5 py-1 text-[11px] text-ink/75 hover:bg-ink/8 hover:text-ink">
@@ -51,10 +51,10 @@ export default function RoomStatsPeriodTable({ anchor }: { anchor: string }) {
           </button>
         </div>
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         {from} → {to} · fact_room_stat + Tab 6.6 YTD anchor as of its own date, reads live -- no cache. RN/Pax netos de comps/in-house (COM/INHOUSE) → ADR correcto.
       </p>
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
       {error && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{error}</div>}
 
       {dates.length > 0 ? (

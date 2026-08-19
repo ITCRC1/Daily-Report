@@ -64,7 +64,7 @@ function MonthCalendar({ year, month, statusMap, selectedDay, onSelect }: {
   return (
     <div className="rounded-lg border border-ink/10 bg-[#fcfcfb] p-2">
       <div className="mb-1 text-center text-[11px] font-medium text-ink/75">{MONTHS[month]}</div>
-      <div className="grid grid-cols-7 gap-0.5 text-center text-[9px] text-ink/55">
+      <div className="grid grid-cols-7 gap-0.5 text-center text-[9px] text-ink/60">
         {WEEKDAYS.map((d, i) => <div key={i}>{d}</div>)}
       </div>
       <div className="grid grid-cols-7 gap-0.5">
@@ -115,7 +115,7 @@ function StatusGrid({ day, reloadKey }: { day: string; reloadKey: number }) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold text-ink">Day status grid</h2>
-          <p className="text-[11px] text-ink/55">
+          <p className="text-[11px] text-ink/60">
             Incomplete → Ready (minimum required: {(data?.gate_min_set ?? []).join(" + ") || "…"}) → Audited → Closed.
             Click a day to select it above.
           </p>
@@ -136,7 +136,7 @@ function StatusGrid({ day, reloadKey }: { day: string; reloadKey: number }) {
         <span className="flex items-center gap-1"><span className="inline-block h-3 w-3 rounded bg-ink/4" /> No data</span>
       </div>
 
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
         {Array.from({ length: 12 }, (_, m) => (
@@ -179,7 +179,7 @@ function DropZone({ files, onFiles, onRemove }: {
         onDrop={(e) => { e.preventDefault(); setDragOver(false); onFiles(e.dataTransfer.files); }}
         onClick={() => inputRef.current?.click()}
         className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center text-sm transition-colors ${
-          dragOver ? "border-accent bg-accent/10 text-ink" : "border-ink/12 text-ink/60 hover:border-ink/20"}`}
+          dragOver ? "border-accent bg-accent/10 text-white" : "border-ink/12 text-ink/60 hover:border-ink/20"}`}
       >
         Drag the day&apos;s files here (Opera XML + Integrity/POS Excel), or click to choose them.
         <input ref={inputRef} type="file" multiple className="hidden"
@@ -189,8 +189,8 @@ function DropZone({ files, onFiles, onRemove }: {
         <ul className="divide-y divide-ink/8 rounded-lg border border-ink/10 bg-[#fcfcfb]">
           {files.map((f, i) => (
             <li key={i} className="flex items-center justify-between px-3 py-1.5 text-xs text-ink/85">
-              <span className="truncate">{f.name} <span className="text-ink/55">({(f.size / 1024).toFixed(0)} KB)</span></span>
-              <button onClick={() => onRemove(i)} className="text-ink/55 hover:text-red-600">✕</button>
+              <span className="truncate">{f.name} <span className="text-ink/60">({(f.size / 1024).toFixed(0)} KB)</span></span>
+              <button onClick={() => onRemove(i)} className="text-ink/60 hover:text-red-600">✕</button>
             </li>
           ))}
         </ul>
@@ -243,7 +243,7 @@ export default function DataInputPage() {
         <p className="text-xs text-ink/60">
           Batch upload for a full day (Opera + Integrity + Simphony) · selected day: <b className="text-ink/85">{day}</b>
         </p>
-        <p className="mt-1 text-[11px] text-ink/55">
+        <p className="mt-1 text-[11px] text-ink/60">
           business_date is assigned by the batch (the day selector above), never the file name (§2.8).
           Files are classified by content — the real Integrity file can be named anything,
           it&apos;s detected by having a sheet named &quot;Datos&quot;. Re-uploading fully replaces
@@ -255,7 +255,7 @@ export default function DataInputPage() {
 
       <div className="flex items-center gap-3">
         <button onClick={upload} disabled={uploading || files.length === 0}
-          className="rounded bg-accent px-4 py-2 text-sm font-medium text-ink disabled:opacity-40">
+          className="rounded bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-40">
           {uploading ? "Uploading and ingesting…" : `Upload and Ingest (${files.length} file${files.length === 1 ? "" : "s"})`}
         </button>
         {files.length > 0 && !uploading && (
@@ -330,7 +330,7 @@ export default function DataInputPage() {
                   <div className="font-semibold text-ink/70">{result.audit.kpis.interno}</div>
                 </div>
               </div>
-              <p className="mt-2 text-[11px] text-ink/55">
+              <p className="mt-2 text-[11px] text-ink/60">
                 See the full detail in Tab 2 · Daily Audit, and Revenue/Cash in Tabs 3-5.
               </p>
             </div>

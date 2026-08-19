@@ -48,7 +48,7 @@ export default function ReportingPage() {
         <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2">
           {SUBTABS.map((s) => (
             <button key={s.id} onClick={() => setTab(s.id)}
-              className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
+              className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}>
               {s.label}
             </button>
           ))}

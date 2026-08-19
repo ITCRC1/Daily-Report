@@ -147,7 +147,7 @@ export default function RevenueDailyPage() {
       <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2 print:hidden">
         {SUBTABS.map((s) => (
           <button key={s.id} onClick={() => setTab(s.id)}
-            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
+            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}>
             {s.label}
           </button>
         ))}
@@ -215,14 +215,14 @@ export default function RevenueDailyPage() {
                 <tr key={c.center} className="border-t border-ink/8">
                   <td className={td}>{c.center}</td>
                   <td className={`${tdN} border-l-2 border-ink/25`}>${money(c.today_actual)}</td>
-                  <td className={`${tdN} text-ink/55`}>${money(c.today_budget)}</td>
+                  <td className={`${tdN} text-ink/60`}>${money(c.today_budget)}</td>
                   <td className={`${tdN} ${varColor(c.today_var)}`}>${money(c.today_var)}</td>
                   <td className={`${tdN} ${varColor(c.today_var_pct)}`}>{pct(c.today_var_pct)}</td>
                   <td className={`${tdN} border-l-2 border-ink/25`}>${money(c.mtd_actual)}</td>
-                  <td className={`${tdN} text-ink/55`}>${money(c.mtd_budget)}</td>
+                  <td className={`${tdN} text-ink/60`}>${money(c.mtd_budget)}</td>
                   <td className={`${tdN} ${varColor(c.mtd_var)}`}>${money(c.mtd_var)}</td>
                   <td className={`${tdN} ${varColor(c.mtd_var_pct)}`}>{pct(c.mtd_var_pct)}</td>
-                  <td className={`${tdN} border-l-2 border-ink/25 text-ink/55`}>${money(c.month_budget_total)}</td>
+                  <td className={`${tdN} border-l-2 border-ink/25 text-ink/60`}>${money(c.month_budget_total)}</td>
                   <td className={`${tdN} ${varColor(c.amount_to_budget)}`}>${money(c.amount_to_budget)}</td>
                   <td className={`${tdN} ${varColor(c.monthly_var_pct)}`}>{pct(c.monthly_var_pct)}</td>
                 </tr>
@@ -230,14 +230,14 @@ export default function RevenueDailyPage() {
               <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                 <td className={td}>GRAND TOTAL</td>
                 <td className={`${tdN} border-l-2 border-ink/25 text-emerald-600`}>${money(data.grand_total.today_actual)}</td>
-                <td className={`${tdN} text-ink/55`}>${money(data.grand_total.today_budget)}</td>
+                <td className={`${tdN} text-ink/60`}>${money(data.grand_total.today_budget)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.today_actual - data.grand_total.today_budget)}`}>${money(data.grand_total.today_actual - data.grand_total.today_budget)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.today_var_pct)}`}>{pct(data.grand_total.today_var_pct)}</td>
                 <td className={`${tdN} border-l-2 border-ink/25 text-emerald-600`}>${money(data.grand_total.mtd_actual)}</td>
-                <td className={`${tdN} text-ink/55`}>${money(data.grand_total.mtd_budget)}</td>
+                <td className={`${tdN} text-ink/60`}>${money(data.grand_total.mtd_budget)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.mtd_actual - data.grand_total.mtd_budget)}`}>${money(data.grand_total.mtd_actual - data.grand_total.mtd_budget)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.mtd_var_pct)}`}>{pct(data.grand_total.mtd_var_pct)}</td>
-                <td className={`${tdN} border-l-2 border-ink/25 text-ink/55`}>${money(data.grand_total.month_budget_total)}</td>
+                <td className={`${tdN} border-l-2 border-ink/25 text-ink/60`}>${money(data.grand_total.month_budget_total)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.amount_to_budget)}`}>${money(data.grand_total.amount_to_budget)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.monthly_var_pct)}`}>{pct(data.grand_total.monthly_var_pct)}</td>
               </tr>
@@ -273,14 +273,14 @@ export default function RevenueDailyPage() {
                   <tr key={c.center} className="border-t border-ink/8">
                     <td className={td}>{c.center}</td>
                     <td className={`${tdN} border-l-2 border-ink/25`}>${money(c.today_actual)}</td>
-                    <td className={`${tdN} text-ink/55`}>${money(c.today_budget)}</td>
+                    <td className={`${tdN} text-ink/60`}>${money(c.today_budget)}</td>
                     <td className={`${tdN} ${varColor(c.today_var)}`}>${money(c.today_var)}</td>
                     <td className={`${tdN} ${varColor(c.today_var_pct)}`}>{pct(c.today_var_pct)}</td>
                     <td className={`${tdN} border-l-2 border-ink/25`}>${money(c.mtd_actual)}</td>
-                    <td className={`${tdN} text-ink/55`}>${money(c.mtd_budget)}</td>
+                    <td className={`${tdN} text-ink/60`}>${money(c.mtd_budget)}</td>
                     <td className={`${tdN} ${varColor(c.mtd_var)}`}>${money(c.mtd_var)}</td>
                     <td className={`${tdN} ${varColor(c.mtd_var_pct)}`}>{pct(c.mtd_var_pct)}</td>
-                    <td className={`${tdN} border-l-2 border-ink/25 text-ink/55`}>${money(c.month_budget_total)}</td>
+                    <td className={`${tdN} border-l-2 border-ink/25 text-ink/60`}>${money(c.month_budget_total)}</td>
                     <td className={`${tdN} ${varColor(c.amount_to_budget)}`}>${money(c.amount_to_budget)}</td>
                     <td className={`${tdN} ${varColor(c.monthly_var_pct)}`}>{pct(c.monthly_var_pct)}</td>
                   </tr>
@@ -288,14 +288,14 @@ export default function RevenueDailyPage() {
                 <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                   <td className={td}>{data.on_property_production.total.center}</td>
                   <td className={`${tdN} border-l-2 border-ink/25 text-emerald-600`}>${money(data.on_property_production.total.today_actual)}</td>
-                  <td className={`${tdN} text-ink/55`}>${money(data.on_property_production.total.today_budget)}</td>
+                  <td className={`${tdN} text-ink/60`}>${money(data.on_property_production.total.today_budget)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.today_var)}`}>${money(data.on_property_production.total.today_var)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.today_var_pct)}`}>{pct(data.on_property_production.total.today_var_pct)}</td>
                   <td className={`${tdN} border-l-2 border-ink/25 text-emerald-600`}>${money(data.on_property_production.total.mtd_actual)}</td>
-                  <td className={`${tdN} text-ink/55`}>${money(data.on_property_production.total.mtd_budget)}</td>
+                  <td className={`${tdN} text-ink/60`}>${money(data.on_property_production.total.mtd_budget)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.mtd_var)}`}>${money(data.on_property_production.total.mtd_var)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.mtd_var_pct)}`}>{pct(data.on_property_production.total.mtd_var_pct)}</td>
-                  <td className={`${tdN} border-l-2 border-ink/25 text-ink/55`}>${money(data.on_property_production.total.month_budget_total)}</td>
+                  <td className={`${tdN} border-l-2 border-ink/25 text-ink/60`}>${money(data.on_property_production.total.month_budget_total)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.amount_to_budget)}`}>${money(data.on_property_production.total.amount_to_budget)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.monthly_var_pct)}`}>{pct(data.on_property_production.total.monthly_var_pct)}</td>
                 </tr>
@@ -315,7 +315,7 @@ export default function RevenueDailyPage() {
             </div>
             <RoomStatsTable rows={data.room_categories_mtd} overall={data.room_categories_mtd_overall}
               comps={data.room_categories_mtd_comps} reconciled={data.room_categories_mtd_reconciled} />
-            <p className="mt-1 text-[11px] text-ink/55 print:hidden">
+            <p className="mt-1 text-[11px] text-ink/60 print:hidden">
               No budget by room type (not needed — rate is controlled via the general
               ADR above, Integrity Room Revenue ÷ Room Statistics). "Codes" (FVR/OVR)
               are in Tab 3.1. This table comes from the real ingestion of Opera's
@@ -571,7 +571,7 @@ function MarketSegmentTable({ label, data, names }: {
             <tr key={r.market_code} className={`border-t border-ink/8 ${COM_CODES.has(r.market_code) ? "bg-amber-500/10" : ""}`}>
               <td className={`${td} ${COM_CODES.has(r.market_code) ? "text-amber-600 font-medium" : ""}`}>
                 {names[r.market_code] || r.market_code}
-                <span className="ml-1 font-mono text-[10px] text-ink/55">({r.market_code})</span>
+                <span className="ml-1 font-mono text-[10px] text-ink/60">({r.market_code})</span>
               </td>
               <td className={`${tdN} ${countColor(r.rooms)}`}>{num(r.rooms)}</td>
               <td className={`${tdN} ${countColor(r.persons)}`}>{num(r.persons)}</td>

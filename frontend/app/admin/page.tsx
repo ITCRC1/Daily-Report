@@ -46,7 +46,7 @@ export default function AdminPage() {
 
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-ink/90">Tabs elegibles</h2>
-        <p className="text-[11px] text-ink/55">Prendé/apagá tabs principales y sus sub-tabs. Apagar un tab principal lo saca de la barra; apagar un sub-tab lo saca dentro de esa página.</p>
+        <p className="text-[11px] text-ink/60">Prendé/apagá tabs principales y sus sub-tabs. Apagar un tab principal lo saca de la barra; apagar un sub-tab lo saca dentro de esa página.</p>
         <div className="divide-y divide-ink/8 rounded-lg border border-ink/10 bg-[#fcfcfb]">
           {NAV_TABS.map((t) => {
             const on = !disabled.includes(t.id);
@@ -57,7 +57,7 @@ export default function AdminPage() {
             return (
               <div key={t.id}>
                 <div className="flex items-center justify-between px-4 py-2.5">
-                  <span className={`text-sm font-medium ${on ? "text-ink/90" : "text-ink/55 line-through"}`}>{t.label}</span>
+                  <span className={`text-sm font-medium ${on ? "text-ink/90" : "text-ink/60 line-through"}`}>{t.label}</span>
                   {pill(t.id, on)}
                 </div>
                 {on && subs.map((s) => {
@@ -74,7 +74,7 @@ export default function AdminPage() {
           })}
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={save} disabled={saving} className="rounded bg-accent px-4 py-2 text-sm text-ink hover:brightness-110 disabled:opacity-50">{saving ? "Guardando…" : "Guardar tabs"}</button>
+          <button onClick={save} disabled={saving} className="rounded bg-accent px-4 py-2 text-sm text-white hover:brightness-110 disabled:opacity-50">{saving ? "Guardando…" : "Guardar tabs"}</button>
           {msg && <span className="text-xs text-emerald-600">{msg}</span>}
           {err && <span className="text-xs text-red-600">{err}</span>}
         </div>

@@ -55,11 +55,11 @@ function Row({ label, col, t, bold }: { label: string; col: Col | null; t: FT; b
       <td className={`px-3 py-1 text-left ${bold ? "text-ink/90" : "text-ink/85"} whitespace-nowrap`}>{label}</td>
       <td className={`${tdN} ${c}`}>{fmt(col?.today, t)}</td>
       <td className={`${tdN} border-l border-ink/10 ${negC(mtd)}`}>{fmt(mtd, t)}</td>
-      <td className={`${tdN} text-ink/55`}>{fmt(fc, t)}</td>
+      <td className={`${tdN} text-ink/60`}>{fmt(fc, t)}</td>
       <td className={`${tdN} ${negC(vFc)}`}>{fmtVar(vFc, t)}</td>
       <td className={`${tdN} border-l border-ink/10 text-ink/60`}>{fmt(bud, t)}</td>
       <td className={`${tdN} ${negC(vBud)}`}>{fmtVar(vBud, t)}</td>
-      <td className={`${tdN} border-l border-ink/10 text-ink/55`}>{fmt(ly, t)}</td>
+      <td className={`${tdN} border-l border-ink/10 text-ink/60`}>{fmt(ly, t)}</td>
       <td className={`${tdN} ${negC(vLy)}`}>{fmtVar(vLy, t)}</td>
       {/* Mes completo: budget del mes entero vs lo acumulado, y cuánto falta. */}
       <td className={`${tdN} border-l border-ink/10 text-ink/60`}>{fmt(mBud, t)}</td>
@@ -110,7 +110,7 @@ function Summary({ date }: { date: string }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Portada del Daily Revenue Report (pág. 2) · {date} · MTD = {d?.days_mtd ?? 0} días. Rooms stats y Revenue por
         categoría <b>reales</b> (motor sobre Integrity, como Tab 3/4). <b>Budget</b> = prorrateado a los {d?.days_mtd ?? 0} días
         corridos (comparable 1:1 con M-T-D Actual); <b>Budget Mes</b> = el mes completo (el de 6.1), y <b>Falta</b> = lo
@@ -193,7 +193,7 @@ function RoomsBySegment({ date }: { date: string }) {
   const empty = d && d.groups.length === 0;
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Rooms by Market Segment (pág. 5–6) · {date} · MTD = {d?.days_mtd ?? 0} días. RN y Room Revenue <b>reales</b> por
         segmento (XML Statistics + XML Revenue, igual que Tab 7.10). Occ% = RN del segmento / habitaciones disponibles; ADR = Rev / RN.
       </p>
@@ -280,7 +280,7 @@ function RevenueDetail({ date }: { date: string }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Revenue Detail por outlet (pág. 3–4) · {date} · MTD = {d?.days_mtd ?? 0} días. Revenue <b>real</b> por
         departamento (motor sobre Integrity, igual que Tab 3/4/9.1) + Budget MTD por outlet. Detalle de lo que 9.1 muestra colapsado por categoría.
       </p>
@@ -470,7 +470,7 @@ function FBMealPeriod({ date }: { date: string }) {
   const empty = d && d.outlets.length === 0;
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         F&B by Meal Period (pág. 9–11) · {date} · MTD = {d?.days_mtd ?? 0} días. Revenue <b>real</b> de <b>Integrity</b> por
         sub-departamento (outlet, los 8 del catálogo) × meal period (del nombre de cuenta) × Food/Beverage (por naturaleza). Reconcilia 1:1 con el Total F&B de 9.1/9.2.
         Requiere Integrity cargado del día. <b>Covers</b> (cubiertos) se capturan a mano por celda — escribí en la columna
@@ -483,7 +483,7 @@ function FBMealPeriod({ date }: { date: string }) {
         >
           ⬇ Plantilla de Covers (mes)
         </button>
-        <label className="cursor-pointer rounded bg-accent/80 px-2.5 py-1 text-[11px] text-ink hover:bg-accent">
+        <label className="cursor-pointer rounded bg-accent/80 px-2.5 py-1 text-[11px] text-white hover:bg-accent">
           ⬆ Cargar Covers
           <input
             type="file" accept=".xlsx" className="hidden"
@@ -517,7 +517,7 @@ function FBMealPeriod({ date }: { date: string }) {
                   <Fragment key={o.outlet}>
                     <tr className="border-t border-ink/10 bg-[#eeede7] font-medium">
                       <td className={`px-3 py-1 text-left whitespace-nowrap ${inactive ? "text-ink/50" : "text-ink/90"}`}>
-                        <span className="text-ink/55">{o.outlet}</span> · {o.sub_department}
+                        <span className="text-ink/60">{o.outlet}</span> · {o.sub_department}
                         {inactive && <span className="ml-2 text-[10px] text-ink/45">(sin movimiento)</span>}
                       </td>
                       <FBCells m={o.subtotal.today} bold />
@@ -564,7 +564,7 @@ function FBMealPeriod({ date }: { date: string }) {
         <div className="flex flex-wrap gap-3 pt-1">
           {/* Total Revenue */}
           <div className="min-w-[220px] flex-1 rounded-lg border border-ink/10 bg-[#fcfcfb] p-3">
-            <div className="text-[11px] uppercase tracking-wide text-ink/55">Total Revenue</div>
+            <div className="text-[11px] uppercase tracking-wide text-ink/60">Total Revenue</div>
             <div className="mt-2 flex items-end justify-between gap-3">
               <div><div className="text-[10px] text-ink/50">Today</div><div className="text-base font-semibold text-ink/90 tabular-nums">{fmt(d.total.today.total, "usd")}</div></div>
               <div className="text-right"><div className="text-[10px] text-ink/50">M-T-D</div><div className="text-base font-semibold text-ink/90 tabular-nums">{fmt(d.total.mtd.total, "usd")}</div></div>
@@ -573,9 +573,9 @@ function FBMealPeriod({ date }: { date: string }) {
           {/* Total Customers (editable) */}
           <div className="min-w-[220px] flex-1 rounded-lg border border-ink/10 bg-[#fcfcfb] p-3">
             <div className="flex items-center justify-between">
-              <div className="text-[11px] uppercase tracking-wide text-ink/55">Total Customers</div>
+              <div className="text-[11px] uppercase tracking-wide text-ink/60">Total Customers</div>
               <button onClick={saveCustomers} disabled={saving || !custDirty}
-                className={`rounded px-2 py-0.5 text-[10px] ${custDirty && !saving ? "bg-accent text-ink hover:opacity-90" : "bg-[#eeede7] text-ink/55"}`}>
+                className={`rounded px-2 py-0.5 text-[10px] ${custDirty && !saving ? "bg-accent text-white hover:opacity-90" : "bg-[#eeede7] text-ink/60"}`}>
                 {saving ? "…" : "Guardar"}
               </button>
             </div>
@@ -628,7 +628,7 @@ function FBRecap({ date }: { date: string }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         F&B Revenue recap (formato FS) · {date} · MTD = {d?.days_mtd ?? 0} días. Tres secciones (Food / Beverage / F&B Misc.)
         con los <b>outlets</b> como filas. Actual <b>real</b> de Integrity por outlet; Budget solo en la fila Total (por naturaleza, no por outlet);
         Forecast y Año anterior = "—" (vienen de la carga). Reconcilia con 9.1/9.2.
@@ -686,7 +686,7 @@ function BeverageDetail({ date }: { date: string }) {
   const empty = d && d.sections.length === 0;
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Beverage Revenue por concepto (pág. 9–11) · {date} · MTD = {d?.days_mtd ?? 0} días. El Beverage (naturalezas 4125/4130/4131)
         se abre en <b>Beer / Wine / Liquors</b> con los outlets como filas. Real de Integrity; reconcilia con el Beverage de 9.6/9.2.
         Budget solo en el Total (por naturaleza). El <b>NA Beverage</b> es memo — el catálogo lo clasifica en Food, no en Beverage.
@@ -717,9 +717,9 @@ function BeverageDetail({ date }: { date: string }) {
               <tr className="border-t-2 border-ink/15"><td colSpan={9} className="p-0" /></tr>
               <Row label="Total Beverage Revenue" col={d.total} t="usd" bold />
               <tr className="border-t border-ink/8">
-                <td className="px-3 py-1 text-left text-ink/55 italic whitespace-nowrap">NA Beverage (memo — va en Food)</td>
-                <td className={`${tdN} text-ink/55`}>{fmt(d.na_beverage.today, "usd")}</td>
-                <td className={`${tdN} border-l border-ink/10 text-ink/55`}>{fmt(d.na_beverage.mtd, "usd")}</td>
+                <td className="px-3 py-1 text-left text-ink/60 italic whitespace-nowrap">NA Beverage (memo — va en Food)</td>
+                <td className={`${tdN} text-ink/60`}>{fmt(d.na_beverage.today, "usd")}</td>
+                <td className={`${tdN} border-l border-ink/10 text-ink/60`}>{fmt(d.na_beverage.mtd, "usd")}</td>
                 <td colSpan={6} className="p-0" />
               </tr>
             </tbody>
@@ -770,7 +770,7 @@ function SpaSummary({ date }: { date: string }) {
   const dirty = d !== null && input !== String(d.treatments.today);
   return (
     <div className="space-y-3 max-w-2xl">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Spa · {date} · MTD = {d?.days_mtd ?? 0} días. <b>Monto</b> = revenue de Spa (dept 0140) real de Integrity (reconcilia con 9.1/9.2).
         El <b>conteo de treatments</b> se captura a mano (no existe en el sistema); <b>Average Rate</b> = Monto ÷ Treatments.
       </p>
@@ -814,7 +814,7 @@ function SpaSummary({ date }: { date: string }) {
       )}
       <div className="flex items-center gap-2">
         <button onClick={save} disabled={saving || !dirty}
-          className={`rounded px-3 py-1.5 text-xs ${dirty && !saving ? "bg-accent text-ink hover:opacity-90" : "bg-[#fcfcfb] text-ink/55"}`}>
+          className={`rounded px-3 py-1.5 text-xs ${dirty && !saving ? "bg-accent text-white hover:opacity-90" : "bg-[#fcfcfb] text-ink/60"}`}>
           {saving ? "Guardando…" : "Guardar treatments"}
         </button>
         <span className="text-[11px] text-ink/50">Guarda el conteo de treatments del día ({date}); el MTD suma los días cargados.</span>
@@ -864,10 +864,10 @@ export default function DailyExtendedPage() {
           <span className="text-xs text-ink/85">
             Vista de impresión · {SUBTABS.length} secciones ({SUBTABS[0]?.id}–{SUBTABS[SUBTABS.length - 1]?.id}) · {anchor}
           </span>
-          <span className="text-[11px] text-ink/55">Esperá a que carguen todas y luego imprimí.</span>
+          <span className="text-[11px] text-ink/60">Esperá a que carguen todas y luego imprimí.</span>
           <span className="ml-auto flex gap-2">
             <button onClick={() => window.print()}
-              className="rounded bg-accent px-3 py-1 text-xs font-medium text-ink hover:bg-accent/80">
+              className="rounded bg-accent px-3 py-1 text-xs font-medium text-white hover:bg-accent/80">
               🖨 Imprimir
             </button>
             <button onClick={() => setPrinting(false)}
@@ -908,7 +908,7 @@ export default function DailyExtendedPage() {
       <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2">
         {SUBTABS.map((s) => (
           <button key={s.id} onClick={() => setTab(s.id)}
-            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
+            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}>
             {s.label}
           </button>
         ))}

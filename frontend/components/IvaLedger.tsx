@@ -61,7 +61,7 @@ export default function IvaLedger({ anchor: businessDate }: { anchor: string }) 
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         VAT accrued per day, real from Integrity (credits to "VAT - CREDITS (IVA DEVENGADO - INGRESOS) - 13%"
         — IVA 13% + IVA 13% POS), since 2026-07-01. Read-only — informational, for tax filing. Shown in both
         USD and CRC (IVA is declared/paid to Hacienda in colones).
@@ -87,7 +87,7 @@ export default function IvaLedger({ anchor: businessDate }: { anchor: string }) 
         </label>
       </div>
 
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
       {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
 
       {data && (

@@ -41,12 +41,12 @@ export default function MarketCodesPeriodTable({ anchor }: { anchor: string }) {
   return (
     <div className="space-y-3">
       <PeriodTabs value={period} onChange={setPeriod} />
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         {from} → {to} · <span className="text-ink/70">Rooms</span> y <span className="text-ink/70">Pax</span> del XML STATISTICS;
         {" "}<span className="text-ink/70">Room Revenue</span> (Accommodation) y <span className="text-ink/70">Revenue Total</span> (todo lo REVENUE)
         {" "}del XML de Revenue, por market code. Total abajo.
       </p>
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
       {err && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{err}</div>}
 
       {data && (
@@ -92,7 +92,7 @@ export default function MarketCodesPeriodTable({ anchor }: { anchor: string }) {
       {data && (
         <>
           <div className="pt-1 text-[11px] font-semibold uppercase tracking-wide text-ink/60">By Market Group</div>
-          <p className="text-[11px] text-ink/55">
+          <p className="text-[11px] text-ink/60">
             Direct = DIR/WEB/BAR · OTA = OTA · Travel Agency = TAFIT/TAGP/TA · Groups = FNF/RET/SOC/WED · Other = el resto (el total cierra con la tabla de arriba).
           </p>
           <div className="overflow-auto rounded-xl border border-ink/10 shadow-lg">

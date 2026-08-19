@@ -96,7 +96,7 @@ const negColor = (v: number | null | undefined) =>
 const ESTADO_STYLE: Record<string, string> = {
   OK: "text-emerald-600", DISCREPANCIA: "text-amber-600",
   "FALTA EN INTEGRITY": "text-red-600", "FALTA EN OPERA": "text-red-600",
-  INTERNO: "text-ink/55", DIF_OPERATIVA: "text-amber-600",
+  INTERNO: "text-ink/60", DIF_OPERATIVA: "text-amber-600",
 };
 const ESTADO_LABEL: Record<string, string> = {
   OK: "OK", DISCREPANCIA: "DISCREPANCY",
@@ -289,17 +289,17 @@ export default function AuditPage() {
           {data?.status === "cerrado" ? (
             <>
               <button onClick={refresh} disabled={loading}
-                className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-ink hover:bg-ink/8 disabled:opacity-50">
+                className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-white hover:bg-ink/8 disabled:opacity-50">
                 {loading ? "…" : "🔄 REFRESH"}
               </button>
               <button onClick={reopen} disabled={loading}
-                className="rounded bg-amber-600 px-3 py-2 text-xs font-medium text-ink hover:bg-amber-500 disabled:opacity-50">
+                className="rounded bg-amber-600 px-3 py-2 text-xs font-medium text-white hover:bg-amber-500 disabled:opacity-50">
                 {loading ? "…" : "🔓 Reopen"}
               </button>
             </>
           ) : (
             <button onClick={() => release(false)} disabled={loading || !data}
-              className="rounded bg-emerald-600 px-3 py-2 text-xs font-medium text-ink hover:bg-emerald-500 disabled:opacity-50">
+              className="rounded bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-500 disabled:opacity-50">
               {loading ? "…" : "Release to Owners"}
             </button>
           )}
@@ -310,11 +310,11 @@ export default function AuditPage() {
           </button>
           <div className="flex gap-1 border-l border-ink/10 pl-2">
             <button onClick={() => downloadExport("excel")}
-              className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-ink hover:bg-ink/8">
+              className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-white hover:bg-ink/8">
               📊 Excel
             </button>
             <button onClick={() => downloadExport("pdf")}
-              className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-ink hover:bg-ink/8">
+              className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-white hover:bg-ink/8">
               📄 PDF
             </button>
           </div>
@@ -334,7 +334,7 @@ export default function AuditPage() {
                 placeholder="Override reason (required)"
                 className="w-80 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
               <button onClick={() => release(true)} disabled={loading || !overrideNote.trim()}
-                className="rounded bg-amber-600 px-2 py-1 text-[11px] text-ink disabled:opacity-50">
+                className="rounded bg-amber-600 px-2 py-1 text-[11px] text-white disabled:opacity-50">
                 Confirm override
               </button>
               <button onClick={() => setShowOverride(false)} className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75">✕</button>
@@ -371,7 +371,7 @@ export default function AuditPage() {
           <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2">
             {SUBTABS.map((s) => (
               <button key={s.id} onClick={() => setTab(s.id)}
-                className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
+                className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-white" : "border border-ink/10 bg-panel text-ink/70 hover:bg-ink/5 hover:text-ink"}`}>
                 {s.label}
               </button>
             ))}
@@ -633,7 +633,7 @@ function Ledgers({ ledgers, day, onSaved }: { ledgers: Ledger[]; day: string; on
                 {l.source === "Trial Balance"
                   ? <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[11px] text-emerald-700">Trial Balance</span>
                   : l.anchored ? <span className="text-sky-600">anchor {l.anchor_date}</span> : "carried over"}
-                {l.note && <span className="text-ink/55"> · {l.note}</span>}
+                {l.note && <span className="text-ink/60"> · {l.note}</span>}
               </td>
               <td className="px-3 py-1.5">
                 {edit === l.ledger ? (
@@ -642,13 +642,13 @@ function Ledgers({ ledgers, day, onSaved }: { ledgers: Ledger[]; day: string; on
                       title="Optional reference text only. The dollar amount goes in the 'Opening' box on the left, not here."
                       className="w-40 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink/75 placeholder:text-ink/45 placeholder:italic" />
                     <button onClick={() => save(l.ledger)} disabled={saving}
-                      className="rounded bg-accent px-2 py-1 text-[11px] text-ink disabled:opacity-50">Save</button>
+                      className="rounded bg-accent px-2 py-1 text-[11px] text-white disabled:opacity-50">Save</button>
                     <button onClick={() => setEdit(null)} className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75">✕</button>
                   </span>
                 ) : (
                   <span className="flex gap-1">
                     <button onClick={() => toggleDetail(l.ledger)}
-                      className={`rounded px-2 py-1 text-[11px] ${openDetail === l.ledger ? "bg-accent text-ink" : "bg-ink/5 text-ink/75 hover:text-ink"}`}>
+                      className={`rounded px-2 py-1 text-[11px] ${openDetail === l.ledger ? "bg-accent text-white" : "bg-ink/5 text-ink/75 hover:text-ink"}`}>
                       {openDetail === l.ledger ? "▲ folios" : "▼ folios"}
                     </button>
                     <button onClick={() => startEdit(l)} className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75 hover:text-ink">Edit opening</button>
@@ -707,9 +707,9 @@ function Ledgers({ ledgers, day, onSaved }: { ledgers: Ledger[]; day: string; on
                       {(detail.folios as ArInvoice[]).map((f) => (
                         <tr key={f.invoice_no} className="border-t border-ink/8">
                           <td className="px-3 py-1.5 font-mono text-ink/85">{f.invoice_no}</td>
-                          <td className={td}>{f.account_name}{f.account_number ? <span className="text-ink/55"> · {f.account_number}</span> : null}</td>
+                          <td className={td}>{f.account_name}{f.account_number ? <span className="text-ink/60"> · {f.account_number}</span> : null}</td>
                           <td className={td}>{f.guest_name}</td>
-                          <td className="px-3 py-1.5 text-ink/55">{f.arrival_date} → {f.departure_date}</td>
+                          <td className="px-3 py-1.5 text-ink/60">{f.arrival_date} → {f.departure_date}</td>
                           <td className={`${tdN} font-medium ${negColor(f.amount)}`}>${money(f.amount)}</td>
                         </tr>
                       ))}
@@ -735,7 +735,7 @@ function Ledgers({ ledgers, day, onSaved }: { ledgers: Ledger[]; day: string; on
                         <td className={td}>{f.guest_name}</td>
                         <td className="px-3 py-1.5 text-emerald-600">{f.status}</td>
                         <td className={`${tdN} font-medium ${negColor(f.total_amount)}`}>${money(f.total_amount)}</td>
-                        <td className="px-3 py-1.5 text-ink/55">{f.lines.length} lines</td>
+                        <td className="px-3 py-1.5 text-ink/60">{f.lines.length} lines</td>
                       </tr>
                       {openFolio === f.bill_no && f.lines.map((ln, i) => (
                         <tr key={`${f.bill_no}-${i}`} className="bg-[#f9f9f7]/60 text-ink/70">
@@ -757,7 +757,7 @@ function Ledgers({ ledgers, day, onSaved }: { ledgers: Ledger[]; day: string; on
               </table>
                 </div>
               )}
-              <p className="text-[11px] text-ink/55">{detail.note}</p>
+              <p className="text-[11px] text-ink/60">{detail.note}</p>
             </div>
           )}
         </div>
@@ -810,7 +810,7 @@ function OccTable<K extends string>({ title, keyName, keyLabel, rows, totals }: 
             <tr key={r[keyName]} className="border-t border-ink/8">
               <td className="px-3 py-1.5 text-ink/85">
                 {r.name || r[keyName]}
-                {r.name && <span className="ml-1 font-mono text-[10px] text-ink/55">({r[keyName]})</span>}
+                {r.name && <span className="ml-1 font-mono text-[10px] text-ink/60">({r[keyName]})</span>}
               </td>
               <td className={`${tdN} ${negColor(r.rooms)}`}>{int(r.rooms)}</td>
               <td className={`${tdN} ${negColor(r.persons)}`}>{int(r.persons)}</td>
@@ -858,11 +858,11 @@ function Estadisticas({ o }: { o: Occupancy }) {
               <tr key={i} className="border-t border-ink/8">
                 <td className="px-3 py-1.5 text-ink/85">
                   {r.market_name || r.market_code}
-                  {r.market_name && <span className="ml-1 font-mono text-[10px] text-ink/55">({r.market_code})</span>}
+                  {r.market_name && <span className="ml-1 font-mono text-[10px] text-ink/60">({r.market_code})</span>}
                 </td>
                 <td className="px-3 py-1.5 text-ink/75">
                   {r.room_class_name || r.room_class}
-                  {r.room_class_name && <span className="ml-1 font-mono text-[10px] text-ink/55">({r.room_class})</span>}
+                  {r.room_class_name && <span className="ml-1 font-mono text-[10px] text-ink/60">({r.room_class})</span>}
                 </td>
                 <td className="px-3 py-1.5 font-mono text-ink/75">{r.room_type}</td>
                 <td className={`${tdN} ${negColor(r.rooms)}`}>{int(r.rooms)}</td>
@@ -920,11 +920,11 @@ function InhouseComp({ o }: { o: Occupancy }) {
               <tr key={i} className="border-t border-ink/8">
                 <td className="px-3 py-1.5 text-ink/85">
                   {r.market_name || r.market_code}
-                  <span className="ml-1 font-mono text-[10px] text-ink/55">({r.market_code})</span>
+                  <span className="ml-1 font-mono text-[10px] text-ink/60">({r.market_code})</span>
                 </td>
                 <td className="px-3 py-1.5 font-mono text-ink/75">
                   {r.room_type || "—"}
-                  {r.room_class_name && <span className="ml-1 font-sans text-[10px] text-ink/55">{r.room_class_name}</span>}
+                  {r.room_class_name && <span className="ml-1 font-sans text-[10px] text-ink/60">{r.room_class_name}</span>}
                 </td>
                 <td className={tdN}>{int(r.rooms)}</td>
                 <td className={tdN}>{int(r.persons)}</td>
@@ -1071,7 +1071,7 @@ function SimphonyPos({ pos }: { pos: PosData }) {
           </table>
         </div>
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         {pos.total_checks} closed checks · source: {pos.summary.source_file}
       </p>
     </div>
@@ -1114,7 +1114,7 @@ function OtbVsRevenue({ otb }: { otb: OtbData }) {
             <OtbReconRow label="Rooms Only" r={otb.rooms_only_recon} />
           </tbody>
         </table>
-        <p className="mt-1 text-[11px] text-ink/55">
+        <p className="mt-1 text-[11px] text-ink/60">
           Full Revenue and Rooms Only are different in nature (one is the whole hotel&apos;s total, the
           other is rooms only) — that&apos;s why each is reconciled on its own against Integrity&apos;s
           real revenue, not against each other.
@@ -1137,7 +1137,7 @@ function OtbVsRevenue({ otb }: { otb: OtbData }) {
                 <td className={`${tdN} ${negColor(d!.inventory_rooms)}`}>{int(d!.inventory_rooms)}</td>
                 <td className={`${tdN} ${negColor(d!.adr)}`}>${money(d!.adr)}</td>
                 <td className={`${tdN} ${negColor(d!.occupancy)}`}>{d!.occupancy.toFixed(1)}%</td>
-                <td className="px-3 py-1.5 text-ink/55">{d!.source_file}</td>
+                <td className="px-3 py-1.5 text-ink/60">{d!.source_file}</td>
               </tr>
             ))}
             {otb.actual_stats && (
@@ -1156,13 +1156,13 @@ function OtbVsRevenue({ otb }: { otb: OtbData }) {
                 </td>
                 <td className={`${tdN} font-bold ${negColor(otb.actual_stats.adr) || "text-sky-600"}`}>${money(otb.actual_stats.adr)}</td>
                 <td className={`${tdN} font-bold text-sky-600`}>{(otb.actual_stats.occupancy_pct * 100).toFixed(1)}%</td>
-                <td className="px-3 py-1.5 text-ink/55">Revenue/ADR: Integrity · RN/Pax/Inv: fact_room_stat · Available: fixed at 30</td>
+                <td className="px-3 py-1.5 text-ink/60">Revenue/ADR: Integrity · RN/Pax/Inv: fact_room_stat · Available: fixed at 30</td>
               </tr>
             )}
           </tbody>
         </table>
         {otb.non_room_revenue !== null && (
-          <p className="mt-1 text-[11px] text-ink/55">
+          <p className="mt-1 text-[11px] text-ink/60">
             For reference: Full Revenue − Rooms Only = <span className={`text-ink/75 ${negColor(otb.non_room_revenue)}`}>${money(otb.non_room_revenue)}</span> of
             non-lodging revenue (F&amp;B, tours, etc.) per the OTB report itself — this is NOT a
             reconciliation, it&apos;s contextual data within the same Opera report.
@@ -1201,7 +1201,7 @@ function OtbVsRevenue({ otb }: { otb: OtbData }) {
               })}
             </tbody>
           </table>
-          <p className="mt-1 text-[11px] text-ink/55">
+          <p className="mt-1 text-[11px] text-ink/60">
             Compared against Rooms Only because it&apos;s the OTB report directly equivalent to the
             physical rooms operation (Full Revenue blends in other revenue). If Inventory or
             Occupancy don&apos;t match, the OTB is using an availability assumption different from the
@@ -1272,7 +1272,7 @@ function HallazgosYTD() {
         <h3 className="text-sm font-medium text-ink/75">
           Open Findings — Year to Date {year} ({findings.length})
         </h3>
-        {loading && <span className="text-xs text-ink/55">Loading…</span>}
+        {loading && <span className="text-xs text-ink/60">Loading…</span>}
       </div>
       {findings.length === 0 && !loading ? (
         <div className="rounded-lg border border-ink/10 bg-[#fcfcfb] p-6 text-sm text-emerald-600">
@@ -1322,7 +1322,7 @@ function HallazgosYTD() {
                         {error && <div className="text-[11px] text-red-600">{error}</div>}
                         <div className="flex gap-2">
                           <button onClick={() => save(f.id!)} disabled={saving}
-                            className="rounded bg-accent px-3 py-1 text-[11px] text-ink disabled:opacity-50">
+                            className="rounded bg-accent px-3 py-1 text-[11px] text-white disabled:opacity-50">
                             {saving ? "Saving…" : "Save"}
                           </button>
                           <button onClick={() => setEditingId(null)}

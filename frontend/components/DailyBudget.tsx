@@ -63,11 +63,11 @@ export default function DailyBudget() {
           </select>
         </label>
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         Automatically derived from 6.1 (monthly ÷ days in the month, residual on the last day, §3) — not
         edited here directly.
       </p>
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
       {dates.length > 0 ? (
         <div className="max-h-[600px] overflow-auto rounded-lg border border-ink/10">
           <table className="w-full text-sm">

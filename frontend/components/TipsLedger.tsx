@@ -91,7 +91,7 @@ export default function TipsLedger({ anchor: businessDate, kind, description }: 
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-ink/55">{description}</p>
+      <p className="text-[11px] text-ink/60">{description}</p>
 
       {kpis && (
         <div className="grid grid-cols-3 gap-3">
@@ -115,7 +115,7 @@ export default function TipsLedger({ anchor: businessDate, kind, description }: 
         </label>
       </div>
 
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
       {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
 
       {data && (

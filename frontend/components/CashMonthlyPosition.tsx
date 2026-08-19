@@ -210,16 +210,16 @@ export default function CashMonthlyPosition() {
           {dirty && <span className="text-amber-700/80">unsaved changes</span>}
           {msg && <span className="text-emerald-600">{msg}</span>}
           <button onClick={save} disabled={saving || !dirty}
-            className={`rounded px-3 py-1 ${dirty ? "bg-accent text-ink hover:brightness-110" : "bg-ink/5 text-ink/55"}`}>
+            className={`rounded px-3 py-1 ${dirty ? "bg-accent text-white hover:brightness-110" : "bg-ink/5 text-ink/60"}`}>
             {saving ? "Saving…" : "Save"}
           </button>
         </div>
       </div>
-      <p className="text-[11px] text-ink/55">
+      <p className="text-[11px] text-ink/60">
         All lines are editable (manual input) except <b>MTD Cash collected from the Operation</b>, which is calculated from Tab 5 =
         {" "}<b>Real Cash</b> for the month to date (excludes AR and Non-Cash). Month Balance recalculates automatically.
       </p>
-      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {loading && <div className="text-xs text-ink/60">Loading…</div>}
       {err && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{err}</div>}
 
       <table className="w-full overflow-hidden rounded-lg border border-ink/10 text-sm">
@@ -227,7 +227,7 @@ export default function CashMonthlyPosition() {
           {editRow("Opening Cash Balance", "opening")}
           <tr className="border-t border-ink/8 bg-[#e8f0fb]/60">
             <td className={rowL}>
-              MTD Cash collected — bruto <span className="text-[10px] text-ink/55">(Real Cash)</span>
+              MTD Cash collected — bruto <span className="text-[10px] text-ink/60">(Real Cash)</span>
               <button onClick={() => setModalOpen(true)}
                 className="ml-2 rounded border border-sky-500/40 bg-sky-500/10 px-1.5 py-0.5 text-[10px] text-sky-700 hover:bg-sky-500/20">
                 🔧 Comisiones tarjeta
@@ -277,7 +277,7 @@ export default function CashMonthlyPosition() {
           <div className="w-full max-w-xl rounded-xl border border-ink/12 bg-[#141824] p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-1 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-ink">Comisiones y retención de tarjeta</h3>
-              <button onClick={() => setModalOpen(false)} className="text-ink/55 hover:text-ink">✕</button>
+              <button onClick={() => setModalOpen(false)} className="text-ink/60 hover:text-ink">✕</button>
             </div>
             <p className="mb-3 text-[11px] text-ink/60">
               Tasas que se descuentan al <b>bruto</b> para dejar el <b>neto</b> que va al cash flow.
@@ -313,7 +313,7 @@ export default function CashMonthlyPosition() {
             <div className="mt-4 flex justify-end gap-2">
               <button onClick={() => setModalOpen(false)} className="rounded px-3 py-1.5 text-xs text-ink/70 hover:text-ink">Cerrar</button>
               <button onClick={async () => { await save(); setModalOpen(false); }} disabled={saving}
-                className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-ink disabled:opacity-40">
+                className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-white disabled:opacity-40">
                 {saving ? "Guardando…" : "Guardar"}
               </button>
             </div>
