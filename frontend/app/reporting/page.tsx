@@ -38,17 +38,17 @@ export default function ReportingPage() {
     <ForceRefreshProvider>
       <section className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4">
         <div>
-          <h1 className="text-xl font-semibold text-white">Tab 7 · Reporting</h1>
-          <p className="text-xs text-white/50">
+          <h1 className="text-xl font-semibold text-ink">Tab 7 · Reporting</h1>
+          <p className="text-xs text-ink/60">
             Quick Today/Weekly/MTD/Full Year views for validation and ad hoc reporting (COWLCR). Every
             table always shows a TOTAL row and every dollar amount is formatted as currency.
           </p>
         </div>
 
-        <nav className="flex flex-wrap gap-1 border-b border-white/10 pb-2">
+        <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2">
           {SUBTABS.map((s) => (
             <button key={s.id} onClick={() => setTab(s.id)}
-              className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-white" : "bg-[#1E2130] text-white/60 hover:text-white"}`}>
+              className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
               {s.label}
             </button>
           ))}

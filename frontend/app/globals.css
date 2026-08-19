@@ -3,19 +3,19 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  background: #0F1118;
-  color: #E6E8EF;
+  background: #f9f9f7;
+  color: #0b0b0b;
 }
 
-/* Impresión profesional de reportes (Tab 3 y siguientes) -- el diseño oscuro
-   de pantalla no sirve para papel: se resetea todo a fondo blanco/texto
-   oscuro dentro de <main>, se preserva el significado semántico de
-   rojo/verde/ámbar (variaciones), y se fuerza horizontal (las tablas de
-   11+ columnas no entran en vertical). */
+/* Impresión de reportes (Tab 3 y siguientes). Desde el cambio a paleta clara
+   la pantalla ya se parece al papel, así que acá quedó sobre todo el ajuste
+   de tamaños, márgenes y cortes de página; el reseteo de color se conserva
+   porque los lavados y filetes finos de pantalla no rinden bien impresos. Se
+   fuerza horizontal: las tablas de 11+ columnas no entran en vertical. */
 @media print {
   @page {
     size: landscape;
@@ -78,7 +78,7 @@ body {
   main .px-3 { padding-left: 5px !important; padding-right: 5px !important; }
   main .py-2, main .py-1\.5, main .py-2\.5 { padding-top: 2px !important; padding-bottom: 2px !important; }
 
-  main [class*="border-white"] {
+  main [class*="border-ink"] {
     border-color: #cbd0da !important;
   }
 
@@ -133,20 +133,11 @@ body {
   main .print-heatmap td:first-child,
   main .print-heatmap th:first-child { text-align: left !important; padding-left: 2px !important; }
 
-  /* 8.5 / 8.6 charts SVG: los ejes (meses en X, valores/% en Y), las
-     gridlines y las etiquetas de valor usan fill/stroke blanco
-     semitransparente pensado para el fondo oscuro de pantalla -- sobre la
-     hoja blanca del PDF quedan invisibles ("no se ven las coordenadas"). Los
-     atributos fill/stroke inline de SVG tienen especificidad 0, así que
-     estos selectores de atributo los sobrescriben. Se oscurecen SOLO los
-     blanquecinos; los colores con significado (barras azul/naranja, GAP
-     rojo, línea de media móvil) se dejan intactos y ya imprimen bien. */
-  main svg text[fill="#ffffff66"],
-  main svg text[fill="#ffffff99"],
-  main svg text[fill="#ffffffcc"] { fill: #333333 !important; }
-  main svg text[fill="#7aa0e0"] { fill: #2f5597 !important; }
-  main svg line[stroke="#ffffff14"],
-  main svg line[stroke="#ffffff12"] { stroke: #c8cdd8 !important; }
+  /* 8.5 / 8.6 charts SVG: cuando la pantalla era oscura, los ejes y las
+     etiquetas iban en blanco semitransparente y había que oscurecerlos acá
+     para que no salieran invisibles en el PDF. Con la paleta clara los fills
+     ya son tinta sobre claro (#898781 ejes, #52514e etiquetas, #e1e0d9
+     gridlines) y se imprimen tal cual: esas reglas se eliminaron. */
 
   /* Página 1 = encabezado + KPIs + tabla principal. Página 2 = todo lo demás
      (On-Property + Room Statistics + Months to Day + Otros). Un solo corte

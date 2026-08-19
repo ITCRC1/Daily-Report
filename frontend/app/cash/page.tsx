@@ -35,19 +35,19 @@ const money = (v: number | null | undefined) =>
   v === null || v === undefined ? "—"
     : v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const th = "px-3 py-2 text-left font-medium text-white/60";
-const thN = "px-3 py-2 text-right font-medium text-white/60";
-const td = "px-3 py-1.5 text-white/80";
-const tdN = "px-3 py-1.5 text-right tabular-nums text-white/80";
+const th = "px-3 py-2 text-left font-medium text-ink/70";
+const thN = "px-3 py-2 text-right font-medium text-ink/70";
+const td = "px-3 py-1.5 text-ink/85";
+const tdN = "px-3 py-1.5 text-right tabular-nums text-ink/85";
 
 const valueColor = (v: number | null | undefined) =>
-  v !== null && v !== undefined && v < 0 ? "!text-rose-400" : "";
+  v !== null && v !== undefined && v < 0 ? "!text-rose-600" : "";
 
 function Kpi({ label, value, tone }: { label: string; value: number | string; tone?: string }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-[#1E2130] p-4">
-      <div className={`text-2xl font-bold ${tone || "text-white"}`}>{value}</div>
-      <div className="text-[11px] uppercase tracking-wide text-white/50">{label}</div>
+    <div className="rounded-lg border border-ink/10 bg-[#fcfcfb] p-4">
+      <div className={`text-2xl font-bold ${tone || "text-ink"}`}>{value}</div>
+      <div className="text-[11px] uppercase tracking-wide text-ink/60">{label}</div>
     </div>
   );
 }
@@ -57,19 +57,19 @@ function BreakdownTable({ title, rows }: { title: string; rows: Record<string, n
   const total = entries.reduce((a, [, v]) => a + v, 0);
   return (
     <div>
-      <div className="mb-1 text-[11px] uppercase tracking-wide text-white/50">{title}</div>
+      <div className="mb-1 text-[11px] uppercase tracking-wide text-ink/60">{title}</div>
       {entries.length === 0 ? (
-        <div className="rounded-lg border border-white/10 bg-[#1E2130]/50 p-3 text-xs text-white/40">No activity.</div>
+        <div className="rounded-lg border border-ink/10 bg-[#fcfcfb]/50 p-3 text-xs text-ink/55">No activity.</div>
       ) : (
-        <table className="w-full rounded-lg border border-white/10 text-xs">
+        <table className="w-full rounded-lg border border-ink/10 text-xs">
           <tbody>
             {entries.map(([k, v]) => (
-              <tr key={k} className="border-t border-white/5 first:border-t-0">
+              <tr key={k} className="border-t border-ink/8 first:border-t-0">
                 <td className={td}>{k}</td>
                 <td className={`${tdN} ${valueColor(v)}`}>${money(v)}</td>
               </tr>
             ))}
-            <tr className="border-t border-white/20 bg-[#1E2130] font-bold">
+            <tr className="border-t border-ink/15 bg-[#fcfcfb] font-bold">
               <td className={td}>Total</td>
               <td className={`${tdN} ${valueColor(total)}`}>${money(total)}</td>
             </tr>
@@ -84,15 +84,15 @@ function UnmappedBlock({ rows }: { rows: Unmapped[] }) {
   if (rows.length === 0) return null;
   return (
     <div className="rounded border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs">
-      <div className="mb-1 font-medium text-amber-400">⚠ Unmapped payment TCodes (UNMAPPED, §5.5)</div>
+      <div className="mb-1 font-medium text-amber-600">⚠ Unmapped payment TCodes (UNMAPPED, §5.5)</div>
       <table className="w-full text-xs">
         <thead><tr>{["TCode", "Description", "Opera Total"].map((h) => <th key={h} className={th}>{h}</th>)}</tr></thead>
         <tbody>
           {rows.map((u) => (
-            <tr key={u.tcode} className="border-t border-white/5">
-              <td className="px-3 py-1 font-mono text-white/80">{u.tcode}</td>
+            <tr key={u.tcode} className="border-t border-ink/8">
+              <td className="px-3 py-1 font-mono text-ink/85">{u.tcode}</td>
               <td className={td}>{u.description}</td>
-              <td className={`${tdN} ${valueColor(u.opera_total) || "text-amber-400"}`}>${money(u.opera_total)}</td>
+              <td className={`${tdN} ${valueColor(u.opera_total) || "text-amber-600"}`}>${money(u.opera_total)}</td>
             </tr>
           ))}
         </tbody>
@@ -109,11 +109,11 @@ function SplitTable({ title, rows }: { title: string; rows: Split }) {
   const totNon = entries.reduce((a, [, v]) => a + v.non, 0);
   return (
     <div>
-      <div className="mb-1 text-[11px] uppercase tracking-wide text-white/50">{title}</div>
+      <div className="mb-1 text-[11px] uppercase tracking-wide text-ink/60">{title}</div>
       {entries.length === 0 ? (
-        <div className="rounded-lg border border-white/10 bg-[#1E2130]/50 p-3 text-xs text-white/40">No activity.</div>
+        <div className="rounded-lg border border-ink/10 bg-[#fcfcfb]/50 p-3 text-xs text-ink/55">No activity.</div>
       ) : (
-        <table className="w-full rounded-lg border border-white/10 text-xs">
+        <table className="w-full rounded-lg border border-ink/10 text-xs">
           <thead>
             <tr>
               <th className={th}></th>
@@ -125,20 +125,20 @@ function SplitTable({ title, rows }: { title: string; rows: Split }) {
             {entries.map(([k, v]) => {
               const isReal = Math.abs(v.real) > 0.005;
               return (
-                <tr key={k} className="border-t border-white/5">
+                <tr key={k} className="border-t border-ink/8">
                   <td className={td}>
                     {k}
-                    {!isReal && <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-white/40">excluido</span>}
+                    {!isReal && <span className="ml-2 rounded bg-ink/5 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-ink/55">excluido</span>}
                   </td>
-                  <td className={`${tdN} ${v.real ? "text-emerald-400" : "text-white/20"}`}>{v.real ? `$${money(v.real)}` : "—"}</td>
-                  <td className={`${tdN} ${v.non ? "text-white/60" : "text-white/20"}`}>{v.non ? `$${money(v.non)}` : "—"}</td>
+                  <td className={`${tdN} ${v.real ? "text-emerald-600" : "text-ink/40"}`}>{v.real ? `$${money(v.real)}` : "—"}</td>
+                  <td className={`${tdN} ${v.non ? "text-ink/70" : "text-ink/40"}`}>{v.non ? `$${money(v.non)}` : "—"}</td>
                 </tr>
               );
             })}
-            <tr className="border-t border-white/20 bg-[#1E2130] font-bold">
+            <tr className="border-t border-ink/15 bg-[#fcfcfb] font-bold">
               <td className={td}>Total</td>
-              <td className={`${tdN} text-emerald-400`}>${money(totReal)}</td>
-              <td className={`${tdN} text-white/60`}>${money(totNon)}</td>
+              <td className={`${tdN} text-emerald-600`}>${money(totReal)}</td>
+              <td className={`${tdN} text-ink/70`}>${money(totNon)}</td>
             </tr>
           </tbody>
         </table>
@@ -154,14 +154,14 @@ function RealCashComposition({ p }: { p: Pivot }) {
     <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4">
       <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between text-left">
         <div>
-          <h3 className="text-sm font-semibold text-emerald-300">🔍 Composición del Real Cash</h3>
-          <p className="text-[11px] text-white/50">
-            Qué líneas suman los <b className="text-emerald-400">${money(p.real_cash)}</b> de Real Cash —
-            y qué queda <span className="text-white/60">excluido como No-Cash (${money(p.non_cash)})</span>:
+          <h3 className="text-sm font-semibold text-emerald-700">🔍 Composición del Real Cash</h3>
+          <p className="text-[11px] text-ink/60">
+            Qué líneas suman los <b className="text-emerald-600">${money(p.real_cash)}</b> de Real Cash —
+            y qué queda <span className="text-ink/70">excluido como No-Cash (${money(p.non_cash)})</span>:
             cuentas por cobrar (AR) y cargos internos. Referencia para el ajuste en 5.2.
           </p>
         </div>
-        <span className="text-white/40">{open ? "▾" : "▸"}</span>
+        <span className="text-ink/55">{open ? "▾" : "▸"}</span>
       </button>
       {open && (
         <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -177,10 +177,10 @@ function PivotSection({ label, p }: { label: string; p: Pivot }) {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-4 gap-3">
-        <Kpi label={`${label} · Real Cash`} value={`$${money(p.real_cash)}`} tone={valueColor(p.real_cash) || "text-emerald-400"} />
-        <Kpi label="Non-Cash" value={`$${money(p.non_cash)}`} tone={valueColor(p.non_cash) || "text-white/60"} />
-        <Kpi label="Cash-relevant (broad)" value={`$${money(p.cash_relevant_total)}`} tone={valueColor(p.cash_relevant_total) || "text-sky-400"} />
-        <Kpi label="Bank-only (strict)" value={`$${money(p.bank_only_total)}`} tone={valueColor(p.bank_only_total) || "text-amber-400"} />
+        <Kpi label={`${label} · Real Cash`} value={`$${money(p.real_cash)}`} tone={valueColor(p.real_cash) || "text-emerald-600"} />
+        <Kpi label="Non-Cash" value={`$${money(p.non_cash)}`} tone={valueColor(p.non_cash) || "text-ink/70"} />
+        <Kpi label="Cash-relevant (broad)" value={`$${money(p.cash_relevant_total)}`} tone={valueColor(p.cash_relevant_total) || "text-sky-600"} />
+        <Kpi label="Bank-only (strict)" value={`$${money(p.bank_only_total)}`} tone={valueColor(p.bank_only_total) || "text-amber-600"} />
       </div>
       <RealCashComposition p={p} />
       <div className="grid grid-cols-2 gap-4">
@@ -239,21 +239,21 @@ function DailyCashFromOperation() {
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-white/50">
+      <p className="text-xs text-ink/60">
         Two-level buckets (§5.5) via dim_payment_map · {day}
         {data && ` · ${data.days_loaded_mtd} day(s) in MTD`}
         {weekData && ` · ${weekData.days_loaded_week} in the week (${weekData.week.label}) · ${weekData.days_loaded_ytd} in YTD`}
       </p>
 
-      {loading && <div className="text-sm text-white/50">Loading…</div>}
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-3 text-sm text-white/70">{msg}</div>}
+      {loading && <div className="text-sm text-ink/60">Loading…</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-3 text-sm text-ink/75">{msg}</div>}
 
       {data && (
         <>
-          <nav className="flex gap-1 border-b border-white/10 pb-2">
+          <nav className="flex gap-1 border-b border-ink/10 pb-2">
             {(Object.keys(TAB_LABEL) as TabId[]).map((t) => (
               <button key={t} onClick={() => setTab(t)} disabled={t !== "today" && t !== "mtd" && !weekData}
-                className={`rounded px-3 py-1 text-xs disabled:opacity-30 ${tab === t ? "bg-accent text-white" : "bg-[#1E2130] text-white/60 hover:text-white"}`}>
+                className={`rounded px-3 py-1 text-xs disabled:opacity-30 ${tab === t ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
                 {TAB_LABEL[t]}
               </button>
             ))}
@@ -281,12 +281,12 @@ export default function CashPage() {
   return (
     <section className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4 px-3">
       <div>
-        <h1 className="text-xl font-semibold text-white">Tab 5 · Cash</h1>
+        <h1 className="text-xl font-semibold text-ink">Tab 5 · Cash</h1>
       </div>
-      <nav className="flex flex-wrap gap-1 border-b border-white/10 pb-2">
+      <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2">
         {SUBTABS.map((s) => (
           <button key={s.id} onClick={() => setTab(s.id)}
-            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-white" : "bg-[#1E2130] text-white/60 hover:text-white"}`}>
+            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
             {s.label}
           </button>
         ))}

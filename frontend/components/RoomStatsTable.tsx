@@ -18,12 +18,12 @@ const money = (v: number | null | undefined) =>
     : v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const intFmt = (v: number | null | undefined) =>
   v === null || v === undefined ? "—" : v.toLocaleString("en-US", { maximumFractionDigits: 0 });
-const valueColor = (v: number) => (v < 0 ? "!text-rose-400" : "");
+const valueColor = (v: number) => (v < 0 ? "!text-rose-600" : "");
 
-const th = "px-3 py-2.5 text-left font-bold text-white/70";
-const thN = "px-3 py-2.5 text-right font-bold text-white/70";
-const td = "px-3 py-1.5 text-white/80";
-const tdN = "px-3 py-1.5 text-right tabular-nums text-white/80";
+const th = "px-3 py-2.5 text-left font-bold text-ink/75";
+const thN = "px-3 py-2.5 text-right font-bold text-ink/75";
+const td = "px-3 py-1.5 text-ink/85";
+const tdN = "px-3 py-1.5 text-right tabular-nums text-ink/85";
 
 export default function RoomStatsTable({ rows, overall, comps, reconciled, net }: {
   rows: RoomCategory[]; overall: RoomCategoryOverall;
@@ -35,9 +35,9 @@ export default function RoomStatsTable({ rows, overall, comps, reconciled, net }
 }) {
   const grossMode = !!net;
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 shadow-lg">
+    <div className="overflow-hidden rounded-xl border border-ink/10 shadow-lg">
       <table className="w-full text-xs">
-        <thead className="bg-gradient-to-r from-[#1a2744] to-[#1E2130]"><tr>
+        <thead className="bg-gradient-to-r from-[#dfeafc] to-[#fcfcfb]"><tr>
           <th className={th}>Category</th><th className={thN}>Units</th>
           <th className={thN}>RN</th><th className={thN}>Pax</th><th className={thN}>Available</th>
           <th className={thN}>Revenue</th><th className={thN}>Occ %</th>
@@ -45,7 +45,7 @@ export default function RoomStatsTable({ rows, overall, comps, reconciled, net }
         </tr></thead>
         <tbody>
           {rows.map((c) => (
-            <tr key={c.category} className="border-t border-white/5">
+            <tr key={c.category} className="border-t border-ink/8">
               <td className={td}>{c.category}</td>
               <td className={tdN}>{intFmt(c.units)}</td>
               <td className={tdN}>{intFmt(c.stay_rooms)}</td>
@@ -60,8 +60,8 @@ export default function RoomStatsTable({ rows, overall, comps, reconciled, net }
           {/* Fila Comps/In-House (compartida por ambos modos) */}
           {(() => {
             const compsRow = comps ? (
-              <tr className="border-t border-white/10 bg-[#231c17] italic text-amber-200/80">
-                <td className={td}>{grossMode ? "+ " : ""}Comps &amp; In-House <span className="not-italic text-[10px] text-amber-200/50">(excl. from ADR/Occ)</span></td>
+              <tr className="border-t border-ink/10 bg-[#fbf3e6] italic text-amber-700/80">
+                <td className={td}>{grossMode ? "+ " : ""}Comps &amp; In-House <span className="not-italic text-[10px] text-amber-700/50">(excl. from ADR/Occ)</span></td>
                 <td className={tdN}>—</td>
                 <td className={tdN}>{intFmt(comps.stay_rooms)}</td>
                 <td className={tdN}>{intFmt(comps.stay_persons)}</td>
@@ -76,7 +76,7 @@ export default function RoomStatsTable({ rows, overall, comps, reconciled, net }
             // (Net + Comps) y va al FINAL; en modo weekly es el TOTAL (revenue
             // rooms) y va primero.
             const overallRow = (
-              <tr className={`border-t-2 ${grossMode ? "border-white/30" : "border-white/20"} bg-[#1E2130] font-bold`}>
+              <tr className={`border-t-2 ${grossMode ? "border-ink/20" : "border-ink/15"} bg-[#fcfcfb] font-bold`}>
                 <td className={td}>{grossMode ? "TOTAL (occupied = Net + Comps)" : "TOTAL (revenue rooms)"}</td>
                 <td className={tdN}>{intFmt(overall.units)}</td>
                 <td className={tdN}>{intFmt(overall.stay_rooms)}</td>
@@ -92,7 +92,7 @@ export default function RoomStatsTable({ rows, overall, comps, reconciled, net }
               // Modo bruto (Tab 4 YTD / 6.6): NET -> + Comps -> TOTAL (ocupadas).
               return (
                 <>
-                  <tr className="border-t-2 border-white/20 bg-[#16233a] font-bold text-emerald-300/90">
+                  <tr className="border-t-2 border-ink/15 bg-[#e8f0fb] font-bold text-emerald-700/90">
                     <td className={td}>NET (revenue rooms)</td>
                     <td className={tdN}>{intFmt(net.units)}</td>
                     <td className={tdN}>{intFmt(net.stay_rooms)}</td>
@@ -114,7 +114,7 @@ export default function RoomStatsTable({ rows, overall, comps, reconciled, net }
                 {overallRow}
                 {compsRow}
                 {reconciled && (
-                  <tr className="border-t border-white/20 bg-[#16233a] font-bold text-white/90">
+                  <tr className="border-t border-ink/15 bg-[#e8f0fb] font-bold text-ink/90">
                     <td className={td}>GRAND TOTAL (incl. comps)</td>
                     <td className={tdN}>{intFmt(reconciled.units)}</td>
                     <td className={tdN}>{intFmt(reconciled.stay_rooms)}</td>

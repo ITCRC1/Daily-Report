@@ -15,4 +15,4 @@ export const pctFmt = (v: number | null | undefined) =>
   v === null || v === undefined ? "—" : `${(v * 100).toFixed(1)}%`;
 
 export const valueColor = (v: number | null | undefined) =>
-  v !== null && v !== undefined && v < 0 ? "!text-rose-400" : "";
+  v !== null && v !== undefined && v < 0 ? "!text-rose-600" : "";

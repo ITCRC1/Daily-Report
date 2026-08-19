@@ -40,31 +40,31 @@ export default function AdminPage() {
   return (
     <section className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-white">Admin</h1>
-        <p className="text-xs text-white/50">Tabs elegibles.</p>
+        <h1 className="text-xl font-semibold text-ink">Admin</h1>
+        <p className="text-xs text-ink/60">Tabs elegibles.</p>
       </div>
 
       <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-white/90">Tabs elegibles</h2>
-        <p className="text-[11px] text-white/40">Prendé/apagá tabs principales y sus sub-tabs. Apagar un tab principal lo saca de la barra; apagar un sub-tab lo saca dentro de esa página.</p>
-        <div className="divide-y divide-white/5 rounded-lg border border-white/10 bg-[#1E2130]">
+        <h2 className="text-sm font-semibold text-ink/90">Tabs elegibles</h2>
+        <p className="text-[11px] text-ink/55">Prendé/apagá tabs principales y sus sub-tabs. Apagar un tab principal lo saca de la barra; apagar un sub-tab lo saca dentro de esa página.</p>
+        <div className="divide-y divide-ink/8 rounded-lg border border-ink/10 bg-[#fcfcfb]">
           {NAV_TABS.map((t) => {
             const on = !disabled.includes(t.id);
             const subs = SUB_TABS[t.id] ?? [];
             const pill = (id: string, isOn: boolean) => (
-              <button onClick={() => toggle(id)} className={`w-14 rounded-full px-2 py-1 text-[11px] font-medium ${isOn ? "bg-emerald-500/25 text-emerald-300" : "bg-white/10 text-white/50"}`}>{isOn ? "ON" : "OFF"}</button>
+              <button onClick={() => toggle(id)} className={`w-14 rounded-full px-2 py-1 text-[11px] font-medium ${isOn ? "bg-emerald-500/25 text-emerald-700" : "bg-ink/5 text-ink/60"}`}>{isOn ? "ON" : "OFF"}</button>
             );
             return (
               <div key={t.id}>
                 <div className="flex items-center justify-between px-4 py-2.5">
-                  <span className={`text-sm font-medium ${on ? "text-white/90" : "text-white/40 line-through"}`}>{t.label}</span>
+                  <span className={`text-sm font-medium ${on ? "text-ink/90" : "text-ink/55 line-through"}`}>{t.label}</span>
                   {pill(t.id, on)}
                 </div>
                 {on && subs.map((s) => {
                   const son = !disabled.includes(s.id);
                   return (
                     <div key={s.id} className="flex items-center justify-between bg-[#181b26] px-4 py-1.5 pl-9">
-                      <span className={`text-[12px] ${son ? "text-white/70" : "text-white/35 line-through"}`}>{s.label}</span>
+                      <span className={`text-[12px] ${son ? "text-ink/75" : "text-ink/50 line-through"}`}>{s.label}</span>
                       {pill(s.id, son)}
                     </div>
                   );
@@ -74,9 +74,9 @@ export default function AdminPage() {
           })}
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={save} disabled={saving} className="rounded bg-accent px-4 py-2 text-sm text-white hover:brightness-110 disabled:opacity-50">{saving ? "Guardando…" : "Guardar tabs"}</button>
-          {msg && <span className="text-xs text-emerald-400">{msg}</span>}
-          {err && <span className="text-xs text-red-300">{err}</span>}
+          <button onClick={save} disabled={saving} className="rounded bg-accent px-4 py-2 text-sm text-ink hover:brightness-110 disabled:opacity-50">{saving ? "Guardando…" : "Guardar tabs"}</button>
+          {msg && <span className="text-xs text-emerald-600">{msg}</span>}
+          {err && <span className="text-xs text-red-600">{err}</span>}
         </div>
       </div>
     </section>

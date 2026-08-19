@@ -21,11 +21,11 @@ function firstOfMonth(iso: string) {
   return toISO(new Date(d.getFullYear(), d.getMonth(), 1));
 }
 
-const th = "px-3 py-2 text-left font-medium text-white/60 whitespace-nowrap";
-const thN = "px-3 py-2 text-right font-medium text-white/60 whitespace-nowrap";
-const td = "px-3 py-1.5 text-white/80 whitespace-nowrap";
+const th = "px-3 py-2 text-left font-medium text-ink/70 whitespace-nowrap";
+const thN = "px-3 py-2 text-right font-medium text-ink/70 whitespace-nowrap";
+const td = "px-3 py-1.5 text-ink/85 whitespace-nowrap";
 const tdEmpty = "px-3 py-1.5";
-const numInput = "w-28 rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-right text-white disabled:border-white/5 disabled:bg-transparent disabled:text-white/60";
+const numInput = "w-28 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-right text-ink disabled:border-ink/8 disabled:bg-transparent disabled:text-ink/70";
 
 const SOURCE_BADGE: Record<Source, string> = {
   audit: "🔒 from audit",
@@ -111,19 +111,19 @@ export default function DepositLedger({ anchor: businessDate }: { anchor: string
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-xs text-white/70">
+        <label className="flex flex-col gap-1 text-xs text-ink/75">
           From
           <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
-            className="rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-white" />
+            className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-white/70">
+        <label className="flex flex-col gap-1 text-xs text-ink/75">
           To
           <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
-            className="rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-white" />
+            className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
         </label>
       </div>
 
-      <p className="text-[11px] text-white/40">
+      <p className="text-[11px] text-ink/55">
         Deposited/Applied come automatically from Integrity for any day already audited (credits/debits to
         the "ADELANTO HPDS LODGING" suspense account — 🔒 read-only, matches Tab 2 exactly). Days with no
         audit yet (e.g. before Daily-Ops went live) are ✏️ manual entry as a fallback. Balance = running
@@ -131,60 +131,60 @@ export default function DepositLedger({ anchor: businessDate }: { anchor: string
         Tab 2.3 (that one is Opera&apos;s guest-advance PMS ledger — a different concept entirely).
       </p>
 
-      {loading && <div className="text-xs text-white/40">Loading…</div>}
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-2 text-xs text-white/70">{msg}</div>}
+      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
 
-      <div className="rounded-lg border border-white/10 bg-[#1E2130]/60 p-3">
+      <div className="rounded-lg border border-ink/10 bg-[#fcfcfb]/60 p-3">
         {data?.anchor && !editingOpening ? (
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-white/70">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink/75">
             <span>
               Opening balance anchor: <strong>{usd(data.anchor.balance_usd)}</strong> as of{" "}
               <strong>{data.anchor.anchor_date}</strong>
               {data.anchor.note ? ` — ${data.anchor.note}` : ""}
             </span>
             <button onClick={() => setEditingOpening(true)}
-              className="rounded bg-white/10 px-2 py-1 text-[11px] text-white/70 hover:bg-white/20">
+              className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75 hover:bg-ink/8">
               Edit
             </button>
           </div>
         ) : !editingOpening ? (
-          <div className="flex items-center justify-between gap-2 text-xs text-white/50">
+          <div className="flex items-center justify-between gap-2 text-xs text-ink/60">
             <span>No opening balance anchor yet — YTD-June starting balance can be loaded whenever it&apos;s ready.</span>
             <button onClick={() => setEditingOpening(true)}
-              className="rounded bg-white/10 px-2 py-1 text-[11px] text-white/70 hover:bg-white/20">
+              className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75 hover:bg-ink/8">
               Load opening balance
             </button>
           </div>
         ) : (
           <div className="flex flex-wrap items-end gap-2">
-            <label className="flex flex-col gap-1 text-[11px] text-white/60">
+            <label className="flex flex-col gap-1 text-[11px] text-ink/70">
               Anchor date
               <input type="date" value={openingDraft.anchor_date}
                 onChange={(e) => setOpeningDraft((p) => ({ ...p, anchor_date: e.target.value }))}
-                className="rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-white" />
+                className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
             </label>
-            <label className="flex flex-col gap-1 text-[11px] text-white/60">
+            <label className="flex flex-col gap-1 text-[11px] text-ink/70">
               Balance ($)
               <div className="flex items-center gap-1">
-                <span className="text-white/40">$</span>
+                <span className="text-ink/55">$</span>
                 <input type="number" step="0.01" autoFocus value={openingDraft.balance_usd}
                   onChange={(e) => setOpeningDraft((p) => ({ ...p, balance_usd: e.target.value }))}
                   className={numInput} />
               </div>
             </label>
-            <label className="flex flex-1 flex-col gap-1 text-[11px] text-white/60">
+            <label className="flex flex-1 flex-col gap-1 text-[11px] text-ink/70">
               Note — optional, NOT the balance
               <input type="text" value={openingDraft.note} title="Optional note — the balance goes in the field above"
                 onChange={(e) => setOpeningDraft((p) => ({ ...p, note: e.target.value }))}
                 placeholder="e.g. YTD close as of Jun 30, 2026"
-                className="rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-white" />
+                className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
             </label>
             <button onClick={saveOpening}
-              className="rounded bg-accent px-3 py-1.5 text-[11px] font-medium text-white hover:opacity-90">
+              className="rounded bg-accent px-3 py-1.5 text-[11px] font-medium text-ink hover:opacity-90">
               Save
             </button>
             <button onClick={() => setEditingOpening(false)}
-              className="rounded bg-white/10 px-3 py-1.5 text-[11px] text-white/70 hover:bg-white/20">
+              className="rounded bg-ink/5 px-3 py-1.5 text-[11px] text-ink/75 hover:bg-ink/8">
               Cancel
             </button>
           </div>
@@ -192,9 +192,9 @@ export default function DepositLedger({ anchor: businessDate }: { anchor: string
       </div>
 
       {data && (
-        <div className="overflow-x-auto rounded-lg border border-white/10">
+        <div className="overflow-x-auto rounded-lg border border-ink/10">
           <table className="w-full text-sm">
-            <thead className="bg-[#1E2130]">
+            <thead className="bg-[#fcfcfb]">
               <tr>
                 <th className={th}>Date</th>
                 <th className={thN}>Deposited</th>
@@ -206,7 +206,7 @@ export default function DepositLedger({ anchor: businessDate }: { anchor: string
               </tr>
             </thead>
             <tbody>
-              <tr className="border-t border-white/5 bg-[#1E2130]/40 text-white/50">
+              <tr className="border-t border-ink/8 bg-[#fcfcfb]/40 text-ink/60">
                 <td className={td}>Opening ({from})</td>
                 <td className={tdEmpty}></td>
                 <td className={tdEmpty}></td>
@@ -217,7 +217,7 @@ export default function DepositLedger({ anchor: businessDate }: { anchor: string
                 const readOnly = r.source === "audit";
                 const draft = amountDrafts[r.date] ?? { deposited: String(r.deposited_usd), applied: String(r.applied_usd) };
                 return (
-                  <tr key={r.date} className="border-t border-white/5">
+                  <tr key={r.date} className="border-t border-ink/8">
                     <td className={td}>{r.date}</td>
                     <td className={thN}>
                       <input type="number" step="0.01" value={draft.deposited} disabled={readOnly}
@@ -232,12 +232,12 @@ export default function DepositLedger({ anchor: businessDate }: { anchor: string
                         className={numInput} />
                     </td>
                     <td className={`${thN} font-medium ${valueColor(r.balance_usd)}`}>{usd(r.balance_usd)}</td>
-                    <td className={`${td} text-white/50`}>{SOURCE_BADGE[r.source]}</td>
+                    <td className={`${td} text-ink/60`}>{SOURCE_BADGE[r.source]}</td>
                     <td className={td}>
                       <input type="text" value={noteDrafts[r.date] ?? ""}
                         onChange={(e) => setNoteDrafts((p) => ({ ...p, [r.date]: e.target.value }))}
                         placeholder="optional note"
-                        className="w-48 rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-white" />
+                        className="w-48 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
                     </td>
                     <td className={td}>
                       <button
@@ -248,14 +248,14 @@ export default function DepositLedger({ anchor: businessDate }: { anchor: string
                         }}
                         disabled={savingDate === r.date}
                         title={readOnly ? "Saves the note only — amounts come from the audit" : "Save"}
-                        className="rounded bg-white/10 px-2 py-1 text-[11px] text-white/70 hover:bg-white/20 disabled:opacity-40">
+                        className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75 hover:bg-ink/8 disabled:opacity-40">
                         {savingDate === r.date ? "…" : "💾 Save"}
                       </button>
                     </td>
                   </tr>
                 );
               })}
-              <tr className="border-t-2 border-white/20 bg-[#1E2130] font-bold">
+              <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                 <td className={td}>Closing ({to})</td>
                 <td className={tdEmpty}></td>
                 <td className={tdEmpty}></td>

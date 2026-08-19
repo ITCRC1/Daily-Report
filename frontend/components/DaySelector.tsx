@@ -18,13 +18,13 @@ export default function DaySelector() {
   }
 
   return (
-    <label className="flex items-center gap-2 text-xs text-white/70">
+    <label className="flex items-center gap-2 text-xs text-ink/75">
       Day:
       <input
         type="date"
         value={day}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded border border-white/10 bg-[#1E2130] px-2 py-1 text-white"
+        className="rounded border border-ink/10 bg-[#fcfcfb] px-2 py-1 text-ink"
       />
     </label>
   );

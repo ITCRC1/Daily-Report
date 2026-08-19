@@ -14,10 +14,10 @@ type Row = {
 
 const COLUMNS = ["date", "dept_code", "dept_name", "amount_usd", "rooms_sold", "total_pax", "available_rooms"];
 
-const bTh = "px-4 py-3 text-left font-medium text-white/60 whitespace-nowrap";
-const bThN = "px-4 py-3 text-right font-medium text-white/60 whitespace-nowrap";
-const bTd = "px-4 py-2.5 text-white/80";
-const bTdN = "px-4 py-2.5 text-right tabular-nums text-white/80";
+const bTh = "px-4 py-3 text-left font-medium text-ink/70 whitespace-nowrap";
+const bThN = "px-4 py-3 text-right font-medium text-ink/70 whitespace-nowrap";
+const bTd = "px-4 py-2.5 text-ink/85";
+const bTdN = "px-4 py-2.5 text-right tabular-nums text-ink/85";
 
 export default function RevenueActualPeriodTable({ anchor }: { anchor: string }) {
   const [period, setPeriod] = useState<PeriodKey>("today");
@@ -45,24 +45,24 @@ export default function RevenueActualPeriodTable({ anchor }: { anchor: string })
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <PeriodTabs value={period} onChange={setPeriod} />
-        <div className="flex items-center gap-2 text-[11px] text-white/40">
+        <div className="flex items-center gap-2 text-[11px] text-ink/55">
           {lastRefreshedAt && <span>Last refreshed: {lastRefreshedAt}</span>}
           <button onClick={forceRefresh}
-            className="rounded bg-white/10 px-2.5 py-1 text-[11px] text-white/70 hover:bg-white/20 hover:text-white">
+            className="rounded bg-ink/5 px-2.5 py-1 text-[11px] text-ink/75 hover:bg-ink/8 hover:text-ink">
             🔄 Force Recalculate
           </button>
         </div>
       </div>
-      <p className="text-[11px] text-white/40">
+      <p className="text-[11px] text-ink/55">
         {from} → {to} · Revenue Actual Daily (Tab 6.4), reads fact_revenue_actual_daily live -- no cache.
       </p>
-      {loading && <div className="text-xs text-white/40">Loading…</div>}
-      {error && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-300">{error}</div>}
+      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {error && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{error}</div>}
 
       {dates.length > 0 ? (
-        <div className="max-h-[600px] overflow-auto rounded-lg border border-white/10">
+        <div className="max-h-[600px] overflow-auto rounded-lg border border-ink/10">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-[#1E2130]">
+            <thead className="sticky top-0 bg-[#fcfcfb]">
               <tr>
                 <th className={bTh}>Day</th>
                 {depts.map((d) => <th key={d} className={bThN}>{d}{deptNames.get(d) ? ` · ${deptNames.get(d)}` : ""}</th>)}
@@ -83,19 +83,19 @@ export default function RevenueActualPeriodTable({ anchor }: { anchor: string })
                 const occPct = pax?.available_rooms ? (pax.rooms_sold ?? 0) / pax.available_rooms : null;
                 const adr = pax?.rooms_sold ? rooms / pax.rooms_sold : null;
                 return (
-                  <tr key={d} className="border-t border-white/5">
+                  <tr key={d} className="border-t border-ink/8">
                     <td className={bTd}>{d}</td>
-                    {depts.map((dept) => <td key={dept} className={`${bTdN} ${valueColor(rowData[dept] ?? 0)}`}>{rowData[dept] ? usd(rowData[dept]) : <span className="text-white/25">—</span>}</td>)}
+                    {depts.map((dept) => <td key={dept} className={`${bTdN} ${valueColor(rowData[dept] ?? 0)}`}>{rowData[dept] ? usd(rowData[dept]) : <span className="text-ink/45">—</span>}</td>)}
                     <td className={`${bTdN} font-medium ${valueColor(total)}`}>{usd(total)}</td>
-                    <td className={bTdN}>{pax?.rooms_sold != null ? intFmt(pax.rooms_sold) : <span className="text-white/25">—</span>}</td>
-                    <td className={bTdN}>{pax?.total_pax != null ? intFmt(pax.total_pax) : <span className="text-white/25">—</span>}</td>
-                    <td className={bTdN}>{pax?.available_rooms != null ? intFmt(pax.available_rooms) : <span className="text-white/25">—</span>}</td>
-                    <td className={bTdN}>{occPct !== null ? pctFmt(occPct) : <span className="text-white/25">—</span>}</td>
-                    <td className={`${bTdN} ${adr !== null ? valueColor(adr) : ""}`}>{adr !== null ? usd(adr) : <span className="text-white/25">—</span>}</td>
+                    <td className={bTdN}>{pax?.rooms_sold != null ? intFmt(pax.rooms_sold) : <span className="text-ink/45">—</span>}</td>
+                    <td className={bTdN}>{pax?.total_pax != null ? intFmt(pax.total_pax) : <span className="text-ink/45">—</span>}</td>
+                    <td className={bTdN}>{pax?.available_rooms != null ? intFmt(pax.available_rooms) : <span className="text-ink/45">—</span>}</td>
+                    <td className={bTdN}>{occPct !== null ? pctFmt(occPct) : <span className="text-ink/45">—</span>}</td>
+                    <td className={`${bTdN} ${adr !== null ? valueColor(adr) : ""}`}>{adr !== null ? usd(adr) : <span className="text-ink/45">—</span>}</td>
                   </tr>
                 );
               })}
-              <tr className="sticky bottom-0 border-t-2 border-white/20 bg-[#1E2130] font-bold">
+              <tr className="sticky bottom-0 border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                 <td className={bTd}>TOTAL</td>
                 {depts.map((dept) => {
                   const deptTotal = dates.reduce((a, d) => a + (byDate.get(d)![dept] ?? 0), 0);
@@ -124,7 +124,7 @@ export default function RevenueActualPeriodTable({ anchor }: { anchor: string })
           </table>
         </div>
       ) : (
-        !loading && <div className="rounded-lg border border-dashed border-white/15 bg-[#1E2130]/50 p-4 text-xs text-white/50">
+        !loading && <div className="rounded-lg border border-dashed border-ink/12 bg-[#fcfcfb]/50 p-4 text-xs text-ink/60">
           No revenue actual data for {from} → {to}.
         </div>
       )}

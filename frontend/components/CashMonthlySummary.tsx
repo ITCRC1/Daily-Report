@@ -22,10 +22,10 @@ type MonthlySummary = { year: number; property: string; months: MonthRow[]; ytd:
 const crc = (v: number | null | undefined) =>
   v === null || v === undefined ? "—" : `₡${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-const th = "px-3 py-2 text-left font-medium text-white/60 whitespace-nowrap";
-const thN = "px-3 py-2 text-right font-medium text-white/60 whitespace-nowrap";
-const td = "px-3 py-1.5 text-white/80 whitespace-nowrap";
-const tdN = "px-3 py-1.5 text-right tabular-nums text-white/80 whitespace-nowrap";
+const th = "px-3 py-2 text-left font-medium text-ink/70 whitespace-nowrap";
+const thN = "px-3 py-2 text-right font-medium text-ink/70 whitespace-nowrap";
+const td = "px-3 py-1.5 text-ink/85 whitespace-nowrap";
+const tdN = "px-3 py-1.5 text-right tabular-nums text-ink/85 whitespace-nowrap";
 
 export default function CashMonthlySummary() {
   const [year, setYear] = useState(new Date().getFullYear());
@@ -52,23 +52,23 @@ export default function CashMonthlySummary() {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-2 text-xs text-white/70">
+        <label className="flex items-center gap-2 text-xs text-ink/75">
           Year:
           <input type="number" value={year} onChange={(e) => setYear(parseInt(e.target.value, 10) || year)}
-            className="w-24 rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-white" />
+            className="w-24 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
         </label>
       </div>
-      <p className="text-[11px] text-white/40">
+      <p className="text-[11px] text-ink/55">
         Cards / Transfers / Cash / SINPE in their native transaction currency (never converted) — built
         day by day from real ingested Integrity data, same source as the rest of Tab 5. A month with no
         ingested days shows $0.00, same as any other view before data is loaded.
       </p>
 
-      {loading && <div className="text-xs text-white/40">Loading…</div>}
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-2 text-xs text-white/70">{msg}</div>}
+      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
 
       {unmappedCurrency.length > 0 && (
-        <div className="rounded border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-300/80">
+        <div className="rounded border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-700/80">
           ⚠ {unmappedCurrency.length} payment line(s) with a TCode whose currency (dim_payment_map.moneda)
           is neither CRC nor USD — amount included in the USD column so it isn't lost, but the mapping
           should be reviewed: {unmappedCurrency.map((u) => u.tcode).join(", ")}
@@ -77,9 +77,9 @@ export default function CashMonthlySummary() {
 
       {data && (
         <>
-          <div className="overflow-x-auto rounded-lg border border-white/10">
+          <div className="overflow-x-auto rounded-lg border border-ink/10">
             <table className="w-full text-sm">
-              <thead className="bg-[#1E2130]">
+              <thead className="bg-[#fcfcfb]">
                 <tr>
                   <th className={th}>Month</th>
                   <th className={thN}>Cards CRC</th>
@@ -98,10 +98,10 @@ export default function CashMonthlySummary() {
               </thead>
               <tbody>
                 {data.months.map((m) => (
-                  <tr key={m.month} className="border-t border-white/5">
+                  <tr key={m.month} className="border-t border-ink/8">
                     <td className={td}>
                       {m.month}
-                      {m.days_loaded === 0 && <span className="ml-1 text-white/25">(no data)</span>}
+                      {m.days_loaded === 0 && <span className="ml-1 text-ink/45">(no data)</span>}
                     </td>
                     <td className={`${tdN} ${valueColor(m.cards_crc)}`}>{crc(m.cards_crc)}</td>
                     <td className={`${tdN} ${valueColor(m.cards_usd)}`}>{usd(m.cards_usd)}</td>
@@ -117,7 +117,7 @@ export default function CashMonthlySummary() {
                     <td className={`${tdN} font-bold ${valueColor(m.total_usd)}`}>{usd(m.total_usd)}</td>
                   </tr>
                 ))}
-                <tr className="border-t-2 border-white/20 bg-[#1E2130] font-bold">
+                <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                   <td className={td}>YTD TOTAL</td>
                   <td className={`${tdN} ${valueColor(data.ytd.cards_crc)}`}>{crc(data.ytd.cards_crc)}</td>
                   <td className={`${tdN} ${valueColor(data.ytd.cards_usd)}`}>{usd(data.ytd.cards_usd)}</td>
@@ -137,10 +137,10 @@ export default function CashMonthlySummary() {
           </div>
 
           <div>
-            <div className="mb-1 text-[11px] uppercase tracking-wide text-white/50">Resumen Mensual USD</div>
-            <div className="max-w-md overflow-x-auto rounded-lg border border-white/10">
+            <div className="mb-1 text-[11px] uppercase tracking-wide text-ink/60">Resumen Mensual USD</div>
+            <div className="max-w-md overflow-x-auto rounded-lg border border-ink/10">
               <table className="w-full text-sm">
-                <thead className="bg-[#1E2130]">
+                <thead className="bg-[#fcfcfb]">
                   <tr>
                     <th className={th}>Mes</th>
                     <th className={thN}>Real Cash USD</th>
@@ -150,14 +150,14 @@ export default function CashMonthlySummary() {
                 </thead>
                 <tbody>
                   {data.months.map((m) => (
-                    <tr key={m.month} className="border-t border-white/5">
+                    <tr key={m.month} className="border-t border-ink/8">
                       <td className={td}>{m.month}</td>
                       <td className={`${tdN} ${valueColor(m.total_real_cash_usd)}`}>{usd(m.total_real_cash_usd)}</td>
                       <td className={`${tdN} ${valueColor(m.total_non_cash_usd)}`}>{usd(m.total_non_cash_usd)}</td>
                       <td className={`${tdN} font-medium ${valueColor(m.total_usd)}`}>{usd(m.total_usd)}</td>
                     </tr>
                   ))}
-                  <tr className="border-t-2 border-white/20 bg-[#1E2130] font-bold">
+                  <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                     <td className={td}>YTD TOTAL</td>
                     <td className={`${tdN} ${valueColor(data.ytd.total_real_cash_usd)}`}>{usd(data.ytd.total_real_cash_usd)}</td>
                     <td className={`${tdN} ${valueColor(data.ytd.total_non_cash_usd)}`}>{usd(data.ytd.total_non_cash_usd)}</td>

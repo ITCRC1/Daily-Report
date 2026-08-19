@@ -23,16 +23,16 @@ export default function TopNav() {
   const tabs = NAV_TABS.filter((t) => !disabled.includes(t.id));
 
   return (
-    <header className="sticky top-0 z-10 border-b border-white/10 bg-[#0F1118] print:hidden">
+    <header className="sticky top-0 z-10 border-b border-ink/10 bg-[#f9f9f7] print:hidden">
       <div className="flex items-center justify-between px-5 py-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold tracking-wide text-white">DAILY-OPS</span>
+          <span className="text-sm font-bold tracking-wide text-ink">DAILY-OPS</span>
           <span className="rounded bg-accent/20 px-2 py-0.5 text-[11px] text-accent">COWLCR</span>
         </div>
         <div className="flex items-center gap-3">
           <DaySelector />
           <Link href="/admin" title="Admin — prender/apagar tabs"
-            className={`rounded px-2 py-1 text-xs ${pathname === "/admin" ? "bg-accent text-white" : "bg-[#1E2130] text-white/50 hover:text-white"}`}>
+            className={`rounded px-2 py-1 text-xs ${pathname === "/admin" ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/60 hover:text-ink"}`}>
             ⚙
           </Link>
         </div>
@@ -46,8 +46,8 @@ export default function TopNav() {
               href={t.href}
               className={`rounded px-3 py-1.5 text-xs transition ${
                 active
-                  ? "bg-accent text-white"
-                  : "bg-[#1E2130] text-white/70 hover:text-white"
+                  ? "bg-accent text-ink"
+                  : "bg-[#fcfcfb] text-ink/75 hover:text-ink"
               }`}
             >
               {t.label}

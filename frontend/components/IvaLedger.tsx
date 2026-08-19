@@ -17,15 +17,15 @@ const EARLIEST = "2026-07-01";
 const crc = (v: number | null | undefined) =>
   v === null || v === undefined ? "—" : `₡${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-const th = "px-3 py-2 text-left font-medium text-white/60 whitespace-nowrap";
-const thN = "px-3 py-2 text-right font-medium text-white/60 whitespace-nowrap";
-const td = "px-3 py-1.5 text-white/80 whitespace-nowrap";
+const th = "px-3 py-2 text-left font-medium text-ink/70 whitespace-nowrap";
+const thN = "px-3 py-2 text-right font-medium text-ink/70 whitespace-nowrap";
+const td = "px-3 py-1.5 text-ink/85 whitespace-nowrap";
 
 function Kpi({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-[#1E2130] p-4">
-      <div className={`text-2xl font-bold ${tone || "text-white"}`}>{value}</div>
-      <div className="text-[11px] uppercase tracking-wide text-white/50">{label}</div>
+    <div className="rounded-lg border border-ink/10 bg-[#fcfcfb] p-4">
+      <div className={`text-2xl font-bold ${tone || "text-ink"}`}>{value}</div>
+      <div className="text-[11px] uppercase tracking-wide text-ink/60">{label}</div>
     </div>
   );
 }
@@ -61,7 +61,7 @@ export default function IvaLedger({ anchor: businessDate }: { anchor: string }) 
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-white/40">
+      <p className="text-[11px] text-ink/55">
         VAT accrued per day, real from Integrity (credits to "VAT - CREDITS (IVA DEVENGADO - INGRESOS) - 13%"
         — IVA 13% + IVA 13% POS), since 2026-07-01. Read-only — informational, for tax filing. Shown in both
         USD and CRC (IVA is declared/paid to Hacienda in colones).
@@ -69,31 +69,31 @@ export default function IvaLedger({ anchor: businessDate }: { anchor: string }) 
 
       {kpis && (
         <div className="grid grid-cols-2 gap-3">
-          <Kpi label="Today" value={`${usd(kpis.today.accrued_usd)} · ${crc(kpis.today.accrued_crc)}`} tone="text-amber-400" />
-          <Kpi label="MTD" value={`${usd(kpis.mtd.accrued_usd)} · ${crc(kpis.mtd.accrued_crc)}`} tone="text-amber-400" />
+          <Kpi label="Today" value={`${usd(kpis.today.accrued_usd)} · ${crc(kpis.today.accrued_crc)}`} tone="text-amber-600" />
+          <Kpi label="MTD" value={`${usd(kpis.mtd.accrued_usd)} · ${crc(kpis.mtd.accrued_crc)}`} tone="text-amber-600" />
         </div>
       )}
 
       <div className="flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-xs text-white/70">
+        <label className="flex flex-col gap-1 text-xs text-ink/75">
           From
           <input type="date" value={from} min={EARLIEST} onChange={(e) => setFrom(e.target.value)}
-            className="rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-white" />
+            className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-white/70">
+        <label className="flex flex-col gap-1 text-xs text-ink/75">
           To
           <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
-            className="rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-white" />
+            className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
         </label>
       </div>
 
-      {loading && <div className="text-xs text-white/40">Loading…</div>}
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-2 text-xs text-white/70">{msg}</div>}
+      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
 
       {data && (
-        <div className="overflow-x-auto rounded-lg border border-white/10">
+        <div className="overflow-x-auto rounded-lg border border-ink/10">
           <table className="w-full text-sm">
-            <thead className="bg-[#1E2130]">
+            <thead className="bg-[#fcfcfb]">
               <tr>
                 <th className={th}>Date</th>
                 <th className={thN}>IVA 13% (USD)</th>
@@ -102,13 +102,13 @@ export default function IvaLedger({ anchor: businessDate }: { anchor: string }) 
             </thead>
             <tbody>
               {data.rows.map((r) => (
-                <tr key={r.date} className="border-t border-white/5">
-                  <td className={td}>{r.date}{!r.ingested && <span className="ml-1 text-white/25">(no audit)</span>}</td>
+                <tr key={r.date} className="border-t border-ink/8">
+                  <td className={td}>{r.date}{!r.ingested && <span className="ml-1 text-ink/45">(no audit)</span>}</td>
                   <td className={thN}>{usd(r.accrued_usd)}</td>
                   <td className={thN}>{crc(r.accrued_crc)}</td>
                 </tr>
               ))}
-              <tr className="border-t-2 border-white/20 bg-[#1E2130] font-bold">
+              <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                 <td className={td}>Total ({from} → {to})</td>
                 <td className={thN}>{usd(data.total_usd)}</td>
                 <td className={thN}>{crc(data.total_crc)}</td>

@@ -14,10 +14,10 @@ type Row = {
 
 const COLUMNS = ["date", "category", "revenue", "stay_rooms", "stay_persons", "physical_rooms"];
 
-const bTh = "px-4 py-3 text-left font-medium text-white/60 whitespace-nowrap";
-const bThN = "px-4 py-3 text-right font-medium text-white/60 whitespace-nowrap";
-const bTd = "px-4 py-2.5 text-white/80";
-const bTdN = "px-4 py-2.5 text-right tabular-nums text-white/80";
+const bTh = "px-4 py-3 text-left font-medium text-ink/70 whitespace-nowrap";
+const bThN = "px-4 py-3 text-right font-medium text-ink/70 whitespace-nowrap";
+const bTd = "px-4 py-2.5 text-ink/85";
+const bTdN = "px-4 py-2.5 text-right tabular-nums text-ink/85";
 
 export default function RoomStatsPeriodTable({ anchor }: { anchor: string }) {
   const [period, setPeriod] = useState<PeriodKey>("today");
@@ -43,24 +43,24 @@ export default function RoomStatsPeriodTable({ anchor }: { anchor: string }) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <PeriodTabs value={period} onChange={setPeriod} />
-        <div className="flex items-center gap-2 text-[11px] text-white/40">
+        <div className="flex items-center gap-2 text-[11px] text-ink/55">
           {lastRefreshedAt && <span>Last refreshed: {lastRefreshedAt}</span>}
           <button onClick={forceRefresh}
-            className="rounded bg-white/10 px-2.5 py-1 text-[11px] text-white/70 hover:bg-white/20 hover:text-white">
+            className="rounded bg-ink/5 px-2.5 py-1 text-[11px] text-ink/75 hover:bg-ink/8 hover:text-ink">
             🔄 Force Recalculate
           </button>
         </div>
       </div>
-      <p className="text-[11px] text-white/40">
+      <p className="text-[11px] text-ink/55">
         {from} → {to} · fact_room_stat + Tab 6.6 YTD anchor as of its own date, reads live -- no cache. RN/Pax netos de comps/in-house (COM/INHOUSE) → ADR correcto.
       </p>
-      {loading && <div className="text-xs text-white/40">Loading…</div>}
-      {error && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-300">{error}</div>}
+      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {error && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{error}</div>}
 
       {dates.length > 0 ? (
-        <div className="max-h-[600px] overflow-auto rounded-lg border border-white/10">
+        <div className="max-h-[600px] overflow-auto rounded-lg border border-ink/10">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-[#1E2130]">
+            <thead className="sticky top-0 bg-[#fcfcfb]">
               <tr>
                 <th className={bTh}>Day</th>
                 {categories.map((c) => <th key={c} className={bThN}>{c}</th>)}
@@ -85,19 +85,19 @@ export default function RoomStatsPeriodTable({ anchor }: { anchor: string }) {
                 const occPct = availTotal ? rnTotal / availTotal : null;
                 const adr = rnTotal ? total / rnTotal : null;
                 return (
-                  <tr key={d} className="border-t border-white/5">
+                  <tr key={d} className="border-t border-ink/8">
                     <td className={bTd}>{d}</td>
-                    {categories.map((c) => <td key={c} className={`${bTdN} ${valueColor(rev[c] ?? 0)}`}>{rev[c] ? usd(rev[c]) : <span className="text-white/25">—</span>}</td>)}
+                    {categories.map((c) => <td key={c} className={`${bTdN} ${valueColor(rev[c] ?? 0)}`}>{rev[c] ? usd(rev[c]) : <span className="text-ink/45">—</span>}</td>)}
                     <td className={`${bTdN} font-medium ${valueColor(total)}`}>{usd(total)}</td>
                     <td className={bTdN}>{intFmt(rnTotal)}</td>
                     <td className={bTdN}>{intFmt(paxTotal)}</td>
                     <td className={bTdN}>{intFmt(availTotal)}</td>
-                    <td className={bTdN}>{occPct !== null ? pctFmt(occPct) : <span className="text-white/25">—</span>}</td>
-                    <td className={`${bTdN} ${adr !== null ? valueColor(adr) : ""}`}>{adr !== null ? usd(adr) : <span className="text-white/25">—</span>}</td>
+                    <td className={bTdN}>{occPct !== null ? pctFmt(occPct) : <span className="text-ink/45">—</span>}</td>
+                    <td className={`${bTdN} ${adr !== null ? valueColor(adr) : ""}`}>{adr !== null ? usd(adr) : <span className="text-ink/45">—</span>}</td>
                   </tr>
                 );
               })}
-              <tr className="sticky bottom-0 border-t-2 border-white/20 bg-[#1E2130] font-bold">
+              <tr className="sticky bottom-0 border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                 <td className={bTd}>TOTAL</td>
                 {categories.map((c) => {
                   const catTotal = dates.reduce((a, d) => a + (byDate.get(d)?.[c] ?? 0), 0);
@@ -125,7 +125,7 @@ export default function RoomStatsPeriodTable({ anchor }: { anchor: string }) {
           </table>
         </div>
       ) : (
-        !loading && <div className="rounded-lg border border-dashed border-white/15 bg-[#1E2130]/50 p-4 text-xs text-white/50">
+        !loading && <div className="rounded-lg border border-dashed border-ink/12 bg-[#fcfcfb]/50 p-4 text-xs text-ink/60">
           No room stats for {from} → {to}.
         </div>
       )}

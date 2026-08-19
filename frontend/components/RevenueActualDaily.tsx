@@ -10,11 +10,11 @@ type RevenueActualRow = {
 
 const money = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const intFmt = (v: number) => v.toLocaleString("en-US", { maximumFractionDigits: 0 });
-const valueColor = (v: number) => (v < 0 ? "!text-rose-400" : "");
-const bTh = "px-4 py-3 text-left font-medium text-white/60 whitespace-nowrap";
-const bThN = "px-4 py-3 text-right font-medium text-white/60 whitespace-nowrap";
-const bTd = "px-4 py-2.5 text-white/80";
-const bTdN = "px-4 py-2.5 text-right tabular-nums text-white/80";
+const valueColor = (v: number) => (v < 0 ? "!text-rose-600" : "");
+const bTh = "px-4 py-3 text-left font-medium text-ink/70 whitespace-nowrap";
+const bThN = "px-4 py-3 text-right font-medium text-ink/70 whitespace-nowrap";
+const bTd = "px-4 py-2.5 text-ink/85";
+const bTdN = "px-4 py-2.5 text-right tabular-nums text-ink/85";
 
 export default function RevenueActualDaily({ allowUpload = true }: { allowUpload?: boolean }) {
   const [rows, setRows] = useState<RevenueActualRow[]>([]);
@@ -73,32 +73,32 @@ export default function RevenueActualDaily({ allowUpload = true }: { allowUpload
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
         {allowUpload && (
-          <label className="cursor-pointer rounded bg-accent px-3 py-1.5 text-xs font-medium text-white">
+          <label className="cursor-pointer rounded bg-accent px-3 py-1.5 text-xs font-medium text-ink">
             {uploading ? "Uploading…" : "📤 Upload daily grid (Actual)"}
             <input type="file" accept=".xlsx" className="hidden" disabled={uploading}
               onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
           </label>
         )}
         {dates.length > 0 && (
-          <span className="text-xs text-white/50">
+          <span className="text-xs text-ink/60">
             Year to Date: {dates[0]} → {dates[dates.length - 1]} ({dates.length} days) · Total: <span className={valueColor(grandTotal)}>${money(grandTotal)}</span>
           </span>
         )}
       </div>
       {allowUpload && (
-        <p className="text-[11px] text-white/40">
+        <p className="text-[11px] text-ink/55">
           Bulk upload from an already-aggregated daily grid (the "Actual" sheet of the Weekly workbook, one
           day per row) — doesn&apos;t replace the real day-by-day ingestion (Tabs 1-2), it&apos;s a shortcut to
           backfill history. Only replaces the days present in the uploaded file.
         </p>
       )}
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-2 text-xs text-white/70">{msg}</div>}
-      {loading && <div className="text-xs text-white/40">Loading…</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
+      {loading && <div className="text-xs text-ink/55">Loading…</div>}
 
       {dates.length > 0 ? (
-        <div className="max-h-[700px] overflow-auto rounded-lg border border-white/10">
+        <div className="max-h-[700px] overflow-auto rounded-lg border border-ink/10">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-[#1E2130]">
+            <thead className="sticky top-0 bg-[#fcfcfb]">
               <tr>
                 <th className={bTh}>Day</th>
                 {depts.map((d) => <th key={d} className={bThN}>{d}{deptNames.get(d) ? ` · ${deptNames.get(d)}` : ""}</th>)}
@@ -119,19 +119,19 @@ export default function RevenueActualDaily({ allowUpload = true }: { allowUpload
                 const occPct = pax?.available_rooms ? (pax.rooms_sold ?? 0) / pax.available_rooms : null;
                 const adr = pax?.rooms_sold ? rooms / pax.rooms_sold : null;
                 return (
-                  <tr key={d} className="border-t border-white/5">
+                  <tr key={d} className="border-t border-ink/8">
                     <td className={bTd}>{d}</td>
-                    {depts.map((dept) => <td key={dept} className={`${bTdN} ${valueColor(rowData[dept] ?? 0)}`}>{rowData[dept] ? `$${money(rowData[dept])}` : <span className="text-white/25">—</span>}</td>)}
+                    {depts.map((dept) => <td key={dept} className={`${bTdN} ${valueColor(rowData[dept] ?? 0)}`}>{rowData[dept] ? `$${money(rowData[dept])}` : <span className="text-ink/45">—</span>}</td>)}
                     <td className={`${bTdN} font-medium ${valueColor(total)}`}>${money(total)}</td>
-                    <td className={bTdN}>{pax?.rooms_sold !== null && pax?.rooms_sold !== undefined ? intFmt(pax.rooms_sold) : <span className="text-white/25">—</span>}</td>
-                    <td className={bTdN}>{pax?.total_pax !== null && pax?.total_pax !== undefined ? intFmt(pax.total_pax) : <span className="text-white/25">—</span>}</td>
-                    <td className={bTdN}>{pax?.available_rooms !== null && pax?.available_rooms !== undefined ? intFmt(pax.available_rooms) : <span className="text-white/25">—</span>}</td>
-                    <td className={bTdN}>{occPct !== null ? `${(occPct * 100).toFixed(1)}%` : <span className="text-white/25">—</span>}</td>
-                    <td className={`${bTdN} ${adr !== null ? valueColor(adr) : ""}`}>{adr !== null ? `$${money(adr)}` : <span className="text-white/25">—</span>}</td>
+                    <td className={bTdN}>{pax?.rooms_sold !== null && pax?.rooms_sold !== undefined ? intFmt(pax.rooms_sold) : <span className="text-ink/45">—</span>}</td>
+                    <td className={bTdN}>{pax?.total_pax !== null && pax?.total_pax !== undefined ? intFmt(pax.total_pax) : <span className="text-ink/45">—</span>}</td>
+                    <td className={bTdN}>{pax?.available_rooms !== null && pax?.available_rooms !== undefined ? intFmt(pax.available_rooms) : <span className="text-ink/45">—</span>}</td>
+                    <td className={bTdN}>{occPct !== null ? `${(occPct * 100).toFixed(1)}%` : <span className="text-ink/45">—</span>}</td>
+                    <td className={`${bTdN} ${adr !== null ? valueColor(adr) : ""}`}>{adr !== null ? `$${money(adr)}` : <span className="text-ink/45">—</span>}</td>
                   </tr>
                 );
               })}
-              <tr className="sticky bottom-0 border-t-2 border-white/20 bg-[#1E2130] font-bold">
+              <tr className="sticky bottom-0 border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                 <td className={bTd}>TOTAL YTD</td>
                 {depts.map((dept) => {
                   const deptTotal = dates.reduce((a, d) => a + (byDate.get(d)![dept] ?? 0), 0);
@@ -160,7 +160,7 @@ export default function RevenueActualDaily({ allowUpload = true }: { allowUpload
           </table>
         </div>
       ) : (
-        !loading && <div className="rounded-lg border border-dashed border-white/15 bg-[#1E2130]/50 p-4 text-xs text-white/50">
+        !loading && <div className="rounded-lg border border-dashed border-ink/12 bg-[#fcfcfb]/50 p-4 text-xs text-ink/60">
           No daily actual revenue loaded yet.
         </div>
       )}

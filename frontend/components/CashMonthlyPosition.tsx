@@ -142,14 +142,14 @@ export default function CashMonthlyPosition() {
     } catch (e: any) { setErr(String(e)); } finally { setSaving(false); }
   };
 
-  const inputCls = "w-40 rounded border border-white/15 bg-[#0f1118] px-2 py-1 text-right tabular-nums text-white/90 focus:border-accent focus:outline-none";
-  const rowL = "px-3 py-1.5 text-left text-white/80";
+  const inputCls = "w-40 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-right tabular-nums text-ink/90 focus:border-accent focus:outline-none";
+  const rowL = "px-3 py-1.5 text-left text-ink/85";
   // Función (NO componente) para no remontar el input en cada tecla (perdía el foco).
   const editRow = (label: string, k: keyof Vals, indent?: boolean) => (
-    <tr className="border-t border-white/5">
-      <td className={`${rowL} ${indent ? "pl-6 text-white/60" : ""}`}>{label}</td>
+    <tr className="border-t border-ink/8">
+      <td className={`${rowL} ${indent ? "pl-6 text-ink/70" : ""}`}>{label}</td>
       <td className="px-3 py-1.5 text-right">
-        <span className="mr-2 text-white/30">$</span>
+        <span className="mr-2 text-ink/45">$</span>
         <input type="text" inputMode="decimal" value={display(k)} placeholder="0.00"
           onFocus={() => setFocused(k)} onBlur={() => setFocused(null)}
           onChange={(e) => set(k, e.target.value)} className={inputCls} />
@@ -159,14 +159,14 @@ export default function CashMonthlyPosition() {
   // Fila con el CONCEPTO (label) editable + el monto (para las 4 "Other Payment").
   const setLabel = (k: string, v: string) => { setLabels((p) => ({ ...p, [k]: v })); setDirty(true); setMsg(""); };
   const editRowNamed = (k: keyof Vals) => (
-    <tr className="border-t border-white/5">
+    <tr className="border-t border-ink/8">
       <td className="px-3 py-1.5">
         <input type="text" value={labels[k] ?? ""} placeholder="Description…"
           onChange={(e) => setLabel(k, e.target.value)}
-          className="w-64 rounded border border-dashed border-white/20 bg-[#0f1118] px-2 py-1 text-left text-white/90 focus:border-accent focus:outline-none" />
+          className="w-64 rounded border border-dashed border-ink/15 bg-[#f9f9f7] px-2 py-1 text-left text-ink/90 focus:border-accent focus:outline-none" />
       </td>
       <td className="px-3 py-1.5 text-right">
-        <span className="mr-2 text-white/30">$</span>
+        <span className="mr-2 text-ink/45">$</span>
         <input type="text" inputMode="decimal" value={display(k)} placeholder="0.00"
           onFocus={() => setFocused(k)} onBlur={() => setFocused(null)}
           onChange={(e) => set(k, e.target.value)} className={inputCls} />
@@ -174,11 +174,11 @@ export default function CashMonthlyPosition() {
     </tr>
   );
 
-  const rateInput = "w-20 rounded border border-white/15 bg-[#0f1118] px-2 py-1 text-right tabular-nums text-white/90 focus:border-accent focus:outline-none";
+  const rateInput = "w-20 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-right tabular-nums text-ink/90 focus:border-accent focus:outline-none";
   const rateRow = (label: string, base: number, commK: RateKey, retK: RateKey, fee: number) => (
-    <tr className="border-t border-white/5">
-      <td className="px-2 py-1.5 text-white/80">{label}</td>
-      <td className="px-2 py-1.5 text-right tabular-nums text-white/70">${money(base)}</td>
+    <tr className="border-t border-ink/8">
+      <td className="px-2 py-1.5 text-ink/85">{label}</td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-ink/75">${money(base)}</td>
       <td className="px-2 py-1.5 text-right">
         <input type="text" inputMode="decimal" value={rates[commK]} placeholder="0"
           onChange={(e) => setRate(commK, e.target.value)} className={rateInput} />
@@ -187,8 +187,8 @@ export default function CashMonthlyPosition() {
         <input type="text" inputMode="decimal" value={rates[retK]} placeholder="0"
           onChange={(e) => setRate(retK, e.target.value)} className={rateInput} />
       </td>
-      <td className="px-2 py-1.5 text-right tabular-nums text-rose-300/80">${money(fee)}</td>
-      <td className="px-2 py-1.5 text-right tabular-nums text-emerald-300">${money(base - fee)}</td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-rose-600/80">${money(fee)}</td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-emerald-700">${money(base - fee)}</td>
     </tr>
   );
 
@@ -196,56 +196,56 @@ export default function CashMonthlyPosition() {
     <div className="max-w-2xl space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-white/90">Monthly Cash Position</h2>
+          <h2 className="text-sm font-semibold text-ink/90">Monthly Cash Position</h2>
           <select value={month} onChange={(e) => setMonth(parseInt(e.target.value, 10))}
-            className="rounded border border-white/15 bg-[#0f1118] px-2 py-1 text-[12px] text-white/90 focus:border-accent focus:outline-none">
+            className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-[12px] text-ink/90 focus:border-accent focus:outline-none">
             {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
           </select>
           <select value={year} onChange={(e) => setYear(parseInt(e.target.value, 10))}
-            className="rounded border border-white/15 bg-[#0f1118] px-2 py-1 text-[12px] text-white/90 focus:border-accent focus:outline-none">
+            className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-[12px] text-ink/90 focus:border-accent focus:outline-none">
             {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
         <div className="flex items-center gap-2 text-[11px]">
-          {dirty && <span className="text-amber-300/80">unsaved changes</span>}
-          {msg && <span className="text-emerald-400">{msg}</span>}
+          {dirty && <span className="text-amber-700/80">unsaved changes</span>}
+          {msg && <span className="text-emerald-600">{msg}</span>}
           <button onClick={save} disabled={saving || !dirty}
-            className={`rounded px-3 py-1 ${dirty ? "bg-accent text-white hover:brightness-110" : "bg-white/10 text-white/40"}`}>
+            className={`rounded px-3 py-1 ${dirty ? "bg-accent text-ink hover:brightness-110" : "bg-ink/5 text-ink/55"}`}>
             {saving ? "Saving…" : "Save"}
           </button>
         </div>
       </div>
-      <p className="text-[11px] text-white/40">
+      <p className="text-[11px] text-ink/55">
         All lines are editable (manual input) except <b>MTD Cash collected from the Operation</b>, which is calculated from Tab 5 =
         {" "}<b>Real Cash</b> for the month to date (excludes AR and Non-Cash). Month Balance recalculates automatically.
       </p>
-      {loading && <div className="text-xs text-white/40">Loading…</div>}
-      {err && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-300">{err}</div>}
+      {loading && <div className="text-xs text-ink/55">Loading…</div>}
+      {err && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{err}</div>}
 
-      <table className="w-full overflow-hidden rounded-lg border border-white/10 text-sm">
+      <table className="w-full overflow-hidden rounded-lg border border-ink/10 text-sm">
         <tbody>
           {editRow("Opening Cash Balance", "opening")}
-          <tr className="border-t border-white/5 bg-[#16233a]/60">
+          <tr className="border-t border-ink/8 bg-[#e8f0fb]/60">
             <td className={rowL}>
-              MTD Cash collected — bruto <span className="text-[10px] text-white/40">(Real Cash)</span>
+              MTD Cash collected — bruto <span className="text-[10px] text-ink/55">(Real Cash)</span>
               <button onClick={() => setModalOpen(true)}
-                className="ml-2 rounded border border-sky-500/40 bg-sky-500/10 px-1.5 py-0.5 text-[10px] text-sky-300 hover:bg-sky-500/20">
+                className="ml-2 rounded border border-sky-500/40 bg-sky-500/10 px-1.5 py-0.5 text-[10px] text-sky-700 hover:bg-sky-500/20">
                 🔧 Comisiones tarjeta
               </button>
             </td>
-            <td className="px-3 py-1.5 text-right tabular-nums text-white/70"><span className="mr-2 text-white/30">$</span>{money(gross)}</td>
+            <td className="px-3 py-1.5 text-right tabular-nums text-ink/75"><span className="mr-2 text-ink/45">$</span>{money(gross)}</td>
           </tr>
-          <tr className="border-t border-white/5">
-            <td className={`${rowL} pl-6 text-white/50`}>
-              (−) Comisiones + retención tarjeta <span className="text-[10px] text-white/35">(POS + Ecommerce)</span>
+          <tr className="border-t border-ink/8">
+            <td className={`${rowL} pl-6 text-ink/60`}>
+              (−) Comisiones + retención tarjeta <span className="text-[10px] text-ink/50">(POS + Ecommerce)</span>
             </td>
-            <td className="px-3 py-1.5 text-right tabular-nums text-rose-300/80">
-              {totalFees ? <>(<span className="text-white/30">$</span>{money(totalFees)})</> : <span className="text-white/30">—</span>}
+            <td className="px-3 py-1.5 text-right tabular-nums text-rose-600/80">
+              {totalFees ? <>(<span className="text-ink/45">$</span>{money(totalFees)})</> : <span className="text-ink/45">—</span>}
             </td>
           </tr>
-          <tr className="border-t border-white/5 bg-[#16233a]">
-            <td className={rowL}>MTD Cash collected — <b className="text-emerald-300">neto</b> <span className="text-[10px] text-emerald-300/60">(alimenta el cash flow)</span></td>
-            <td className="px-3 py-1.5 text-right tabular-nums font-medium text-emerald-300"><span className="mr-2 text-white/30">$</span>{money(netOp)}</td>
+          <tr className="border-t border-ink/8 bg-[#e8f0fb]">
+            <td className={rowL}>MTD Cash collected — <b className="text-emerald-700">neto</b> <span className="text-[10px] text-emerald-700/60">(alimenta el cash flow)</span></td>
+            <td className="px-3 py-1.5 text-right tabular-nums font-medium text-emerald-700"><span className="mr-2 text-ink/45">$</span>{money(netOp)}</td>
           </tr>
           {editRow("Other Cash Collections", "other_collections")}
           <tr><td className="py-1.5" colSpan={2} /></tr>
@@ -259,14 +259,14 @@ export default function CashMonthlyPosition() {
           {editRowNamed("other_pay_2")}
           {editRowNamed("other_pay_3")}
           {editRowNamed("other_pay_4")}
-          <tr className="border-t border-white/20 bg-[#1E2130] font-medium text-white/80">
+          <tr className="border-t border-ink/15 bg-[#fcfcfb] font-medium text-ink/85">
             <td className={rowL}>Total Payments</td>
-            <td className="px-3 py-1.5 text-right tabular-nums text-rose-300"><span className="mr-2 text-white/30">$</span>({money(totalPayments)})</td>
+            <td className="px-3 py-1.5 text-right tabular-nums text-rose-600"><span className="mr-2 text-ink/45">$</span>({money(totalPayments)})</td>
           </tr>
-          <tr className={`border-t-2 border-white/30 font-bold ${balance < 0 ? "bg-red-500/15" : "bg-emerald-500/15"}`}>
+          <tr className={`border-t-2 border-ink/20 font-bold ${balance < 0 ? "bg-red-500/15" : "bg-emerald-500/15"}`}>
             <td className={rowL}>Month Balance</td>
-            <td className={`px-3 py-2 text-right tabular-nums ${balance < 0 ? "text-red-300" : "text-emerald-300"}`}>
-              <span className="mr-2 text-white/30">$</span>{money(balance)}
+            <td className={`px-3 py-2 text-right tabular-nums ${balance < 0 ? "text-red-600" : "text-emerald-700"}`}>
+              <span className="mr-2 text-ink/45">$</span>{money(balance)}
             </td>
           </tr>
         </tbody>
@@ -274,24 +274,24 @@ export default function CashMonthlyPosition() {
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setModalOpen(false)}>
-          <div className="w-full max-w-xl rounded-xl border border-white/15 bg-[#141824] p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-xl rounded-xl border border-ink/12 bg-[#141824] p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-1 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-white">Comisiones y retención de tarjeta</h3>
-              <button onClick={() => setModalOpen(false)} className="text-white/40 hover:text-white">✕</button>
+              <h3 className="text-sm font-semibold text-ink">Comisiones y retención de tarjeta</h3>
+              <button onClick={() => setModalOpen(false)} className="text-ink/55 hover:text-ink">✕</button>
             </div>
-            <p className="mb-3 text-[11px] text-white/50">
+            <p className="mb-3 text-[11px] text-ink/60">
               Tasas que se descuentan al <b>bruto</b> para dejar el <b>neto</b> que va al cash flow.
               Aplican solo a los cobros con tarjeta (POS y Ecommerce). En porcentaje (ej. <b>2.5</b> = 2.5%).
             </p>
             {inheritedFrom && (
-              <div className="mb-3 rounded border border-sky-500/30 bg-sky-500/10 px-2.5 py-1.5 text-[11px] text-sky-200">
+              <div className="mb-3 rounded border border-sky-500/30 bg-sky-500/10 px-2.5 py-1.5 text-[11px] text-sky-700">
                 ↴ Tasas <b>heredadas de {inheritedFrom}</b> (este mes no tiene propias). Se aplican automáticamente;
                 editá y guardá solo si cambiaron para este mes.
               </div>
             )}
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-white/50">
+                <tr className="text-ink/60">
                   <th className="px-2 py-1 text-left font-medium">Canal</th>
                   <th className="px-2 py-1 text-right font-medium">Base (Real Cash)</th>
                   <th className="px-2 py-1 text-right font-medium">Comisión %</th>
@@ -305,15 +305,15 @@ export default function CashMonthlyPosition() {
                 {rateRow("Ecommerce", ecomBase, "ecom_commission_pct", "ecom_retention_pct", ecomFee)}
               </tbody>
             </table>
-            <div className="mt-4 space-y-1 rounded-lg border border-white/10 bg-[#0f1118] p-3 text-xs">
-              <div className="flex justify-between"><span className="text-white/60">Bruto (Real Cash MTD)</span><span className="tabular-nums text-white/80">${money(gross)}</span></div>
-              <div className="flex justify-between"><span className="text-white/60">(−) Comisiones + retención</span><span className="tabular-nums text-rose-300">(${money(totalFees)})</span></div>
-              <div className="flex justify-between border-t border-white/10 pt-1 font-semibold"><span className="text-emerald-300">= Neto al cash flow</span><span className="tabular-nums text-emerald-300">${money(netOp)}</span></div>
+            <div className="mt-4 space-y-1 rounded-lg border border-ink/10 bg-[#f9f9f7] p-3 text-xs">
+              <div className="flex justify-between"><span className="text-ink/70">Bruto (Real Cash MTD)</span><span className="tabular-nums text-ink/85">${money(gross)}</span></div>
+              <div className="flex justify-between"><span className="text-ink/70">(−) Comisiones + retención</span><span className="tabular-nums text-rose-600">(${money(totalFees)})</span></div>
+              <div className="flex justify-between border-t border-ink/10 pt-1 font-semibold"><span className="text-emerald-700">= Neto al cash flow</span><span className="tabular-nums text-emerald-700">${money(netOp)}</span></div>
             </div>
             <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setModalOpen(false)} className="rounded px-3 py-1.5 text-xs text-white/60 hover:text-white">Cerrar</button>
+              <button onClick={() => setModalOpen(false)} className="rounded px-3 py-1.5 text-xs text-ink/70 hover:text-ink">Cerrar</button>
               <button onClick={async () => { await save(); setModalOpen(false); }} disabled={saving}
-                className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-white disabled:opacity-40">
+                className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-ink disabled:opacity-40">
                 {saving ? "Guardando…" : "Guardar"}
               </button>
             </div>

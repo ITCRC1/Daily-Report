@@ -77,11 +77,11 @@ type BudgetDailyRow = {
 const MESES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const money = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const intFmt = (v: number) => v.toLocaleString("en-US", { maximumFractionDigits: 0 });
-const valueColor = (v: number) => (v < 0 ? "!text-rose-400" : "");
-const bTh = "px-4 py-3 text-left font-medium text-white/60 whitespace-nowrap";
-const bThN = "px-4 py-3 text-right font-medium text-white/60 whitespace-nowrap";
-const bTd = "px-4 py-2.5 text-white/80";
-const bTdN = "px-4 py-2.5 text-right tabular-nums text-white/80";
+const valueColor = (v: number) => (v < 0 ? "!text-rose-600" : "");
+const bTh = "px-4 py-3 text-left font-medium text-ink/70 whitespace-nowrap";
+const bThN = "px-4 py-3 text-right font-medium text-ink/70 whitespace-nowrap";
+const bTd = "px-4 py-2.5 text-ink/85";
+const bTdN = "px-4 py-2.5 text-right tabular-nums text-ink/85";
 
 function YearBudget() {
   const [year, setYear] = useState(new Date().getFullYear());
@@ -192,32 +192,32 @@ function YearBudget() {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-2 text-xs text-white/70">
+        <label className="flex items-center gap-2 text-xs text-ink/75">
           Year:
           <input type="number" value={year} onChange={(e) => setYear(parseInt(e.target.value, 10) || year)}
-            className="w-24 rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-white" />
+            className="w-24 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
         </label>
         <button onClick={downloadTemplate}
-          className="rounded bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20">
+          className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink hover:bg-ink/8">
           📥 Download {year} template
         </button>
-        <label className="cursor-pointer rounded bg-accent px-3 py-1.5 text-xs font-medium text-white">
+        <label className="cursor-pointer rounded bg-accent px-3 py-1.5 text-xs font-medium text-ink">
           {uploading ? "Uploading…" : "📤 Upload filled template"}
           <input type="file" accept=".xlsx" className="hidden" disabled={uploading}
             onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
         </label>
       </div>
-      <p className="text-[11px] text-white/40">
+      <p className="text-[11px] text-ink/55">
         Cycle: download the template (comes pre-filled with what&apos;s already loaded for the year), fill
         it out in Excel, and upload it again — this fully replaces that year&apos;s budget ("annual reset").
       </p>
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-2 text-xs text-white/70">{msg}</div>}
-      {loading && <div className="text-xs text-white/40">Loading…</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
+      {loading && <div className="text-xs text-ink/55">Loading…</div>}
 
       {byDept.size > 0 ? (
-        <div className="overflow-x-auto rounded-lg border border-white/10">
+        <div className="overflow-x-auto rounded-lg border border-ink/10">
           <table className="w-full text-sm">
-            <thead className="bg-[#1E2130]">
+            <thead className="bg-[#fcfcfb]">
               <tr>
                 <th className={bTh}>Dept</th>
                 {MESES.map((m) => <th key={m} className={bThN}>{m}</th>)}
@@ -226,13 +226,13 @@ function YearBudget() {
             </thead>
             <tbody>
               {[...byDept.entries()].map(([code, { name, amounts }]) => (
-                <tr key={code} className="border-t border-white/5">
+                <tr key={code} className="border-t border-ink/8">
                   <td className={bTd}>{code} · {name}</td>
-                  {amounts.map((a, i) => <td key={i} className={`${bTdN} ${valueColor(a)}`}>{a ? `$${money(a)}` : <span className="text-white/25">—</span>}</td>)}
+                  {amounts.map((a, i) => <td key={i} className={`${bTdN} ${valueColor(a)}`}>{a ? `$${money(a)}` : <span className="text-ink/45">—</span>}</td>)}
                   <td className={`${bTdN} font-medium ${valueColor(amounts.reduce((a, b) => a + b, 0))}`}>${money(amounts.reduce((a, b) => a + b, 0))}</td>
                 </tr>
               ))}
-              <tr className="border-t-2 border-white/20 bg-[#1E2130] font-bold">
+              <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                 <td className={bTd}>TOTAL</td>
                 {totals.map((t, i) => <td key={i} className={`${bTdN} ${valueColor(t)}`}>${money(t)}</td>)}
                 <td className={`${bTdN} ${valueColor(totals.reduce((a, b) => a + b, 0))}`}>${money(totals.reduce((a, b) => a + b, 0))}</td>
@@ -241,15 +241,15 @@ function YearBudget() {
           </table>
         </div>
       ) : (
-        !loading && <div className="rounded-lg border border-dashed border-white/15 bg-[#1E2130]/50 p-4 text-xs text-white/50">
+        !loading && <div className="rounded-lg border border-dashed border-ink/12 bg-[#fcfcfb]/50 p-4 text-xs text-ink/60">
           No budget loaded for {year} yet.
         </div>
       )}
 
       {hasStats && (
-        <div className="overflow-x-auto rounded-lg border border-white/10">
+        <div className="overflow-x-auto rounded-lg border border-ink/10">
           <table className="w-full text-sm">
-            <thead className="bg-[#1E2130]">
+            <thead className="bg-[#fcfcfb]">
               <tr>
                 <th className={bTh}>Statistics</th>
                 {MESES.map((m) => <th key={m} className={bThN}>{m}</th>)}
@@ -258,10 +258,10 @@ function YearBudget() {
             </thead>
             <tbody>
               {STAT_ROWS.map(({ key, label, fmt }) => (
-                <tr key={key} className="border-t border-white/5">
+                <tr key={key} className="border-t border-ink/8">
                   <td className={bTd}>{label}</td>
                   {stats[key].map((v, i) => (
-                    <td key={i} className={`${bTdN} ${v !== null ? valueColor(v) : ""}`}>{v !== null ? fmt(v) : <span className="text-white/25">—</span>}</td>
+                    <td key={i} className={`${bTdN} ${v !== null ? valueColor(v) : ""}`}>{v !== null ? fmt(v) : <span className="text-ink/45">—</span>}</td>
                   ))}
                   <td className={`${bTdN} font-medium ${valueColor(STAT_TOTALS[key])}`}>{fmt(STAT_TOTALS[key])}</td>
                 </tr>
@@ -394,39 +394,39 @@ function RoomStatsYtd() {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
-        <label className="text-xs text-white/60">
+        <label className="text-xs text-ink/70">
           YTD as of:{" "}
           <input type="date" value={asOf} onChange={(e) => setAsOf(e.target.value)}
-            className="ml-1 rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-white" />
+            className="ml-1 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
         </label>
         {!editing ? (
-          <button onClick={startEdit} className="rounded bg-white/10 px-2.5 py-1 text-[11px] text-white/70 hover:text-white">
+          <button onClick={startEdit} className="rounded bg-ink/5 px-2.5 py-1 text-[11px] text-ink/75 hover:text-ink">
             ✎ Edit cutoff / anchor
           </button>
         ) : (
           <div className="flex gap-1.5">
-            <button onClick={saveOpenings} disabled={saving} className="rounded bg-accent px-2.5 py-1 text-[11px] text-white disabled:opacity-50">
+            <button onClick={saveOpenings} disabled={saving} className="rounded bg-accent px-2.5 py-1 text-[11px] text-ink disabled:opacity-50">
               {saving ? "Saving…" : "Save cutoff"}
             </button>
-            <button onClick={() => setEditing(false)} className="rounded bg-white/10 px-2.5 py-1 text-[11px] text-white/70">Cancel</button>
+            <button onClick={() => setEditing(false)} className="rounded bg-ink/5 px-2.5 py-1 text-[11px] text-ink/75">Cancel</button>
           </div>
         )}
-        {loading && <span className="text-xs text-white/40">Loading…</span>}
+        {loading && <span className="text-xs text-ink/55">Loading…</span>}
       </div>
-      <p className="text-[11px] text-white/40">
+      <p className="text-[11px] text-ink/55">
         Real accumulation (fact_room_stat, statroomtype XML ingestion from Tab 1) on top of an editable YTD
         anchor per category — the anchor represents the accumulated total up to its date; any day ingested
         AFTER the anchor is summed automatically, with nothing to re-load. Adjust the anchor here whenever
-        Bismark brings a new cutoff. The editable <span className="text-amber-300">Comps / In-House</span> row
+        Bismark brings a new cutoff. The editable <span className="text-amber-700">Comps / In-House</span> row
         holds the accumulated complimentary/house-use up to the cutoff; from the cutoff onward it's read live
         from Opera STATISTICS (COM/INHOUSE). El pie se lee como una suma: NET (habitaciones que pagan, ADR limpio) + Comps/In-House = TOTAL (habitaciones ocupadas).
       </p>
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-2 text-xs text-white/70">{msg}</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
 
       {editing ? (
-        <div className="overflow-auto rounded-lg border border-white/10">
+        <div className="overflow-auto rounded-lg border border-ink/10">
           <table className="w-full text-sm">
-            <thead className="bg-[#1E2130]">
+            <thead className="bg-[#fcfcfb]">
               <tr>
                 <th className={bTh}>Category</th>
                 <th className={bTh}>Anchor (date)</th>
@@ -440,19 +440,19 @@ function RoomStatsYtd() {
               {draft.map((d) => {
                 const isComps = d.room_category === COMPS_SENTINEL;
                 return (
-                <tr key={d.room_category} className={`border-t border-white/5 ${isComps ? "bg-[#231c17]" : ""}`}>
-                  <td className={`${bTd} ${isComps ? "text-amber-300 font-medium" : ""}`}>
+                <tr key={d.room_category} className={`border-t border-ink/8 ${isComps ? "bg-[#fbf3e6]" : ""}`}>
+                  <td className={`${bTd} ${isComps ? "text-amber-700 font-medium" : ""}`}>
                     {isComps ? "Comps / In-House" : d.room_category}
-                    {isComps && <span className="ml-1 block text-[10px] text-amber-200/50">acumulado hasta el corte (RN, revenue, pax)</span>}
+                    {isComps && <span className="ml-1 block text-[10px] text-amber-700/50">acumulado hasta el corte (RN, revenue, pax)</span>}
                   </td>
                   <td className={bTd}>
                     <input type="date" value={d.anchor_date ?? ""} onChange={(e) => updateDraft(d.room_category, "anchor_date", e.target.value)}
-                      className="rounded border border-white/15 bg-[#0F1118] px-1.5 py-1 text-white" />
+                      className="rounded border border-ink/12 bg-[#f9f9f7] px-1.5 py-1 text-ink" />
                   </td>
                   {(["physical_rooms", "stay_rooms", "revenue", "stay_persons"] as const).map((f) => (
                     <td key={f} className={bTdN}>
                       {isComps && f === "physical_rooms" ? (
-                        <span className="text-white/30">—</span>
+                        <span className="text-ink/45">—</span>
                       ) : (
                         <input type="text" inputMode="decimal"
                           value={String(d[f] ?? "")}
@@ -460,7 +460,7 @@ function RoomStatsYtd() {
                           onPaste={(e) => {
                             if (pasteColumn(d.room_category, f, e.clipboardData.getData("text"))) e.preventDefault();
                           }}
-                          className="w-28 rounded border border-white/15 bg-[#0F1118] px-1.5 py-1 text-right text-white" />
+                          className="w-28 rounded border border-ink/12 bg-[#f9f9f7] px-1.5 py-1 text-right text-ink" />
                       )}
                     </td>
                   ))}
@@ -471,9 +471,9 @@ function RoomStatsYtd() {
           </table>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-white/10 shadow-lg">
+        <div className="overflow-hidden rounded-xl border border-ink/10 shadow-lg">
           <table className="w-full text-sm">
-            <thead className="bg-gradient-to-r from-[#1a2744] to-[#1E2130]">
+            <thead className="bg-gradient-to-r from-[#dfeafc] to-[#fcfcfb]">
               <tr>
                 <th className={bTh}>Room Category</th>
                 <th className={bThN}>Units</th>
@@ -488,7 +488,7 @@ function RoomStatsYtd() {
             </thead>
             <tbody>
               {rows.map((c) => (
-                <tr key={c.category} className="border-t border-white/5">
+                <tr key={c.category} className="border-t border-ink/8">
                   <td className={bTd}>{c.category}</td>
                   <td className={bTdN}>{intFmt(c.units)}</td>
                   <td className={bTdN}>{intFmt(c.physical_rooms)}</td>
@@ -505,7 +505,7 @@ function RoomStatsYtd() {
                   Comps/In-House = TOTAL (habitaciones ocupadas). Antes el orden
                   era Total(gross) -> Comps -> Net (resta), y confundía. */}
               {ytd?.net && ytd?.comps_line && ytd.comps_line.stay_rooms > 0 && (
-                <tr className="border-t-2 border-white/20 bg-[#16233a] font-bold text-emerald-300/90">
+                <tr className="border-t-2 border-ink/15 bg-[#e8f0fb] font-bold text-emerald-700/90">
                   <td className={bTd}>NET (revenue rooms)</td>
                   <td className={bTdN}>{intFmt(ytd.net.units)}</td>
                   <td className={bTdN}>{intFmt(ytd.net.physical_rooms)}</td>
@@ -518,8 +518,8 @@ function RoomStatsYtd() {
                 </tr>
               )}
               {ytd?.comps_line && ytd.comps_line.stay_rooms > 0 && (
-                <tr className="border-t border-white/10 bg-[#231c17] italic text-amber-200/80">
-                  <td className={bTd}>+ Comps / In-House <span className="not-italic text-[10px] text-amber-200/50">(anchor {intFmt(ytd.comps_line.anchor_rooms)} + post-cutoff {intFmt(ytd.comps_line.post_cutoff_rooms)})</span></td>
+                <tr className="border-t border-ink/10 bg-[#fbf3e6] italic text-amber-700/80">
+                  <td className={bTd}>+ Comps / In-House <span className="not-italic text-[10px] text-amber-700/50">(anchor {intFmt(ytd.comps_line.anchor_rooms)} + post-cutoff {intFmt(ytd.comps_line.post_cutoff_rooms)})</span></td>
                   <td className={bTdN}>—</td>
                   <td className={bTdN}>—</td>
                   <td className={bTdN}>{intFmt(ytd.comps_line.stay_rooms)}</td>
@@ -531,7 +531,7 @@ function RoomStatsYtd() {
                 </tr>
               )}
               {overall && (
-                <tr className="border-t-2 border-white/30 bg-[#1E2130] font-bold">
+                <tr className="border-t-2 border-ink/20 bg-[#fcfcfb] font-bold">
                   <td className={bTd}>TOTAL (occupied = Net + Comps)</td>
                   <td className={bTdN}>{intFmt(rows.reduce((a, c) => a + c.units, 0))}</td>
                   <td className={bTdN}>{intFmt(overall.physical_rooms)}</td>
@@ -646,36 +646,36 @@ function WeekCalendarPanel() {
     }
   }
 
-  const th = "px-2 py-1.5 text-left font-medium text-white/60 whitespace-nowrap";
-  const td = "px-2 py-1 text-white/80";
-  const inp = "w-full min-w-[130px] rounded border border-white/15 bg-[#0F1118] px-1.5 py-1 text-white";
+  const th = "px-2 py-1.5 text-left font-medium text-ink/70 whitespace-nowrap";
+  const td = "px-2 py-1 text-ink/85";
+  const inp = "w-full min-w-[130px] rounded border border-ink/12 bg-[#f9f9f7] px-1.5 py-1 text-ink";
 
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-white/40">
-        Rangos semanales que usa <span className="text-white/70">Tab 4 · Weekly Revenue</span> (resuelve la semana
-        de una fecha por rango: inicio ≤ fecha ≤ fin). Editá la <span className="text-white/70">fecha de inicio y
+      <p className="text-[11px] text-ink/55">
+        Rangos semanales que usa <span className="text-ink/75">Tab 4 · Weekly Revenue</span> (resuelve la semana
+        de una fecha por rango: inicio ≤ fecha ≤ fin). Editá la <span className="text-ink/75">fecha de inicio y
         de fin</span> de una semana para generarla con un rango distinto — el reporte se sincroniza solo. El{" "}
-        <span className="text-white/70">Label</span> se recalcula automáticamente. <span className="text-amber-300">
+        <span className="text-ink/75">Label</span> se recalcula automáticamente. <span className="text-amber-700">
         Recalcular</span> regenera todo al corte estándar Viernes→Jueves. (No afecta el calendario por día
-        <span className="text-white/50"> dim_calendar</span>, que es una tabla aparte.)
+        <span className="text-ink/60"> dim_calendar</span>, que es una tabla aparte.)
       </p>
 
       <div className="flex items-center justify-between">
-        <span className="text-xs text-white/50">{rows.length} semanas</span>
+        <span className="text-xs text-ink/60">{rows.length} semanas</span>
         <button onClick={recalculate} disabled={recalculating}
-          className="rounded bg-white/10 px-3 py-1.5 text-xs font-medium text-white/70 hover:text-white disabled:opacity-50">
+          className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink/75 hover:text-ink disabled:opacity-50">
           {recalculating ? "Recalculando…" : "🔄 Recalcular (estándar Vie→Jue)"}
         </button>
       </div>
 
-      {error && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-300">{error}</div>}
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-2 text-xs text-white/70">{msg}</div>}
-      {loading && <div className="text-xs text-white/40">Cargando…</div>}
+      {error && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{error}</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
+      {loading && <div className="text-xs text-ink/55">Cargando…</div>}
 
-      <div className="overflow-x-auto rounded-lg border border-white/10">
+      <div className="overflow-x-auto rounded-lg border border-ink/10">
         <table className="w-full text-sm">
-          <thead className="bg-[#1E2130]">
+          <thead className="bg-[#fcfcfb]">
             <tr>
               <th className={th}>Week #</th>
               <th className={th}>Week Start (Vie)</th>
@@ -689,7 +689,7 @@ function WeekCalendarPanel() {
               const isEd = editing === r.id;
               const livePreview = isEd ? fmtWeekLabel(r.week_num, draft.week_start, draft.week_end) : r.week_label;
               return (
-                <tr key={r.id} className={`border-t border-white/5 ${isEd ? "bg-accent/5" : ""}`}>
+                <tr key={r.id} className={`border-t border-ink/8 ${isEd ? "bg-accent/5" : ""}`}>
                   <td className={`${td} font-medium`}>{r.week_num}</td>
                   <td className={td}>
                     {isEd ? (
@@ -703,18 +703,18 @@ function WeekCalendarPanel() {
                         onChange={(e) => setDraft({ ...draft, week_end: e.target.value })} className={inp} />
                     ) : r.week_end}
                   </td>
-                  <td className={`${td} ${isEd ? "text-amber-300" : "text-white/60"}`}>{livePreview}</td>
+                  <td className={`${td} ${isEd ? "text-amber-700" : "text-ink/70"}`}>{livePreview}</td>
                   <td className={td}>
                     {isEd ? (
                       <div className="flex gap-1">
                         <button onClick={() => save(r)} disabled={saving}
-                          className="rounded bg-accent px-2 py-1 text-[11px] text-white disabled:opacity-50">Guardar</button>
+                          className="rounded bg-accent px-2 py-1 text-[11px] text-ink disabled:opacity-50">Guardar</button>
                         <button onClick={() => setEditing(null)}
-                          className="rounded bg-white/10 px-2 py-1 text-[11px] text-white/70">✕</button>
+                          className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75">✕</button>
                       </div>
                     ) : (
                       <button onClick={() => startEdit(r)}
-                        className="rounded bg-white/10 px-2 py-1 text-[11px] text-white/70 hover:text-white">Editar</button>
+                        className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75 hover:text-ink">Editar</button>
                     )}
                   </td>
                 </tr>
@@ -800,26 +800,26 @@ function EditableTable({ cols, endpoint }: { cols: Col[]; endpoint: string }) {
     }
   }
 
-  const th = "px-2 py-1.5 text-left font-medium text-white/60 whitespace-nowrap";
-  const td = "px-2 py-1 text-white/80";
+  const th = "px-2 py-1.5 text-left font-medium text-ink/70 whitespace-nowrap";
+  const td = "px-2 py-1 text-ink/85";
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-white/50">{rows.length} row{rows.length === 1 ? "" : "s"}</span>
+        <span className="text-xs text-ink/60">{rows.length} row{rows.length === 1 ? "" : "s"}</span>
         {editing !== "new" && (
-          <button onClick={startCreate} className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-white">
+          <button onClick={startCreate} className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-ink">
             + Add
           </button>
         )}
       </div>
 
-      {error && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-300">{error}</div>}
-      {loading && <div className="text-xs text-white/40">Loading…</div>}
+      {error && <div className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-xs text-red-600">{error}</div>}
+      {loading && <div className="text-xs text-ink/55">Loading…</div>}
 
-      <div className="overflow-x-auto rounded-lg border border-white/10">
+      <div className="overflow-x-auto rounded-lg border border-ink/10">
         <table className="w-full text-sm">
-          <thead className="bg-[#1E2130]">
+          <thead className="bg-[#fcfcfb]">
             <tr>
               {cols.map((c) => <th key={c.key} className={th}>{c.label}</th>)}
               <th className={th}></th>
@@ -827,43 +827,43 @@ function EditableTable({ cols, endpoint }: { cols: Col[]; endpoint: string }) {
           </thead>
           <tbody>
             {editing === "new" && (
-              <tr className="border-t border-white/5 bg-accent/5">
+              <tr className="border-t border-ink/8 bg-accent/5">
                 {cols.map((c) => (
                   <td key={c.key} className={td}>
                     <input value={draft[c.key] ?? ""} onChange={(e) => setDraft({ ...draft, [c.key]: e.target.value })}
-                      className="w-full min-w-[80px] rounded border border-white/15 bg-[#0F1118] px-1.5 py-1 text-white" />
+                      className="w-full min-w-[80px] rounded border border-ink/12 bg-[#f9f9f7] px-1.5 py-1 text-ink" />
                   </td>
                 ))}
                 <td className={td}>
                   <div className="flex gap-1">
-                    <button onClick={save} disabled={saving} className="rounded bg-accent px-2 py-1 text-[11px] text-white disabled:opacity-50">Save</button>
-                    <button onClick={cancel} className="rounded bg-white/10 px-2 py-1 text-[11px] text-white/70">✕</button>
+                    <button onClick={save} disabled={saving} className="rounded bg-accent px-2 py-1 text-[11px] text-ink disabled:opacity-50">Save</button>
+                    <button onClick={cancel} className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75">✕</button>
                   </div>
                 </td>
               </tr>
             )}
             {rows.map((r) => (
-              <tr key={r.id} className="border-t border-white/5">
+              <tr key={r.id} className="border-t border-ink/8">
                 {cols.map((c) => (
                   <td key={c.key} className={td}>
                     {editing === r.id ? (
                       <input value={draft[c.key] ?? ""} onChange={(e) => setDraft({ ...draft, [c.key]: e.target.value })}
-                        className="w-full min-w-[80px] rounded border border-white/15 bg-[#0F1118] px-1.5 py-1 text-white" />
+                        className="w-full min-w-[80px] rounded border border-ink/12 bg-[#f9f9f7] px-1.5 py-1 text-ink" />
                     ) : (
-                      r[c.key] ?? <span className="text-white/25">—</span>
+                      r[c.key] ?? <span className="text-ink/45">—</span>
                     )}
                   </td>
                 ))}
                 <td className={td}>
                   {editing === r.id ? (
                     <div className="flex gap-1">
-                      <button onClick={save} disabled={saving} className="rounded bg-accent px-2 py-1 text-[11px] text-white disabled:opacity-50">Save</button>
-                      <button onClick={cancel} className="rounded bg-white/10 px-2 py-1 text-[11px] text-white/70">✕</button>
+                      <button onClick={save} disabled={saving} className="rounded bg-accent px-2 py-1 text-[11px] text-ink disabled:opacity-50">Save</button>
+                      <button onClick={cancel} className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75">✕</button>
                     </div>
                   ) : (
                     <div className="flex gap-1">
-                      <button onClick={() => startEdit(r)} className="rounded bg-white/10 px-2 py-1 text-[11px] text-white/70 hover:text-white">Edit</button>
-                      <button onClick={() => remove(r.id)} className="rounded bg-white/10 px-2 py-1 text-[11px] text-white/70 hover:text-red-400">Delete</button>
+                      <button onClick={() => startEdit(r)} className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75 hover:text-ink">Edit</button>
+                      <button onClick={() => remove(r.id)} className="rounded bg-ink/5 px-2 py-1 text-[11px] text-ink/75 hover:text-red-600">Delete</button>
                     </div>
                   )}
                 </td>
@@ -937,63 +937,63 @@ function ParamsPanel() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div className="rounded-lg border border-white/10 bg-[#1E2130]/40 p-3 text-xs text-white/60">
+      <div className="rounded-lg border border-ink/10 bg-[#fcfcfb]/40 p-3 text-xs text-ink/70">
         Parámetros del sistema, editables sin re-deploy. Los{" "}
-        <b className="text-white/80">nombres de cuenta</b> deben coincidir EXACTO con Integrity —
+        <b className="text-ink/85">nombres de cuenta</b> deben coincidir EXACTO con Integrity —
         si se renombra una cuenta allá, corregila aquí y el reporte vuelve a encontrarla.
-        <b className="text-white/80"> Restaurar</b> vuelve al valor de fábrica.
+        <b className="text-ink/85"> Restaurar</b> vuelve al valor de fábrica.
       </div>
       {msg && (
-        <div className={msg.startsWith("✓") ? "text-xs text-emerald-400" : "text-xs text-rose-400"}>{msg}</div>
+        <div className={msg.startsWith("✓") ? "text-xs text-emerald-600" : "text-xs text-rose-600"}>{msg}</div>
       )}
       {groups.map((g) => (
         <div key={g} className="space-y-2">
-          <h3 className="text-sm font-semibold text-white/80">{g}</h3>
+          <h3 className="text-sm font-semibold text-ink/85">{g}</h3>
           {params.filter((p) => p.group === g).map((p) => {
             const dirty = (draft[p.key] ?? "") !== p.value;
             return (
-              <div key={p.key} className="rounded-lg border border-white/10 bg-[#1E2130]/40 p-3">
+              <div key={p.key} className="rounded-lg border border-ink/10 bg-[#fcfcfb]/40 p-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-white/90">{p.label}</span>
+                  <span className="text-sm text-ink/90">{p.label}</span>
                   <span className="rounded bg-accent/20 px-1.5 py-0.5 text-[10px] text-accent">{p.affects}</span>
                   {p.is_default ? (
-                    <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/50">por defecto</span>
+                    <span className="rounded bg-ink/5 px-1.5 py-0.5 text-[10px] text-ink/60">por defecto</span>
                   ) : (
-                    <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] text-amber-300">personalizado</span>
+                    <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] text-amber-700">personalizado</span>
                   )}
                 </div>
-                <p className="mt-1 text-[11px] text-white/45">{p.help}</p>
+                <p className="mt-1 text-[11px] text-ink/55">{p.help}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <input
                     value={draft[p.key] ?? ""}
                     onChange={(e) => setDraft((d) => ({ ...d, [p.key]: e.target.value }))}
-                    className="min-w-[20rem] flex-1 rounded border border-white/15 bg-[#0F1118] px-2 py-1 text-sm text-white"
+                    className="min-w-[20rem] flex-1 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-sm text-ink"
                   />
                   <button
                     onClick={() => save(p.key)}
                     disabled={!dirty}
-                    className="rounded bg-accent px-3 py-1 text-xs text-white disabled:opacity-40"
+                    className="rounded bg-accent px-3 py-1 text-xs text-ink disabled:opacity-40"
                   >
                     Save
                   </button>
                   {!p.is_default && (
                     <button
                       onClick={() => reset(p.key)}
-                      className="rounded bg-white/10 px-3 py-1 text-xs text-white/70 hover:bg-white/20"
+                      className="rounded bg-ink/5 px-3 py-1 text-xs text-ink/75 hover:bg-ink/8"
                     >
                       Restaurar
                     </button>
                   )}
                 </div>
                 {p.type !== "text" && (
-                  <p className="mt-1 text-[10px] text-white/30">Numérico · default: {p.default}</p>
+                  <p className="mt-1 text-[10px] text-ink/45">Numérico · default: {p.default}</p>
                 )}
               </div>
             );
           })}
         </div>
       ))}
-      {loading && <p className="text-xs text-white/40">Cargando…</p>}
+      {loading && <p className="text-xs text-ink/55">Cargando…</p>}
     </div>
   );
 }
@@ -1004,14 +1004,14 @@ export default function MasterDataPage() {
   return (
     <section className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-white">Tab 6 · Master Data</h1>
-        <p className="text-xs text-white/50">Editable catalogs per property (COWLCR).</p>
+        <h1 className="text-xl font-semibold text-ink">Tab 6 · Master Data</h1>
+        <p className="text-xs text-ink/60">Editable catalogs per property (COWLCR).</p>
       </div>
 
-      <nav className="flex flex-wrap gap-1 border-b border-white/10 pb-2">
+      <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2">
         {SUBTABS.map((s) => (
           <button key={s.id} onClick={() => setTab(s.id)}
-            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-white" : "bg-[#1E2130] text-white/60 hover:text-white"}`}>
+            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
             {s.label}
           </button>
         ))}

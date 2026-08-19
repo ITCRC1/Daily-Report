@@ -48,12 +48,12 @@ const num = (v: number | null | undefined) =>
   v === null || v === undefined ? "—"
     : v.toLocaleString("en-US", { maximumFractionDigits: 0 });
 
-const th = "px-3 py-2 text-left font-bold text-white/60";
-const thN = "px-3 py-2 text-right font-bold text-white/60";
+const th = "px-3 py-2 text-left font-bold text-ink/70";
+const thN = "px-3 py-2 text-right font-bold text-ink/70";
 // Group headers (TODAY / MONTH TO DAY / FULL MONTH RESULT, colSpan), centered
-const thC = "px-3 py-2 text-center font-bold text-white/60";
-const td = "px-3 py-1.5 text-white/80";
-const tdN = "px-3 py-1.5 text-right tabular-nums text-white/80";
+const thC = "px-3 py-2 text-center font-bold text-ink/70";
+const td = "px-3 py-1.5 text-ink/85";
+const tdN = "px-3 py-1.5 text-right tabular-nums text-ink/85";
 const pct = (v: number) => `${(v * 100).toFixed(2)}%`;
 // Date with the month spelled out (e.g. "July 1, 2026") for the header --
 // instead of the raw ISO "2026-07-01", which doesn't look professional in a printed report.
@@ -61,15 +61,15 @@ const fmtDate = (iso: string) => {
   const d = new Date(iso + "T00:00:00");
   return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 };
-const varColor = (v: number) => (v < 0 ? "!text-red-400" : v > 0 ? "!text-emerald-400" : "");
+const varColor = (v: number) => (v < 0 ? "!text-red-600" : v > 0 ? "!text-emerald-600" : "");
 // For counts (pax/rooms) that can be negative (e.g. diffs) but have no "positive=green" semantics
-const countColor = (v: number) => (v < 0 ? "!text-red-400" : "");
+const countColor = (v: number) => (v < 0 ? "!text-red-600" : "");
 
 function Kpi({ label, value, tone, small }: { label: string; value: number | string; tone?: string; small?: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-white/10 bg-[#1E2130] p-4 text-center">
-      <div className={`${small ? "text-lg" : "text-2xl"} whitespace-nowrap font-bold ${tone || "text-white"}`}>{value}</div>
-      <div className="print-kpi-label text-[11px] font-bold uppercase tracking-wide text-white/50">{label}</div>
+    <div className="flex flex-col items-center justify-center rounded-lg border border-ink/10 bg-[#fcfcfb] p-4 text-center">
+      <div className={`${small ? "text-lg" : "text-2xl"} whitespace-nowrap font-bold ${tone || "text-ink"}`}>{value}</div>
+      <div className="print-kpi-label text-[11px] font-bold uppercase tracking-wide text-ink/60">{label}</div>
     </div>
   );
 }
@@ -113,16 +113,16 @@ export default function RevenueDailyPage() {
   return (
     <section className="space-y-4">
       {/* Print header -- only visible when printing (Ctrl+P), large and centered date */}
-      <div className="print-header-block hidden print:flex print:flex-col print:items-center print:border-b print:border-gray-300">
-        <div className="print-subtitle uppercase tracking-wide text-gray-500">Corcovado Wilderness Lodge</div>
+      <div className="print-header-block hidden print:flex print:flex-col print:items-center print:border-b print:border-ink/15">
+        <div className="print-subtitle uppercase tracking-wide text-ink/60">Corcovado Wilderness Lodge</div>
         <div className="print-title font-bold">Daily Revenue Report</div>
         <div className="print-date font-extrabold tracking-tight">{fmtDate(data?.business_date ?? day)}</div>
       </div>
 
       <div className="flex flex-wrap items-start justify-between gap-3 print:hidden">
         <div>
-          <h1 className="text-xl font-semibold text-white">Tab 3 · Daily Revenue Report</h1>
-          <p className="text-xs text-white/50">
+          <h1 className="text-xl font-semibold text-ink">Tab 3 · Daily Revenue Report</h1>
+          <p className="text-xs text-ink/60">
             12 canonical centers (§5.1) · Actual vs Budget vs Variance · {fmtDate(data?.business_date ?? day)}
             {data && ` · ${data.days_loaded_mtd} day(s) loaded in MTD`}
           </p>
@@ -131,12 +131,12 @@ export default function RevenueDailyPage() {
           <div className="flex items-center gap-2">
             <button onClick={() => load()} disabled={loading}
               title="Vuelve a jalar los datos del día seleccionado (por si tardó en actualizar)"
-              className="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/20 hover:text-white disabled:opacity-50">
+              className="rounded-lg bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink/85 hover:bg-ink/8 hover:text-ink disabled:opacity-50">
               {loading ? "Recalculando…" : "🔄 Recalcular"}
             </button>
             {data && (
               <button onClick={() => window.print()}
-                className="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/20 hover:text-white">
+                className="rounded-lg bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink/85 hover:bg-ink/8 hover:text-ink">
                 🖨️ Print
               </button>
             )}
@@ -144,10 +144,10 @@ export default function RevenueDailyPage() {
         )}
       </div>
 
-      <nav className="flex flex-wrap gap-1 border-b border-white/10 pb-2 print:hidden">
+      <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2 print:hidden">
         {SUBTABS.map((s) => (
           <button key={s.id} onClick={() => setTab(s.id)}
-            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-white" : "bg-[#1E2130] text-white/60 hover:text-white"}`}>
+            className={`rounded px-2.5 py-1 text-[11px] ${tab === s.id ? "bg-accent text-ink" : "bg-[#fcfcfb] text-ink/70 hover:text-ink"}`}>
             {s.label}
           </button>
         ))}
@@ -158,86 +158,86 @@ export default function RevenueDailyPage() {
 
       {tab === "3" && (
       <>
-      {loading && <div className="text-sm text-white/50">Loading…</div>}
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-3 text-sm text-white/70">{msg}</div>}
+      {loading && <div className="text-sm text-ink/60">Loading…</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-3 text-sm text-ink/75">{msg}</div>}
 
       {data && (
         <>
           <div className="">
-            <div className="mb-2 print-section-title text-center text-lg font-bold uppercase tracking-wide text-white/80">Today</div>
+            <div className="mb-2 print-section-title text-center text-lg font-bold uppercase tracking-wide text-ink/85">Today</div>
             <div className="grid grid-cols-4 gap-3">
-              <Kpi label="Total Pax" value={num(data.kpis.pax)} tone="text-sky-400" />
-              <Kpi label="Rooms Occupied" value={num(data.kpis.rooms_occupied)} tone="text-emerald-400" />
+              <Kpi label="Total Pax" value={num(data.kpis.pax)} tone="text-sky-600" />
+              <Kpi label="Rooms Occupied" value={num(data.kpis.rooms_occupied)} tone="text-emerald-600" />
               <Kpi label="ADR (Actual / Budget)" value={`$${money(data.kpis.adr)} / $${money(data.kpis.adr_budget)}`} small />
               <Kpi label="Occupancy % (Actual / Budget)"
                 value={`${(data.kpis.occupancy_pct * 100).toFixed(1)}% / ${(data.kpis.occupancy_budget * 100).toFixed(1)}%`} />
             </div>
           </div>
           <div className="">
-            <div className="mb-2 print-section-title text-center text-lg font-bold uppercase tracking-wide text-white/80">Month to Day</div>
+            <div className="mb-2 print-section-title text-center text-lg font-bold uppercase tracking-wide text-ink/85">Month to Day</div>
             <div className="grid grid-cols-4 gap-3">
-              <Kpi label="Total Pax MTD" value={num(data.kpis.mtd_pax)} tone="text-sky-400" />
-              <Kpi label="Rooms Occupied MTD" value={num(data.kpis.mtd_rooms_occupied)} tone="text-emerald-400" />
+              <Kpi label="Total Pax MTD" value={num(data.kpis.mtd_pax)} tone="text-sky-600" />
+              <Kpi label="Rooms Occupied MTD" value={num(data.kpis.mtd_rooms_occupied)} tone="text-emerald-600" />
               <Kpi label="ADR MTD (Actual / Budget)" value={`$${money(data.kpis.mtd_adr)} / $${money(data.kpis.adr_budget)}`} small />
               <Kpi label="Occupancy % MTD (Actual / Budget)"
                 value={`${(data.kpis.mtd_occupancy_pct * 100).toFixed(1)}% / ${(data.kpis.occupancy_budget * 100).toFixed(1)}%`} />
             </div>
           </div>
 
-          <div className="print:hidden rounded border border-white/10 bg-[#1E2130] px-3 py-2 text-[11px] text-white/60">
+          <div className="print:hidden rounded border border-ink/10 bg-[#fcfcfb] px-3 py-2 text-[11px] text-ink/70">
             Budget: {data.budget_status}
           </div>
 
-          <table className="w-full rounded-lg border border-white/10 text-xs">
-            <thead className="bg-[#1E2130]">
+          <table className="w-full rounded-lg border border-ink/10 text-xs">
+            <thead className="bg-[#fcfcfb]">
               <tr>
                 <th className={th} rowSpan={2}>Revenue Center</th>
-                <th className={`${thC} border-l-2 border-white/40`} colSpan={4}>TODAY</th>
-                <th className={`${thC} border-l-2 border-white/40`} colSpan={4}>MONTH TO DAY</th>
-                <th className={`${thC} border-l-2 border-white/40`} colSpan={3}>FULL MONTH RESULT</th>
+                <th className={`${thC} border-l-2 border-ink/25`} colSpan={4}>TODAY</th>
+                <th className={`${thC} border-l-2 border-ink/25`} colSpan={4}>MONTH TO DAY</th>
+                <th className={`${thC} border-l-2 border-ink/25`} colSpan={3}>FULL MONTH RESULT</th>
               </tr>
               <tr>
-                <th className={`${thN} border-l-2 border-white/40`}>Actual</th>
+                <th className={`${thN} border-l-2 border-ink/25`}>Actual</th>
                 <th className={thN}>Budget</th>
                 <th className={thN}>Var $</th>
                 <th className={thN}>Var %</th>
-                <th className={`${thN} border-l-2 border-white/40`}>Actual</th>
+                <th className={`${thN} border-l-2 border-ink/25`}>Actual</th>
                 <th className={thN}>Budget</th>
                 <th className={thN}>Var $</th>
                 <th className={thN}>Var %</th>
-                <th className={`${thN} border-l-2 border-white/40`}>Monthly Budget</th>
+                <th className={`${thN} border-l-2 border-ink/25`}>Monthly Budget</th>
                 <th className={thN}>Amount to Budget</th>
                 <th className={thN}>Var %</th>
               </tr>
             </thead>
             <tbody>
               {data.centers.map((c) => (
-                <tr key={c.center} className="border-t border-white/5">
+                <tr key={c.center} className="border-t border-ink/8">
                   <td className={td}>{c.center}</td>
-                  <td className={`${tdN} border-l-2 border-white/40`}>${money(c.today_actual)}</td>
-                  <td className={`${tdN} text-white/40`}>${money(c.today_budget)}</td>
+                  <td className={`${tdN} border-l-2 border-ink/25`}>${money(c.today_actual)}</td>
+                  <td className={`${tdN} text-ink/55`}>${money(c.today_budget)}</td>
                   <td className={`${tdN} ${varColor(c.today_var)}`}>${money(c.today_var)}</td>
                   <td className={`${tdN} ${varColor(c.today_var_pct)}`}>{pct(c.today_var_pct)}</td>
-                  <td className={`${tdN} border-l-2 border-white/40`}>${money(c.mtd_actual)}</td>
-                  <td className={`${tdN} text-white/40`}>${money(c.mtd_budget)}</td>
+                  <td className={`${tdN} border-l-2 border-ink/25`}>${money(c.mtd_actual)}</td>
+                  <td className={`${tdN} text-ink/55`}>${money(c.mtd_budget)}</td>
                   <td className={`${tdN} ${varColor(c.mtd_var)}`}>${money(c.mtd_var)}</td>
                   <td className={`${tdN} ${varColor(c.mtd_var_pct)}`}>{pct(c.mtd_var_pct)}</td>
-                  <td className={`${tdN} border-l-2 border-white/40 text-white/40`}>${money(c.month_budget_total)}</td>
+                  <td className={`${tdN} border-l-2 border-ink/25 text-ink/55`}>${money(c.month_budget_total)}</td>
                   <td className={`${tdN} ${varColor(c.amount_to_budget)}`}>${money(c.amount_to_budget)}</td>
                   <td className={`${tdN} ${varColor(c.monthly_var_pct)}`}>{pct(c.monthly_var_pct)}</td>
                 </tr>
               ))}
-              <tr className="border-t-2 border-white/20 bg-[#1E2130] font-bold">
+              <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                 <td className={td}>GRAND TOTAL</td>
-                <td className={`${tdN} border-l-2 border-white/40 text-emerald-400`}>${money(data.grand_total.today_actual)}</td>
-                <td className={`${tdN} text-white/40`}>${money(data.grand_total.today_budget)}</td>
+                <td className={`${tdN} border-l-2 border-ink/25 text-emerald-600`}>${money(data.grand_total.today_actual)}</td>
+                <td className={`${tdN} text-ink/55`}>${money(data.grand_total.today_budget)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.today_actual - data.grand_total.today_budget)}`}>${money(data.grand_total.today_actual - data.grand_total.today_budget)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.today_var_pct)}`}>{pct(data.grand_total.today_var_pct)}</td>
-                <td className={`${tdN} border-l-2 border-white/40 text-emerald-400`}>${money(data.grand_total.mtd_actual)}</td>
-                <td className={`${tdN} text-white/40`}>${money(data.grand_total.mtd_budget)}</td>
+                <td className={`${tdN} border-l-2 border-ink/25 text-emerald-600`}>${money(data.grand_total.mtd_actual)}</td>
+                <td className={`${tdN} text-ink/55`}>${money(data.grand_total.mtd_budget)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.mtd_actual - data.grand_total.mtd_budget)}`}>${money(data.grand_total.mtd_actual - data.grand_total.mtd_budget)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.mtd_var_pct)}`}>{pct(data.grand_total.mtd_var_pct)}</td>
-                <td className={`${tdN} border-l-2 border-white/40 text-white/40`}>${money(data.grand_total.month_budget_total)}</td>
+                <td className={`${tdN} border-l-2 border-ink/25 text-ink/55`}>${money(data.grand_total.month_budget_total)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.amount_to_budget)}`}>${money(data.grand_total.amount_to_budget)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.monthly_var_pct)}`}>{pct(data.grand_total.monthly_var_pct)}</td>
               </tr>
@@ -245,57 +245,57 @@ export default function RevenueDailyPage() {
           </table>
 
           <div className="print-page-break">
-            <div className="print-table-title mb-1 text-[11px] font-bold uppercase tracking-wide text-white/50">On-Property Production (Detail Visibility)</div>
-            <table className="w-full rounded-lg border border-white/10 text-xs">
-              <thead className="bg-[#1E2130]">
+            <div className="print-table-title mb-1 text-[11px] font-bold uppercase tracking-wide text-ink/60">On-Property Production (Detail Visibility)</div>
+            <table className="w-full rounded-lg border border-ink/10 text-xs">
+              <thead className="bg-[#fcfcfb]">
                 <tr>
                   <th className={th} rowSpan={2}>Revenue Center</th>
-                  <th className={`${thC} border-l-2 border-white/40`} colSpan={4}>TODAY</th>
-                  <th className={`${thC} border-l-2 border-white/40`} colSpan={4}>MONTH TO DAY</th>
-                  <th className={`${thC} border-l-2 border-white/40`} colSpan={3}>FULL MONTH RESULT</th>
+                  <th className={`${thC} border-l-2 border-ink/25`} colSpan={4}>TODAY</th>
+                  <th className={`${thC} border-l-2 border-ink/25`} colSpan={4}>MONTH TO DAY</th>
+                  <th className={`${thC} border-l-2 border-ink/25`} colSpan={3}>FULL MONTH RESULT</th>
                 </tr>
                 <tr>
-                  <th className={`${thN} border-l-2 border-white/40`}>Actual</th>
+                  <th className={`${thN} border-l-2 border-ink/25`}>Actual</th>
                   <th className={thN}>Budget</th>
                   <th className={thN}>Var $</th>
                   <th className={thN}>Var %</th>
-                  <th className={`${thN} border-l-2 border-white/40`}>Actual</th>
+                  <th className={`${thN} border-l-2 border-ink/25`}>Actual</th>
                   <th className={thN}>Budget</th>
                   <th className={thN}>Var $</th>
                   <th className={thN}>Var %</th>
-                  <th className={`${thN} border-l-2 border-white/40`}>Monthly Budget</th>
+                  <th className={`${thN} border-l-2 border-ink/25`}>Monthly Budget</th>
                   <th className={thN}>Amount to Budget</th>
                   <th className={thN}>Var %</th>
                 </tr>
               </thead>
               <tbody>
                 {data.on_property_production.rows.map((c) => (
-                  <tr key={c.center} className="border-t border-white/5">
+                  <tr key={c.center} className="border-t border-ink/8">
                     <td className={td}>{c.center}</td>
-                    <td className={`${tdN} border-l-2 border-white/40`}>${money(c.today_actual)}</td>
-                    <td className={`${tdN} text-white/40`}>${money(c.today_budget)}</td>
+                    <td className={`${tdN} border-l-2 border-ink/25`}>${money(c.today_actual)}</td>
+                    <td className={`${tdN} text-ink/55`}>${money(c.today_budget)}</td>
                     <td className={`${tdN} ${varColor(c.today_var)}`}>${money(c.today_var)}</td>
                     <td className={`${tdN} ${varColor(c.today_var_pct)}`}>{pct(c.today_var_pct)}</td>
-                    <td className={`${tdN} border-l-2 border-white/40`}>${money(c.mtd_actual)}</td>
-                    <td className={`${tdN} text-white/40`}>${money(c.mtd_budget)}</td>
+                    <td className={`${tdN} border-l-2 border-ink/25`}>${money(c.mtd_actual)}</td>
+                    <td className={`${tdN} text-ink/55`}>${money(c.mtd_budget)}</td>
                     <td className={`${tdN} ${varColor(c.mtd_var)}`}>${money(c.mtd_var)}</td>
                     <td className={`${tdN} ${varColor(c.mtd_var_pct)}`}>{pct(c.mtd_var_pct)}</td>
-                    <td className={`${tdN} border-l-2 border-white/40 text-white/40`}>${money(c.month_budget_total)}</td>
+                    <td className={`${tdN} border-l-2 border-ink/25 text-ink/55`}>${money(c.month_budget_total)}</td>
                     <td className={`${tdN} ${varColor(c.amount_to_budget)}`}>${money(c.amount_to_budget)}</td>
                     <td className={`${tdN} ${varColor(c.monthly_var_pct)}`}>{pct(c.monthly_var_pct)}</td>
                   </tr>
                 ))}
-                <tr className="border-t-2 border-white/20 bg-[#1E2130] font-bold">
+                <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                   <td className={td}>{data.on_property_production.total.center}</td>
-                  <td className={`${tdN} border-l-2 border-white/40 text-emerald-400`}>${money(data.on_property_production.total.today_actual)}</td>
-                  <td className={`${tdN} text-white/40`}>${money(data.on_property_production.total.today_budget)}</td>
+                  <td className={`${tdN} border-l-2 border-ink/25 text-emerald-600`}>${money(data.on_property_production.total.today_actual)}</td>
+                  <td className={`${tdN} text-ink/55`}>${money(data.on_property_production.total.today_budget)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.today_var)}`}>${money(data.on_property_production.total.today_var)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.today_var_pct)}`}>{pct(data.on_property_production.total.today_var_pct)}</td>
-                  <td className={`${tdN} border-l-2 border-white/40 text-emerald-400`}>${money(data.on_property_production.total.mtd_actual)}</td>
-                  <td className={`${tdN} text-white/40`}>${money(data.on_property_production.total.mtd_budget)}</td>
+                  <td className={`${tdN} border-l-2 border-ink/25 text-emerald-600`}>${money(data.on_property_production.total.mtd_actual)}</td>
+                  <td className={`${tdN} text-ink/55`}>${money(data.on_property_production.total.mtd_budget)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.mtd_var)}`}>${money(data.on_property_production.total.mtd_var)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.mtd_var_pct)}`}>{pct(data.on_property_production.total.mtd_var_pct)}</td>
-                  <td className={`${tdN} border-l-2 border-white/40 text-white/40`}>${money(data.on_property_production.total.month_budget_total)}</td>
+                  <td className={`${tdN} border-l-2 border-ink/25 text-ink/55`}>${money(data.on_property_production.total.month_budget_total)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.amount_to_budget)}`}>${money(data.on_property_production.total.amount_to_budget)}</td>
                   <td className={`${tdN} ${varColor(data.on_property_production.total.monthly_var_pct)}`}>{pct(data.on_property_production.total.monthly_var_pct)}</td>
                 </tr>
@@ -304,18 +304,18 @@ export default function RevenueDailyPage() {
           </div>
 
           <div className="">
-            <div className="print-table-title mb-1 text-[11px] font-bold uppercase tracking-wide text-white/50">Room Statistics by Category (§5.2, ADR/Occ — revenue rooms only)</div>
+            <div className="print-table-title mb-1 text-[11px] font-bold uppercase tracking-wide text-ink/60">Room Statistics by Category (§5.2, ADR/Occ — revenue rooms only)</div>
             <RoomStatsTable rows={data.room_categories} overall={data.room_categories_overall}
               comps={data.room_categories_comps} reconciled={data.room_categories_reconciled} />
           </div>
 
           <div className="">
-            <div className="print-table-title mb-1 text-[11px] font-bold uppercase tracking-wide text-white/50">
+            <div className="print-table-title mb-1 text-[11px] font-bold uppercase tracking-wide text-ink/60">
               Months to Day Stats — by Room Type (§5.2, month-to-date accumulation)
             </div>
             <RoomStatsTable rows={data.room_categories_mtd} overall={data.room_categories_mtd_overall}
               comps={data.room_categories_mtd_comps} reconciled={data.room_categories_mtd_reconciled} />
-            <p className="mt-1 text-[11px] text-white/40 print:hidden">
+            <p className="mt-1 text-[11px] text-ink/55 print:hidden">
               No budget by room type (not needed — rate is controlled via the general
               ADR above, Integrity Room Revenue ÷ Room Statistics). "Codes" (FVR/OVR)
               are in Tab 3.1. This table comes from the real ingestion of Opera's
@@ -325,17 +325,17 @@ export default function RevenueDailyPage() {
 
           {data.otros.length > 0 && (
             <div>
-              <div className="mb-1 text-[11px] uppercase tracking-wide text-amber-400">⚠ Accounts outside the canonical map (Other)</div>
+              <div className="mb-1 text-[11px] uppercase tracking-wide text-amber-600">⚠ Accounts outside the canonical map (Other)</div>
               <table className="w-full rounded-lg border border-amber-500/30 text-xs">
-                <thead className="bg-[#1E2130]"><tr>
+                <thead className="bg-[#fcfcfb]"><tr>
                   <th className={th}>Account</th><th className={th}>Name</th><th className={thN}>Amount</th>
                 </tr></thead>
                 <tbody>
                   {data.otros.map((o, i) => (
-                    <tr key={i} className="border-t border-white/5">
-                      <td className="px-3 py-1.5 font-mono text-white/80">{o.cuenta}</td>
+                    <tr key={i} className="border-t border-ink/8">
+                      <td className="px-3 py-1.5 font-mono text-ink/85">{o.cuenta}</td>
                       <td className={td}>{o.nombre}</td>
-                      <td className={`${tdN} ${o.amount < 0 ? "text-red-400" : "text-amber-400"}`}>${money(o.amount)}</td>
+                      <td className={`${tdN} ${o.amount < 0 ? "text-red-600" : "text-amber-600"}`}>${money(o.amount)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -382,91 +382,91 @@ function OperaValidation({ day }: { day: string }) {
 
   useEffect(() => { load(); }, [load]);
 
-  const diffColor = (v: number) => (v === 0 ? "!text-emerald-400" : "!text-red-400");
+  const diffColor = (v: number) => (v === 0 ? "!text-emerald-600" : "!text-red-600");
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-white/50">
+      <p className="text-xs text-ink/60">
         Opera Daily (XML STATISTICS, official) vs Opera History (XML statroomtype, for confirmation) —
         cross-check by room type, {day}. Comps &amp; in-house (COM/INHOUSE) excluded; reconciliation line
         below ties back to the full statistics.
       </p>
-      {loading && <div className="text-sm text-white/50">Loading…</div>}
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-3 text-sm text-white/70">{msg}</div>}
+      {loading && <div className="text-sm text-ink/60">Loading…</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-3 text-sm text-ink/75">{msg}</div>}
       {data && (
         <>
-          <table className="w-full rounded-lg border border-white/10 text-xs">
-            <thead className="bg-[#1E2130]"><tr>
+          <table className="w-full rounded-lg border border-ink/10 text-xs">
+            <thead className="bg-[#fcfcfb]"><tr>
               <th className={th}>Category</th>
-              <th className={`${thN} border-l border-white/10`}>RN Daily</th>
+              <th className={`${thN} border-l border-ink/10`}>RN Daily</th>
               <th className={thN}>RN History</th>
               <th className={thN}>Diff RN</th>
-              <th className={`${thN} border-l border-white/10`}>Pax Daily</th>
+              <th className={`${thN} border-l border-ink/10`}>Pax Daily</th>
               <th className={thN}>Pax History</th>
               <th className={thN}>Diff Pax</th>
-              <th className={`${thN} border-l border-white/10`}>Revenue Daily (Integrity)</th>
+              <th className={`${thN} border-l border-ink/10`}>Revenue Daily (Integrity)</th>
               <th className={thN}>Revenue History (statroomtype)</th>
               <th className={thN}>Diff Revenue</th>
             </tr></thead>
             <tbody>
               {data.rows.map((r) => (
-                <tr key={r.category} className="border-t border-white/5">
+                <tr key={r.category} className="border-t border-ink/8">
                   <td className={td}>{r.category}</td>
-                  <td className={`${tdN} border-l border-white/10`}>{num(r.rn_daily)}</td>
+                  <td className={`${tdN} border-l border-ink/10`}>{num(r.rn_daily)}</td>
                   <td className={tdN}>{num(r.rn_history)}</td>
                   <td className={`${tdN} ${diffColor(r.rn_diff)}`}>{num(r.rn_diff)}</td>
-                  <td className={`${tdN} border-l border-white/10`}>{num(r.pax_daily)}</td>
+                  <td className={`${tdN} border-l border-ink/10`}>{num(r.pax_daily)}</td>
                   <td className={tdN}>{num(r.pax_history)}</td>
                   <td className={`${tdN} ${diffColor(r.pax_diff)}`}>{num(r.pax_diff)}</td>
-                  <td className={`${tdN} border-l border-white/10`}>${money(r.revenue_daily)}</td>
+                  <td className={`${tdN} border-l border-ink/10`}>${money(r.revenue_daily)}</td>
                   <td className={tdN}>${money(r.revenue_history)}</td>
                   <td className={`${tdN} ${diffColor(r.revenue_diff)}`}>${money(r.revenue_diff)}</td>
                 </tr>
               ))}
-              <tr className="border-t-2 border-white/20 bg-[#1E2130] font-bold">
+              <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                 <td className={td}>{data.comps && data.comps.rn_daily + data.comps.rn_history > 0 ? "TOTAL (revenue rooms)" : "TOTAL"}</td>
-                <td className={`${tdN} border-l border-white/10`}>{num(data.totals.rn_daily)}</td>
+                <td className={`${tdN} border-l border-ink/10`}>{num(data.totals.rn_daily)}</td>
                 <td className={tdN}>{num(data.totals.rn_history)}</td>
                 <td className={`${tdN} ${diffColor(data.totals.rn_daily - data.totals.rn_history)}`}>
                   {num(data.totals.rn_daily - data.totals.rn_history)}
                 </td>
-                <td className={`${tdN} border-l border-white/10`}>{num(data.totals.pax_daily)}</td>
+                <td className={`${tdN} border-l border-ink/10`}>{num(data.totals.pax_daily)}</td>
                 <td className={tdN}>{num(data.totals.pax_history)}</td>
                 <td className={`${tdN} ${diffColor(data.totals.pax_daily - data.totals.pax_history)}`}>
                   {num(data.totals.pax_daily - data.totals.pax_history)}
                 </td>
-                <td className={`${tdN} border-l border-white/10`}>${money(data.revenue.daily_total)}</td>
+                <td className={`${tdN} border-l border-ink/10`}>${money(data.revenue.daily_total)}</td>
                 <td className={tdN}>${money(data.revenue.history_total)}</td>
                 <td className={`${tdN} ${diffColor(data.revenue.diff)}`}>${money(data.revenue.diff)}</td>
               </tr>
               {data.comps && data.comps.rn_daily + data.comps.rn_history > 0 && (
-                <tr className="border-t border-white/10 bg-[#231c17] italic text-amber-200/80">
-                  <td className={td}>Comps &amp; In-House <span className="not-italic text-[10px] text-amber-200/50">(excl. from cross-check)</span></td>
-                  <td className={`${tdN} border-l border-white/10`}>{num(data.comps.rn_daily)}</td>
+                <tr className="border-t border-ink/10 bg-[#fbf3e6] italic text-amber-700/80">
+                  <td className={td}>Comps &amp; In-House <span className="not-italic text-[10px] text-amber-700/50">(excl. from cross-check)</span></td>
+                  <td className={`${tdN} border-l border-ink/10`}>{num(data.comps.rn_daily)}</td>
                   <td className={tdN}>{num(data.comps.rn_history)}</td>
                   <td className={tdN}>—</td>
-                  <td className={`${tdN} border-l border-white/10`}>{num(data.comps.pax_daily)}</td>
+                  <td className={`${tdN} border-l border-ink/10`}>{num(data.comps.pax_daily)}</td>
                   <td className={tdN}>{num(data.comps.pax_history)}</td>
                   <td className={tdN}>—</td>
-                  <td className={`${tdN} border-l border-white/10`}>$0.00</td>
+                  <td className={`${tdN} border-l border-ink/10`}>$0.00</td>
                   <td className={tdN}>$0.00</td>
                   <td className={tdN}>—</td>
                 </tr>
               )}
               {data.reconciled && data.comps && data.comps.rn_daily + data.comps.rn_history > 0 && (
-                <tr className="border-t border-white/20 bg-[#16233a] font-bold text-white/90">
+                <tr className="border-t border-ink/15 bg-[#e8f0fb] font-bold text-ink/90">
                   <td className={td}>GRAND TOTAL (incl. comps)</td>
-                  <td className={`${tdN} border-l border-white/10`}>{num(data.reconciled.rn_daily)}</td>
+                  <td className={`${tdN} border-l border-ink/10`}>{num(data.reconciled.rn_daily)}</td>
                   <td className={tdN}>{num(data.reconciled.rn_history)}</td>
                   <td className={`${tdN} ${diffColor(data.reconciled.rn_daily - data.reconciled.rn_history)}`}>
                     {num(data.reconciled.rn_daily - data.reconciled.rn_history)}
                   </td>
-                  <td className={`${tdN} border-l border-white/10`}>{num(data.reconciled.pax_daily)}</td>
+                  <td className={`${tdN} border-l border-ink/10`}>{num(data.reconciled.pax_daily)}</td>
                   <td className={tdN}>{num(data.reconciled.pax_history)}</td>
                   <td className={`${tdN} ${diffColor(data.reconciled.pax_daily - data.reconciled.pax_history)}`}>
                     {num(data.reconciled.pax_daily - data.reconciled.pax_history)}
                   </td>
-                  <td className={`${tdN} border-l border-white/10`}>${money(data.revenue.daily_total)}</td>
+                  <td className={`${tdN} border-l border-ink/10`}>${money(data.revenue.daily_total)}</td>
                   <td className={tdN}>${money(data.revenue.history_total)}</td>
                   <td className={`${tdN} ${diffColor(data.revenue.diff)}`}>${money(data.revenue.diff)}</td>
                 </tr>
@@ -474,7 +474,7 @@ function OperaValidation({ day }: { day: string }) {
             </tbody>
           </table>
 
-          <div className="rounded border border-white/10 bg-[#1E2130] p-3 text-[11px] text-white/50">
+          <div className="rounded border border-ink/10 bg-[#fcfcfb] p-3 text-[11px] text-ink/60">
             Code mapping (dim_room_category.room_class):{" "}
             {Object.entries(data.room_class_mapping).map(([code, cat]) => `${code}→${cat}`).join(" · ")}
             <br />
@@ -511,9 +511,9 @@ const COM_CODES = new Set(["COM"]);
 function KpiGroupTable({ label, data }: { label: string; data: { by_kpi_group: KpiGroupRow[]; total_rooms: number; total_persons: number } }) {
   return (
     <div>
-      <div className="mb-1 text-[11px] uppercase tracking-wide text-white/50">{label} — by Channel (KPI)</div>
-      <table className="w-full rounded-lg border border-white/10 text-xs">
-        <thead className="bg-[#1E2130]"><tr>
+      <div className="mb-1 text-[11px] uppercase tracking-wide text-ink/60">{label} — by Channel (KPI)</div>
+      <table className="w-full rounded-lg border border-ink/10 text-xs">
+        <thead className="bg-[#fcfcfb]"><tr>
           <th className={th}>Channel</th><th className={th}>Market Codes Included</th>
           <th className={thN}>RN</th><th className={thN}>Pax</th>
           <th className={thN}>No Show</th><th className={thN}>Cancel</th>
@@ -521,9 +521,9 @@ function KpiGroupTable({ label, data }: { label: string; data: { by_kpi_group: K
         </tr></thead>
         <tbody>
           {data.by_kpi_group.map((g) => (
-            <tr key={g.kpi_group} className={`border-t border-white/5 ${g.kpi_group === "Unmapped" ? "bg-amber-500/10" : ""}`}>
-              <td className={`${td} font-medium ${g.kpi_group === "Unmapped" ? "text-amber-400" : ""}`}>{g.kpi_group}</td>
-              <td className="px-3 py-1.5 font-mono text-white/50">{g.market_codes.join(" + ") || "—"}</td>
+            <tr key={g.kpi_group} className={`border-t border-ink/8 ${g.kpi_group === "Unmapped" ? "bg-amber-500/10" : ""}`}>
+              <td className={`${td} font-medium ${g.kpi_group === "Unmapped" ? "text-amber-600" : ""}`}>{g.kpi_group}</td>
+              <td className="px-3 py-1.5 font-mono text-ink/60">{g.market_codes.join(" + ") || "—"}</td>
               <td className={`${tdN} ${countColor(g.rooms)}`}>{num(g.rooms)}</td>
               <td className={`${tdN} ${countColor(g.persons)}`}>{num(g.persons)}</td>
               <td className={`${tdN} ${countColor(g.noshow_rooms)}`}>{num(g.noshow_rooms)}</td>
@@ -531,7 +531,7 @@ function KpiGroupTable({ label, data }: { label: string; data: { by_kpi_group: K
               <td className={tdN}>{pct(g.pct_of_total)}</td>
             </tr>
           ))}
-          <tr className="border-t-2 border-white/20 bg-[#1E2130] font-bold">
+          <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
             <td className={td} colSpan={2}>TOTAL</td>
             <td className={`${tdN} ${countColor(data.total_rooms)}`}>{num(data.total_rooms)}</td>
             <td className={`${tdN} ${countColor(data.total_persons)}`}>{num(data.total_persons)}</td>
@@ -552,15 +552,15 @@ function MarketSegmentTable({ label, data, names }: {
   if (data.rows.length === 0)
     return (
       <div>
-        <div className="mb-1 text-[11px] uppercase tracking-wide text-white/50">{label}</div>
-        <div className="rounded-lg border border-white/10 bg-[#1E2130] p-4 text-xs text-white/50">No data.</div>
+        <div className="mb-1 text-[11px] uppercase tracking-wide text-ink/60">{label}</div>
+        <div className="rounded-lg border border-ink/10 bg-[#fcfcfb] p-4 text-xs text-ink/60">No data.</div>
       </div>
     );
   return (
     <div>
-      <div className="mb-1 text-[11px] uppercase tracking-wide text-white/50">{label}</div>
-      <table className="w-full rounded-lg border border-white/10 text-xs">
-        <thead className="bg-[#1E2130]"><tr>
+      <div className="mb-1 text-[11px] uppercase tracking-wide text-ink/60">{label}</div>
+      <table className="w-full rounded-lg border border-ink/10 text-xs">
+        <thead className="bg-[#fcfcfb]"><tr>
           <th className={th}>Market Code</th>
           <th className={thN}>RN</th><th className={thN}>Pax</th>
           <th className={thN}>No Show</th><th className={thN}>Cancel</th>
@@ -568,10 +568,10 @@ function MarketSegmentTable({ label, data, names }: {
         </tr></thead>
         <tbody>
           {data.rows.map((r) => (
-            <tr key={r.market_code} className={`border-t border-white/5 ${COM_CODES.has(r.market_code) ? "bg-amber-500/10" : ""}`}>
-              <td className={`${td} ${COM_CODES.has(r.market_code) ? "text-amber-400 font-medium" : ""}`}>
+            <tr key={r.market_code} className={`border-t border-ink/8 ${COM_CODES.has(r.market_code) ? "bg-amber-500/10" : ""}`}>
+              <td className={`${td} ${COM_CODES.has(r.market_code) ? "text-amber-600 font-medium" : ""}`}>
                 {names[r.market_code] || r.market_code}
-                <span className="ml-1 font-mono text-[10px] text-white/40">({r.market_code})</span>
+                <span className="ml-1 font-mono text-[10px] text-ink/55">({r.market_code})</span>
               </td>
               <td className={`${tdN} ${countColor(r.rooms)}`}>{num(r.rooms)}</td>
               <td className={`${tdN} ${countColor(r.persons)}`}>{num(r.persons)}</td>
@@ -580,7 +580,7 @@ function MarketSegmentTable({ label, data, names }: {
               <td className={tdN}>{pct(r.pct_of_total)}</td>
             </tr>
           ))}
-          <tr className="border-t-2 border-white/20 bg-[#1E2130] font-bold">
+          <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
             <td className={td}>TOTAL</td>
             <td className={`${tdN} ${countColor(data.total_rooms)}`}>{num(data.total_rooms)}</td>
             <td className={`${tdN} ${countColor(data.total_persons)}`}>{num(data.total_persons)}</td>
@@ -614,13 +614,13 @@ function MarketSegment({ day }: { day: string }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-white/50">
+      <p className="text-xs text-ink/60">
         Analysis by Market Code (sales channel / COM / In-house) — how many room-nights come
         from each channel, to see what&apos;s affecting the blended ADR. Source: Opera&apos;s XML STATISTICS
         (Tab 1/2.4) — no data if the day doesn&apos;t have that XML ingested.
       </p>
-      {loading && <div className="text-sm text-white/50">Loading…</div>}
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-3 text-sm text-white/70">{msg}</div>}
+      {loading && <div className="text-sm text-ink/60">Loading…</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-3 text-sm text-ink/75">{msg}</div>}
       {data && (
         <>
           <KpiGroupTable label={`Today — ${data.business_date}`} data={data.today} />

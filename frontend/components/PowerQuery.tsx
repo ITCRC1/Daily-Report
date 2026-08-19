@@ -10,10 +10,10 @@ type ColType = "currency" | "count" | "percent" | "bool" | "date" | "text";
 type ColumnMeta = { key: string; label: string; type: ColType };
 type DatasetMeta = { key: string; label: string; columns: ColumnMeta[] };
 
-const th = "px-3 py-2 text-left font-medium text-white/60 whitespace-nowrap";
-const thN = "px-3 py-2 text-right font-medium text-white/60 whitespace-nowrap";
-const td = "px-3 py-1.5 text-white/80 whitespace-nowrap";
-const tdN = "px-3 py-1.5 text-right tabular-nums text-white/80 whitespace-nowrap";
+const th = "px-3 py-2 text-left font-medium text-ink/70 whitespace-nowrap";
+const thN = "px-3 py-2 text-right font-medium text-ink/70 whitespace-nowrap";
+const td = "px-3 py-1.5 text-ink/85 whitespace-nowrap";
+const tdN = "px-3 py-1.5 text-right tabular-nums text-ink/85 whitespace-nowrap";
 
 const isNumericType = (t: ColType) => t === "currency" || t === "count" || t === "percent";
 
@@ -139,7 +139,7 @@ export default function PowerQuery({ anchor }: { anchor: string }) {
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-white/40">
+      <p className="text-[11px] text-ink/55">
         Open column-picker report builder over the already-ingested tables — pick a dataset, choose which
         columns to show, optionally narrow by date, and run it. In the spirit of Opera Cloud&apos;s Reporting
         &amp; Analytics, but strictly over our own data (never a live Opera Cloud connection).
@@ -149,48 +149,48 @@ export default function PowerQuery({ anchor }: { anchor: string }) {
         <nav className="flex gap-1">
           {PERIOD_TABS.map((p) => (
             <button key={p.key} onClick={() => applyPeriod(p.key)}
-              className="rounded bg-[#1E2130] px-2.5 py-1 text-[11px] text-white/60 hover:bg-white/10 hover:text-white">
+              className="rounded bg-[#fcfcfb] px-2.5 py-1 text-[11px] text-ink/70 hover:bg-ink/5 hover:text-ink">
               {p.label}
             </button>
           ))}
         </nav>
-        <div className="flex items-center gap-2 text-[11px] text-white/40">
+        <div className="flex items-center gap-2 text-[11px] text-ink/55">
           {lastRefreshedAt && <span>Last refreshed: {lastRefreshedAt}</span>}
           <button onClick={forceRefresh}
-            className="rounded bg-white/10 px-2.5 py-1 text-[11px] text-white/70 hover:bg-white/20 hover:text-white">
+            className="rounded bg-ink/5 px-2.5 py-1 text-[11px] text-ink/75 hover:bg-ink/8 hover:text-ink">
             🔄 Force Recalculate
           </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-[#1E2130] p-3">
-        <label className="flex flex-col gap-1 text-xs text-white/60">
+      <div className="flex flex-wrap items-end gap-3 rounded-lg border border-ink/10 bg-[#fcfcfb] p-3">
+        <label className="flex flex-col gap-1 text-xs text-ink/70">
           Dataset
           <select value={dataset} onChange={(e) => chooseDataset(e.target.value)}
-            className="rounded border border-white/15 bg-[#0F1118] px-2 py-1.5 text-white">
+            className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1.5 text-ink">
             {datasets.map((d) => <option key={d.key} value={d.key}>{d.label}</option>)}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-xs text-white/60">
+        <label className="flex flex-col gap-1 text-xs text-ink/70">
           From
           <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
-            className="rounded border border-white/15 bg-[#0F1118] px-2 py-1.5 text-white" />
+            className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1.5 text-ink" />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-white/60">
+        <label className="flex flex-col gap-1 text-xs text-ink/70">
           To
           <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
-            className="rounded border border-white/15 bg-[#0F1118] px-2 py-1.5 text-white" />
+            className="rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1.5 text-ink" />
         </label>
         <button onClick={run} disabled={loading}
-          className="rounded bg-accent px-4 py-1.5 text-xs font-medium text-white disabled:opacity-50">
+          className="rounded bg-accent px-4 py-1.5 text-xs font-medium text-ink disabled:opacity-50">
           {loading ? "Running…" : "▶ Run Query"}
         </button>
         {ran && rows.length > 0 && (
           <div className="flex gap-1.5">
-            <button onClick={() => download("csv")} className="rounded bg-white/10 px-3 py-1.5 text-xs text-white/80 hover:bg-white/20">
+            <button onClick={() => download("csv")} className="rounded bg-ink/5 px-3 py-1.5 text-xs text-ink/85 hover:bg-ink/8">
               📥 CSV
             </button>
-            <button onClick={() => download("xlsx")} className="rounded bg-white/10 px-3 py-1.5 text-xs text-white/80 hover:bg-white/20">
+            <button onClick={() => download("xlsx")} className="rounded bg-ink/5 px-3 py-1.5 text-xs text-ink/85 hover:bg-ink/8">
               📥 Excel
             </button>
           </div>
@@ -198,9 +198,9 @@ export default function PowerQuery({ anchor }: { anchor: string }) {
       </div>
 
       {current && (
-        <div className="flex flex-wrap gap-2 rounded-lg border border-white/10 bg-[#1E2130]/50 p-3">
+        <div className="flex flex-wrap gap-2 rounded-lg border border-ink/10 bg-[#fcfcfb]/50 p-3">
           {current.columns.map((c) => (
-            <label key={c.key} className="flex items-center gap-1.5 rounded bg-white/5 px-2 py-1 text-[11px] text-white/70">
+            <label key={c.key} className="flex items-center gap-1.5 rounded bg-ink/4 px-2 py-1 text-[11px] text-ink/75">
               <input type="checkbox" checked={selectedCols.has(c.key)} onChange={() => toggleCol(c.key)} />
               {c.label}
             </label>
@@ -208,13 +208,13 @@ export default function PowerQuery({ anchor }: { anchor: string }) {
         </div>
       )}
 
-      {msg && <div className="rounded border border-white/10 bg-[#1E2130] p-2 text-xs text-white/70">{msg}</div>}
+      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
 
       {ran && !loading && (
         rows.length > 0 ? (
-          <div className="max-h-[600px] overflow-auto rounded-lg border border-white/10">
+          <div className="max-h-[600px] overflow-auto rounded-lg border border-ink/10">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-[#1E2130]">
+              <thead className="sticky top-0 bg-[#fcfcfb]">
                 <tr>
                   {columns.map((c) => (
                     <th key={c} className={isNumericType(colType(c)) ? thN : th}>
@@ -225,7 +225,7 @@ export default function PowerQuery({ anchor }: { anchor: string }) {
               </thead>
               <tbody>
                 {rows.map((r, i) => (
-                  <tr key={i} className="border-t border-white/5">
+                  <tr key={i} className="border-t border-ink/8">
                     {columns.map((c) => (
                       <td key={c} className={isNumericType(colType(c))
                         ? `${tdN} ${colType(c) === "currency" ? valueColor(Number(r[c])) : ""}` : td}>
@@ -235,7 +235,7 @@ export default function PowerQuery({ anchor }: { anchor: string }) {
                   </tr>
                 ))}
                 {hasTotals && (
-                  <tr className="sticky bottom-0 border-t-2 border-white/20 bg-[#1E2130] font-bold">
+                  <tr className="sticky bottom-0 border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                     {columns.map((c, i) => (
                       <td key={c} className={isNumericType(colType(c))
                         ? `${tdN} ${colType(c) === "currency" ? valueColor(totals[c]) : ""}` : td}>
@@ -248,7 +248,7 @@ export default function PowerQuery({ anchor }: { anchor: string }) {
             </table>
           </div>
         ) : (
-          <div className="rounded-lg border border-dashed border-white/15 bg-[#1E2130]/50 p-4 text-xs text-white/50">
+          <div className="rounded-lg border border-dashed border-ink/12 bg-[#fcfcfb]/50 p-4 text-xs text-ink/60">
             No rows for this dataset/date range.
           </div>
         )
