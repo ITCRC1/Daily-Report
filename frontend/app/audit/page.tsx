@@ -906,7 +906,7 @@ function InhouseComp({ o }: { o: Occupancy }) {
     <div>
       <div className="mb-1 text-[11px] uppercase tracking-wide text-ink/60">In-House &amp; Complimentary Rooms (COM / INHOUSE)</div>
       {rows.length === 0 ? (
-        <div className="rounded-lg border border-ink/10 bg-[#171A28] px-3 py-2 text-xs text-ink/60">
+        <div className="rounded-lg border border-ink/10 bg-[#f2f1ec] px-3 py-2 text-xs text-ink/60">
           No hay habitaciones In-House ni Complimentary este día.
         </div>
       ) : (

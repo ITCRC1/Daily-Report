@@ -274,7 +274,7 @@ export default function CashMonthlyPosition() {
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setModalOpen(false)}>
-          <div className="w-full max-w-xl rounded-xl border border-ink/12 bg-[#141824] p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-xl rounded-xl border border-ink/12 bg-panel p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-1 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-ink">Comisiones y retención de tarjeta</h3>
               <button onClick={() => setModalOpen(false)} className="text-ink/60 hover:text-ink">✕</button>

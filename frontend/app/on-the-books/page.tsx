@@ -335,7 +335,7 @@ function ONTBReport({ data }: { data: Report }) {
             {Row("Occupancy %", (d) => d.diff.occ, (v) => pct(v), { money: true, qv: (ms) => qOcc(ms, "otb") - qOcc(ms, "budget") })}
 
             <tr className="border-t-2 border-ink/15 bg-emerald-900/20 font-bold">
-              <td className="sticky left-0 z-10 bg-[#0f1a15] px-3 py-2 text-left text-emerald-700">NET GAP</td>
+              <td className="sticky left-0 z-10 bg-[#eaf5ef] px-3 py-2 text-left text-emerald-700">NET GAP</td>
               {cols.map((c, i) => {
                 const v = c.kind === "m" ? c.month.net_gap : qsum(c.months, (d) => d.net_gap);
                 return <td key={i} className={`px-2 py-2 text-right ${c.kind === "q" ? qbg : ""} ${neg(v)}`}>${money(v)}</td>;

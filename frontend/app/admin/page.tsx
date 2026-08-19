@@ -52,7 +52,7 @@ export default function AdminPage() {
             const on = !disabled.includes(t.id);
             const subs = SUB_TABS[t.id] ?? [];
             const pill = (id: string, isOn: boolean) => (
-              <button onClick={() => toggle(id)} className={`w-14 rounded-full px-2 py-1 text-[11px] font-medium ${isOn ? "bg-emerald-500/25 text-emerald-700" : "bg-ink/5 text-ink/60"}`}>{isOn ? "ON" : "OFF"}</button>
+              <button onClick={() => toggle(id)} className={`w-14 rounded-full px-2 py-1 text-[11px] font-medium ${isOn ? "bg-emerald-500/35 text-emerald-800" : "bg-ink/5 text-ink/60"}`}>{isOn ? "ON" : "OFF"}</button>
             );
             return (
               <div key={t.id}>
@@ -63,7 +63,7 @@ export default function AdminPage() {
                 {on && subs.map((s) => {
                   const son = !disabled.includes(s.id);
                   return (
-                    <div key={s.id} className="flex items-center justify-between bg-[#181b26] px-4 py-1.5 pl-9">
+                    <div key={s.id} className="flex items-center justify-between bg-[#f2f1ec] px-4 py-1.5 pl-9">
                       <span className={`text-[12px] ${son ? "text-ink/75" : "text-ink/50 line-through"}`}>{s.label}</span>
                       {pill(s.id, son)}
                     </div>
