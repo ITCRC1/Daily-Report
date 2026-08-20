@@ -34,11 +34,14 @@ type StatusGridData = { year: number; property: string; gate_min_set: string[]; 
 
 // The values (keys) come straight from the backend (ingest_day_status.estado)
 // -- don't translate the keys, only the label that gets displayed.
+// Lavado al 40 % con el número en el tono 800: sobre fondo claro los textos
+// casi blancos de antes (amber-100, sky-50…) quedaban ilegibles. Medido, los
+// cuatro estados dan ~5:1.
 const STATUS_STYLE: Record<string, string> = {
-  Incompleto: "bg-amber-500/30 text-amber-100 hover:bg-amber-500/50",
-  Listo: "bg-sky-500/50 text-sky-50 hover:bg-sky-500/70",
-  Auditado: "bg-violet-500/50 text-violet-50 hover:bg-violet-500/70",
-  Cerrado: "bg-emerald-500/60 text-emerald-50 hover:bg-emerald-500/80",
+  Incompleto: "bg-amber-500/40 text-amber-800 hover:bg-amber-500/55",
+  Listo: "bg-sky-500/40 text-sky-800 hover:bg-sky-500/55",
+  Auditado: "bg-violet-500/40 text-violet-800 hover:bg-violet-500/55",
+  Cerrado: "bg-emerald-500/40 text-emerald-800 hover:bg-emerald-500/55",
 };
 const STATUS_LABEL: Record<string, string> = {
   Incompleto: "Incomplete", Listo: "Ready", Auditado: "Audited", Cerrado: "Closed",
@@ -77,7 +80,13 @@ function MonthCalendar({ year, month, statusMap, selectedDay, onSelect }: {
           return (
             <button key={i} onClick={() => onSelect(iso)}
               title={st ? `${iso} — ${STATUS_LABEL[st.overall] || st.overall}` : `${iso} — no data`}
-              className={`aspect-square rounded text-[9px] transition-colors ${cls} ${isSelected ? "ring-2 ring-white" : ""}`}>
+              className={`aspect-square rounded text-[9px] transition-colors ${cls} ${
+                // El anillo va en TINTA, no en blanco: un anillo blanco sobre un
+                // día sin datos (casi blanco) es invisible -- justo el caso en
+                // que más se necesita ver qué está seleccionado. El offset lo
+                // despega de la celda para que se lea también sobre los colores.
+                isSelected ? "font-bold ring-2 ring-ink ring-offset-1 ring-offset-panel" : ""
+              }`}>
               {d}
             </button>
           );
