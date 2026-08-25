@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
+import ExcelButton from "@/components/ExcelButton";
 import { useBusinessDate } from "@/lib/useBusinessDate";
 import RoomStatsTable, { RoomCategory, RoomCategoryOverall, RoomCategoryComps } from "@/components/RoomStatsTable";
 
@@ -107,7 +108,7 @@ export default function RevenueWeeklyPage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <section className="space-y-5">
+    <section id="tab4-export" className="space-y-5">
       {/* Print header -- only visible when printing (Ctrl+P), same convention as Tab 3 */}
       {data && (
         <div className="print-header-block hidden print:flex print:flex-col print:items-center print:border-b print:border-ink/15">
@@ -125,6 +126,13 @@ export default function RevenueWeeklyPage() {
               className="rounded-lg bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink/85 hover:bg-ink/8 hover:text-ink">
               🖨️ Print
             </button>
+          )}
+          {data && (
+            <ExcelButton target="tab4-export"
+              filename={`Tab4_Weekly_Revenue_${data.week.week_start}`}
+              title="Tab 4 · Weekly Revenue Report"
+              subtitle={`Corcovado Wilderness Lodge · ${fmtDate(data.week.week_start)} – ${fmtDate(data.week.week_end)}`}
+              label="Excel" />
           )}
         </div>
         <p className="mt-1 text-sm text-ink/60">

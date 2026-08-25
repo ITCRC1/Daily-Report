@@ -14,6 +14,7 @@ import PowerQuery from "@/components/PowerQuery";
 import DepositLedger from "@/components/DepositLedger";
 import TipsLedger from "@/components/TipsLedger";
 import IvaLedger from "@/components/IvaLedger";
+import ExcelButton from "@/components/ExcelButton";
 
 const ALL_SUBTABS = [
   { id: "7.1", label: "7.1 Daily Revenue Actual" },
@@ -36,7 +37,11 @@ export default function ReportingPage() {
 
   return (
     <ForceRefreshProvider>
-      <section className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4">
+      <section id="tab7-export" className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4">
+        <div className="float-right">
+          <ExcelButton target="tab7-export" filename={`Tab7_Reporting_${tab}_${anchor}`}
+            title={`Tab 7 · Reporting — ${tab}`} subtitle={`Corcovado Wilderness Lodge · ${anchor}`} label="Excel" />
+        </div>
         <div>
           <h1 className="text-xl font-semibold text-ink">Tab 7 · Reporting</h1>
           <p className="text-xs text-ink/60">

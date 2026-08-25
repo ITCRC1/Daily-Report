@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { API_URL } from "@/lib/api";
+import ExcelButton from "@/components/ExcelButton";
 import { setBusinessDate, useBusinessDate } from "@/lib/useBusinessDate";
 
 type IngestResult = {
@@ -246,7 +247,11 @@ export default function DataInputPage() {
   }
 
   return (
-    <section className="space-y-4">
+    <section id="tab1-export" className="space-y-4">
+      <div className="float-right">
+        <ExcelButton target="tab1-export" filename={`Tab1_Data_Input_${day}`}
+          title="Tab 1 · Data Input" subtitle={`Corcovado Wilderness Lodge · ${day}`} label="Excel" />
+      </div>
       <div>
         <h1 className="text-xl font-semibold text-ink">Tab 1 · Data Input</h1>
         <p className="text-xs text-ink/60">

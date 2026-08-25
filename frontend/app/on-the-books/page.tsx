@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useBusinessDate } from "@/lib/useBusinessDate";
 import { useSubtabs } from "@/lib/useSubtabs";
 import { API_URL } from "@/lib/api";
+import ExcelButton from "@/components/ExcelButton";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const ALL_SUBTABS = [
@@ -156,7 +157,7 @@ export default function OnTheBooksPage() {
   const moved = data?.otb_move_total;
 
   return (
-    <section className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4">
+    <section id="tab8-export" className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4">
       {/* Encabezado solo visible al imprimir (Ctrl+P) -- va en la 1ra hoja del PDF */}
       <div className="print-header-block hidden print:flex print:flex-col print:items-center print:border-b print:border-ink/15">
         <div className="print-subtitle uppercase tracking-wide text-ink/60">Corcovado Wilderness Lodge</div>
@@ -164,6 +165,11 @@ export default function OnTheBooksPage() {
         <div className="print-date font-extrabold tracking-tight">OTB cut: {data?.snapshot_date ?? dateTo}</div>
       </div>
 
+      <div className="print:hidden float-right">
+        <ExcelButton target="tab8-export" filename={`Tab8_On_The_Books_${year}`}
+          title="Tab 8 · On the Books"
+          subtitle={`Corcovado Wilderness Lodge · ${year} · OTB cut ${data?.snapshot_date ?? dateTo}`} label="Excel" />
+      </div>
       <div className="print:hidden">
         <h1 className="text-xl font-semibold text-ink">Tab 8 · On the Books</h1>
         <p className="text-xs text-ink/60">

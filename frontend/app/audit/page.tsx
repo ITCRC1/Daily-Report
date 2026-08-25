@@ -2,6 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
+import ExcelButton from "@/components/ExcelButton";
 import { useBusinessDate } from "@/lib/useBusinessDate";
 
 type Row = {
@@ -270,7 +271,7 @@ export default function AuditPage() {
   }
 
   return (
-    <section className="space-y-4">
+    <section id="tab2-export" className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-ink">Tab 2 · Daily Audit</h1>
@@ -280,6 +281,10 @@ export default function AuditPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {data && (
+            <ExcelButton target="tab2-export" filename={`Tab2_Daily_Audit_${day}`}
+              title="Tab 2 · Daily Audit" subtitle={`Corcovado Wilderness Lodge · ${day}`} label="Excel" />
+          )}
           {data && (
             <span className={`rounded px-2 py-1 text-[11px] font-medium ${
               data.status === "cerrado" ? "bg-emerald-500/15 text-emerald-600" : "bg-ink/5 text-ink/70"}`}>

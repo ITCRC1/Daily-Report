@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
+import ExcelButton from "@/components/ExcelButton";
 import { useBusinessDate } from "@/lib/useBusinessDate";
 import { useSubtabs } from "@/lib/useSubtabs";
 import CashMonthlySummary from "@/components/CashMonthlySummary";
@@ -279,9 +280,13 @@ export default function CashPage() {
   const anchor = useBusinessDate();
   const fyear = Number(anchor.slice(0, 4)) || 2026;
   return (
-    <section className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4 px-3">
-      <div>
-        <h1 className="text-xl font-semibold text-ink">Tab 5 · Cash</h1>
+    <section id="tab5-export" className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4 px-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold text-ink">Tab 5 · Cash</h1>
+        </div>
+        <ExcelButton target="tab5-export" filename={`Tab5_Cash_${tab}_${anchor}`}
+          title={`Tab 5 · Cash — ${tab}`} subtitle={`Corcovado Wilderness Lodge · ${anchor}`} label="Excel" />
       </div>
       <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2">
         {SUBTABS.map((s) => (

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
+import ExcelButton from "@/components/ExcelButton";
 import { useSubtabs } from "@/lib/useSubtabs";
 import RevenueActualDaily from "@/components/RevenueActualDaily";
 import DailyBudget from "@/components/DailyBudget";
@@ -1010,10 +1011,14 @@ export default function MasterDataPage() {
   const { subtabs: SUBTABS, tab, setTab } = useSubtabs(ALL_SUBTABS, "6.2");
 
   return (
-    <section className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold text-ink">Tab 6 · Master Data</h1>
-        <p className="text-xs text-ink/60">Editable catalogs per property (COWLCR).</p>
+    <section id="tab6-export" className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold text-ink">Tab 6 · Master Data</h1>
+          <p className="text-xs text-ink/60">Editable catalogs per property (COWLCR).</p>
+        </div>
+        <ExcelButton target="tab6-export" filename={`Tab6_Master_Data_${tab}`}
+          title={`Tab 6 · Master Data — ${tab}`} subtitle="Corcovado Wilderness Lodge" label="Excel" />
       </div>
 
       <nav className="flex flex-wrap gap-1 border-b border-ink/10 pb-2">

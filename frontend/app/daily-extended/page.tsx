@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
+import ExcelButton from "@/components/ExcelButton";
 import { useBusinessDate } from "@/lib/useBusinessDate";
 import { useSubtabs } from "@/lib/useSubtabs";
 
@@ -893,14 +894,19 @@ export default function DailyExtendedPage() {
   }
 
   return (
-    <section className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4">
+    <section id="tab9-export" className="w-[calc(100vw-1.5rem)] -translate-x-1/2 relative left-1/2 space-y-4">
       <div className="flex flex-wrap items-start gap-3">
         <div>
           <h1 className="text-xl font-semibold text-ink">Tab 9 · Daily Extendido</h1>
           <p className="text-xs text-ink/60">Daily Revenue Report completo (formato profesional), réplica página por página. COWLCR.</p>
         </div>
+        <span className="ml-auto">
+          <ExcelButton target="tab9-export" filename={`Tab9_${tab}_${anchor}`}
+            title={`Tab 9 · Daily Extendido — ${tab}`}
+            subtitle={`Corcovado Wilderness Lodge · ${anchor}`} label="Excel" />
+        </span>
         <button onClick={() => setPrinting(true)}
-          className="ml-auto rounded bg-ink/5 px-3 py-1.5 text-[11px] text-ink/85 hover:bg-ink/8"
+          className="rounded bg-ink/5 px-3 py-1.5 text-[11px] text-ink/85 hover:bg-ink/8"
           title="Arma el reporte completo (todas las secciones habilitadas) en una sola vista lista para imprimir o guardar como PDF">
           🖨 Imprimir 9.1–9.8
         </button>
