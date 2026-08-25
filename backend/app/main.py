@@ -1,18 +1,31 @@
+from contextlib import asynccontextmanager
+
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
-from app.db import get_session
+from app.db import ensure_forecast_schema, get_session
 from app.models import Property
 
 settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Las tablas del Forecast (Tab 6.1.1) se crean acá si faltan: la raíz del
+    build del backend es `backend/`, así que alembic no viaja al contenedor.
+    Ver `db.ensure_forecast_schema`."""
+    await ensure_forecast_schema()
+    yield
+
 
 app = FastAPI(
     title="DAILY-OPS API",
     version="0.1.0",
     description="Revenue diario/semanal, cash y auditoría · Corcovado Wilderness Lodge",
+    lifespan=lifespan,
 )
 
 app.add_middleware(

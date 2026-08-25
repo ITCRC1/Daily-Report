@@ -27,6 +27,19 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # Idempotente a propósito: en el deploy de Railway la raíz del build del
+    # backend es `backend/`, así que alembic no llega al contenedor y las tablas
+    # las crea el arranque del app (`db.ensure_forecast_schema`). Correr esta
+    # migración después, contra una base ya inicializada así, no debe fallar.
+    existentes = set(sa.inspect(op.get_bind()).get_table_names())
+
+    if "forecast_monthly" not in existentes:
+        _crear_forecast_monthly()
+    if "fact_forecast" not in existentes:
+        _crear_fact_forecast()
+
+
+def _crear_forecast_monthly() -> None:
     op.create_table(
         "forecast_monthly",
         sa.Column("id", postgresql.UUID(as_uuid=True),
@@ -55,7 +68,9 @@ def upgrade() -> None:
     op.create_index("ix_fcstmon_prop", "forecast_monthly", ["property_id"])
     op.create_index("ix_fcstmon_dept", "forecast_monthly", ["dept_id"])
 
-    # derivado = forecast_monthly / días_del_mes; residual → último día
+
+# derivado = forecast_monthly / días_del_mes; residual → último día
+def _crear_fact_forecast() -> None:
     op.create_table(
         "fact_forecast",
         sa.Column("id", postgresql.UUID(as_uuid=True),
