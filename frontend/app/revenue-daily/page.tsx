@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
+import ExcelButton from "@/components/ExcelButton";
 import { useBusinessDate } from "@/lib/useBusinessDate";
 import RoomStatsTable, { RoomCategory, RoomCategoryOverall, RoomCategoryComps } from "@/components/RoomStatsTable";
 
@@ -113,7 +114,7 @@ export default function RevenueDailyPage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <section className="space-y-4">
+    <section id="tab3-export" className="space-y-4">
       {/* Print header -- only visible when printing (Ctrl+P), large and centered date */}
       <div className="print-header-block hidden print:flex print:flex-col print:items-center print:border-b print:border-ink/15">
         <div className="print-subtitle uppercase tracking-wide text-ink/60">Corcovado Wilderness Lodge</div>
@@ -141,6 +142,15 @@ export default function RevenueDailyPage() {
                 className="rounded-lg bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink/85 hover:bg-ink/8 hover:text-ink">
                 🖨️ Print
               </button>
+            )}
+            {data && (
+              <ExcelButton
+                target="tab3-export"
+                filename={`Tab3_Daily_Revenue_${data.business_date}`}
+                title="Tab 3 · Daily Revenue Report"
+                subtitle={`Corcovado Wilderness Lodge · ${fmtDate(data.business_date)} · ${data.days_loaded_mtd} día(s) en el MTD`}
+                label="Excel"
+              />
             )}
           </div>
         )}
