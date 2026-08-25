@@ -47,7 +47,7 @@ async def list_properties(session: AsyncSession = Depends(get_session)) -> list[
     return [{"id": str(p.id), "code": p.code, "name": p.name, "activa": p.activa} for p in rows]
 
 
-from app.api import audit, budget, cash, comps, daily_extended, deposit_ledger, export, ingest, iva, ledgers, market_codes, master_data, nav_config, ontb, reporting, revenue, revenue_actual, tips  # noqa: E402
+from app.api import audit, budget, cash, comps, daily_extended, deposit_ledger, export, forecast, ingest, iva, ledgers, market_codes, master_data, nav_config, ontb, reporting, revenue, revenue_actual, tips  # noqa: E402
 
 app.include_router(ingest.router)          # etapa 1 (ingesta) + dispara etapa 4
 app.include_router(audit.router)           # etapa 4 (reconciliación) + gate/refresh (etapa 8)
@@ -57,6 +57,7 @@ app.include_router(cash.router)            # etapa 3 (Daily Cash from Operation)
 app.include_router(export.router)          # etapa 8 (export Excel + PDF)
 app.include_router(master_data.router)     # Tab 6 — 6.2 Cash Mapping + 6.3 Integrity Mapping
 app.include_router(budget.router)          # Tab 6.1 Monthly Budget + 6.5 Daily derivado
+app.include_router(forecast.router)        # Tab 6.1.1 Forecast mensual + diario derivado
 app.include_router(revenue_actual.router)  # Tab 6.4 Revenue real diario por depto (Year to Date)
 app.include_router(reporting.router)       # Tab 7.4 Power Query
 app.include_router(deposit_ledger.router)  # Tab 7.5 Deposit Ledger (Bank, manual)

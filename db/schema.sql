@@ -227,6 +227,36 @@ CREATE TABLE fact_budget (
   amount_usd  NUMERIC(15,2) NOT NULL DEFAULT 0
 );
 
+-- Tab 6.1.1 Forecast -- gemelo de budget_monthly / fact_budget (tablas propias
+-- para que el reemplazo anual de uno no pise al otro).
+CREATE TABLE forecast_monthly (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id     UUID NOT NULL REFERENCES dim_property(id),
+  year            INT NOT NULL,
+  month           INT NOT NULL CHECK (month BETWEEN 1 AND 12),
+  dept_id         UUID REFERENCES dim_department(id),
+  amount_usd      NUMERIC(15,2) NOT NULL DEFAULT 0,
+  available_rooms NUMERIC(15,2),
+  rooms_occupied  NUMERIC(15,2),
+  guests          NUMERIC(15,2),
+  occupancy_pct   NUMERIC(9,4),
+  adr             NUMERIC(15,2),
+  food            NUMERIC(15,2) NOT NULL DEFAULT 0,
+  beverage        NUMERIC(15,2) NOT NULL DEFAULT 0,
+  misc            NUMERIC(15,2) NOT NULL DEFAULT 0,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- derivado = forecast_monthly / dias_del_mes; residual -> ultimo dia
+CREATE TABLE fact_forecast (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID NOT NULL REFERENCES dim_property(id),
+  date        DATE NOT NULL,
+  dept_id     UUID REFERENCES dim_department(id),
+  amount_usd  NUMERIC(15,2) NOT NULL DEFAULT 0
+);
+
 CREATE TABLE fact_opera_txn (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   property_id    UUID NOT NULL REFERENCES dim_property(id),
@@ -312,6 +342,13 @@ CREATE INDEX ix_budmon_dept     ON budget_monthly (dept_id);
 CREATE INDEX ix_factbud_date    ON fact_budget (date);
 CREATE INDEX ix_factbud_prop    ON fact_budget (property_id);
 CREATE INDEX ix_factbud_dept    ON fact_budget (dept_id);
+
+CREATE INDEX ix_fcstmon_prop    ON forecast_monthly (property_id);
+CREATE INDEX ix_fcstmon_dept    ON forecast_monthly (dept_id);
+
+CREATE INDEX ix_factfcst_date   ON fact_forecast (date);
+CREATE INDEX ix_factfcst_prop   ON fact_forecast (property_id);
+CREATE INDEX ix_factfcst_dept   ON fact_forecast (dept_id);
 
 CREATE INDEX ix_operatxn_bdate  ON fact_opera_txn (business_date);
 CREATE INDEX ix_operatxn_prop   ON fact_opera_txn (property_id);

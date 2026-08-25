@@ -10,6 +10,7 @@ type Center = {
   today_actual: number; today_budget: number; today_var: number; today_var_pct: number;
   mtd_actual: number; mtd_budget: number; mtd_var: number; mtd_var_pct: number;
   month_budget_total: number; amount_to_budget: number; monthly_var_pct: number;
+  month_forecast_total: number; amount_to_forecast: number; monthly_fcst_var_pct: number;
 };
 type Otros = { cuenta: string; nombre: string | null; amount: number };
 type Report = {
@@ -19,6 +20,7 @@ type Report = {
     today_actual: number; today_budget: number; today_var_pct: number;
     mtd_actual: number; mtd_budget: number; mtd_var_pct: number;
     month_budget_total: number; amount_to_budget: number; monthly_var_pct: number;
+    month_forecast_total: number; amount_to_forecast: number; monthly_fcst_var_pct: number;
   };
   fb_detail: { today: FbSplit; mtd: FbSplit };
   otros: Otros[];
@@ -194,7 +196,7 @@ export default function RevenueDailyPage() {
                 <th className={th} rowSpan={2}>Revenue Center</th>
                 <th className={`${thC} border-l-2 border-ink/25`} colSpan={4}>TODAY</th>
                 <th className={`${thC} border-l-2 border-ink/25`} colSpan={4}>MONTH TO DAY</th>
-                <th className={`${thC} border-l-2 border-ink/25`} colSpan={3}>FULL MONTH RESULT</th>
+                <th className={`${thC} border-l-2 border-ink/25`} colSpan={6}>FULL MONTH RESULT</th>
               </tr>
               <tr>
                 <th className={`${thN} border-l-2 border-ink/25`}>Actual</th>
@@ -207,6 +209,9 @@ export default function RevenueDailyPage() {
                 <th className={thN}>Var %</th>
                 <th className={`${thN} border-l-2 border-ink/25`}>Monthly Budget</th>
                 <th className={thN}>Amount to Budget</th>
+                <th className={thN}>Var %</th>
+                <th className={`${thN} border-l-2 border-ink/25`}>Monthly Forecast</th>
+                <th className={thN}>Amount to Forecast</th>
                 <th className={thN}>Var %</th>
               </tr>
             </thead>
@@ -225,6 +230,9 @@ export default function RevenueDailyPage() {
                   <td className={`${tdN} border-l-2 border-ink/25 text-ink/60`}>${money(c.month_budget_total)}</td>
                   <td className={`${tdN} ${varColor(c.amount_to_budget)}`}>${money(c.amount_to_budget)}</td>
                   <td className={`${tdN} ${varColor(c.monthly_var_pct)}`}>{pct(c.monthly_var_pct)}</td>
+                  <td className={`${tdN} border-l-2 border-ink/25 text-ink/60`}>${money(c.month_forecast_total)}</td>
+                  <td className={`${tdN} ${varColor(c.amount_to_forecast)}`}>${money(c.amount_to_forecast)}</td>
+                  <td className={`${tdN} ${varColor(c.monthly_fcst_var_pct)}`}>{pct(c.monthly_fcst_var_pct)}</td>
                 </tr>
               ))}
               <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
@@ -240,6 +248,9 @@ export default function RevenueDailyPage() {
                 <td className={`${tdN} border-l-2 border-ink/25 text-ink/60`}>${money(data.grand_total.month_budget_total)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.amount_to_budget)}`}>${money(data.grand_total.amount_to_budget)}</td>
                 <td className={`${tdN} ${varColor(data.grand_total.monthly_var_pct)}`}>{pct(data.grand_total.monthly_var_pct)}</td>
+                <td className={`${tdN} border-l-2 border-ink/25 text-ink/60`}>${money(data.grand_total.month_forecast_total)}</td>
+                <td className={`${tdN} ${varColor(data.grand_total.amount_to_forecast)}`}>${money(data.grand_total.amount_to_forecast)}</td>
+                <td className={`${tdN} ${varColor(data.grand_total.monthly_fcst_var_pct)}`}>{pct(data.grand_total.monthly_fcst_var_pct)}</td>
               </tr>
             </tbody>
           </table>

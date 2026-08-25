@@ -33,7 +33,7 @@ from app.engine.room_stats import (
     NON_REVENUE_MARKET_CODES, market_segment_rollup, opera_daily_vs_history, room_stats_rollup,
 )
 from app.models import (
-    AppConfig, Budget, BudgetMonthly, Department, IntegrityLine,
+    AppConfig, Budget, BudgetMonthly, Department, Forecast, IntegrityLine,
     MarketCode, OccupancyStat, Property, RevenueActualDaily, RoomCategory, RoomStat, WeekCalendar,
 )
 from app.services import room_stats_service
@@ -287,6 +287,34 @@ async def _budget_by_dept_cost_center(session, pid, start, end) -> dict[str, flo
     return {k: round(v, 2) for k, v in totals.items()}
 
 
+async def _forecast_by_outlet_column(session, pid, start, end) -> dict[str, float]:
+    """Σ fact_forecast.amount_usd en el rango, agrupado por output_column --
+    gemelo de `_budget_by_outlet_column`, para la columna Forecast del cuadro
+    FULL MONTH RESULT (Tab 3)."""
+    rows = (await session.execute(
+        select(Forecast, Department.output_column)
+        .join(Department, Forecast.dept_id == Department.id)
+        .where(Forecast.property_id == pid, Forecast.date >= start, Forecast.date <= end)
+    )).all()
+    totals: dict[str, float] = defaultdict(float)
+    for forecast_row, output_column in rows:
+        totals[output_column] += float(forecast_row.amount_usd)
+    return {k: round(v, 2) for k, v in totals.items()}
+
+
+async def _forecast_by_dept_cost_center(session, pid, start, end) -> dict[str, float]:
+    """Igual que arriba pero por cost_center (no colapsa FB-FOOD/BEV/MISC)."""
+    rows = (await session.execute(
+        select(Forecast, Department.cost_center)
+        .join(Department, Forecast.dept_id == Department.id)
+        .where(Forecast.property_id == pid, Forecast.date >= start, Forecast.date <= end)
+    )).all()
+    totals: dict[str, float] = defaultdict(float)
+    for forecast_row, cost_center in rows:
+        totals[cost_center] += float(forecast_row.amount_usd)
+    return {k: round(v, 2) for k, v in totals.items()}
+
+
 async def _budget_adr_occ(session, pid, year: int, month_from: int, month_to: int) -> dict:
     """ADR/Occupancy% presupuestados (general, no por tipo de habitación --
     Integrity Room Revenue + Room Statistics son la fuente 'oficial' para
@@ -501,14 +529,18 @@ async def daily_report(session: AsyncSession, business_date: date_cls,
     mtd_budget = await _budget_by_outlet_column(session, pid, month_start, business_date)
     month_budget = await _budget_by_outlet_column(session, pid, month_start, month_end)
     has_budget = bool(today_budget or mtd_budget)
+    # Forecast del mes completo -- sólo alimenta el cuadro FULL MONTH RESULT.
+    month_forecast = await _forecast_by_outlet_column(session, pid, month_start, month_end)
 
     def _center(name: str, today_actual: float, mtd_actual: float,
                today_bud: dict | None = None, mtd_bud: dict | None = None,
-               month_bud: dict | None = None) -> dict:
+               month_bud: dict | None = None, month_fcst: dict | None = None) -> dict:
         tb = (today_bud if today_bud is not None else today_budget).get(name, 0.0)
         mb = (mtd_bud if mtd_bud is not None else mtd_budget).get(name, 0.0)
         full = (month_bud if month_bud is not None else month_budget).get(name, 0.0)
+        fcst = (month_fcst if month_fcst is not None else month_forecast).get(name, 0.0)
         amount_to_budget = round(mtd_actual - full, 2)
+        amount_to_forecast = round(mtd_actual - fcst, 2)
         return {
             "center": name,
             "today_actual": round(today_actual, 2), "today_budget": tb,
@@ -517,6 +549,8 @@ async def daily_report(session: AsyncSession, business_date: date_cls,
             "mtd_var": round(mtd_actual - mb, 2), "mtd_var_pct": _pct(mtd_actual - mb, mb),
             "month_budget_total": round(full, 2), "amount_to_budget": amount_to_budget,
             "monthly_var_pct": _pct(amount_to_budget, full),
+            "month_forecast_total": round(fcst, 2), "amount_to_forecast": amount_to_forecast,
+            "monthly_fcst_var_pct": _pct(amount_to_forecast, fcst),
         }
 
     centers = [_center(c, today_cols[c], mtd_cols[c]) for c in OUTPUT_COLUMNS]
@@ -537,6 +571,9 @@ async def daily_report(session: AsyncSession, business_date: date_cls,
     misc_mb = mtd_budget_dept.get("MISC-REV", 0.0)
     misc_full = month_budget_dept.get("MISC-REV", 0.0)
     misc_a2b = round(mtd_misc - misc_full, 2)
+    month_forecast_dept = await _forecast_by_dept_cost_center(session, pid, month_start, month_end)
+    misc_fcst = month_forecast_dept.get("MISC-REV", 0.0)
+    misc_a2f = round(mtd_misc - misc_fcst, 2)
     centers.append({
         "center": "Misc. Revenue",
         "today_actual": round(today_misc, 2), "today_budget": round(misc_tb, 2),
@@ -545,6 +582,8 @@ async def daily_report(session: AsyncSession, business_date: date_cls,
         "mtd_var": round(mtd_misc - misc_mb, 2), "mtd_var_pct": _pct(mtd_misc - misc_mb, misc_mb),
         "month_budget_total": round(misc_full, 2), "amount_to_budget": misc_a2b,
         "monthly_var_pct": _pct(misc_a2b, misc_full),
+        "month_forecast_total": round(misc_fcst, 2), "amount_to_forecast": misc_a2f,
+        "monthly_fcst_var_pct": _pct(misc_a2f, misc_fcst),
     })
 
     fb_dept_map = {"food": "FB-FOOD", "beverage": "FB-BEV", "misc": "FB-MISC"}
@@ -554,7 +593,8 @@ async def daily_report(session: AsyncSession, business_date: date_cls,
     # (se resta la misma lista que se muestra, no queda un monto oculto).
     on_property_rows = [
         {**_center(fb_dept_map[k], today_fb[k], mtd_fb[k],
-                   today_budget_dept, mtd_budget_dept, month_budget_dept), "center": fb_labels[k]}
+                   today_budget_dept, mtd_budget_dept, month_budget_dept,
+                   month_forecast_dept), "center": fb_labels[k]}
         for k in ("beverage", "misc")
     ]
     for c in ("SPA", "Retail-Gift Shop", "Laundry"):
@@ -571,12 +611,15 @@ async def daily_report(session: AsyncSession, business_date: date_cls,
         "mtd_budget": _sum_field(on_property_rows, "mtd_budget"),
         "month_budget_total": _sum_field(on_property_rows, "month_budget_total"),
         "amount_to_budget": _sum_field(on_property_rows, "amount_to_budget"),
+        "month_forecast_total": _sum_field(on_property_rows, "month_forecast_total"),
+        "amount_to_forecast": _sum_field(on_property_rows, "amount_to_forecast"),
     }
     on_property_total["today_var"] = round(on_property_total["today_actual"] - on_property_total["today_budget"], 2)
     on_property_total["today_var_pct"] = _pct(on_property_total["today_var"], on_property_total["today_budget"])
     on_property_total["mtd_var"] = round(on_property_total["mtd_actual"] - on_property_total["mtd_budget"], 2)
     on_property_total["mtd_var_pct"] = _pct(on_property_total["mtd_var"], on_property_total["mtd_budget"])
     on_property_total["monthly_var_pct"] = _pct(on_property_total["amount_to_budget"], on_property_total["month_budget_total"])
+    on_property_total["monthly_fcst_var_pct"] = _pct(on_property_total["amount_to_forecast"], on_property_total["month_forecast_total"])
     # + Misc. Revenue en AMBOS (Today ya lo incluía vía otros; el MTD lo perdía).
     grand_today = round(sum(today_cols.values()) + today_misc, 2)
     grand_mtd = round(sum(mtd_cols.values()) + mtd_misc, 2)
@@ -586,6 +629,8 @@ async def daily_report(session: AsyncSession, business_date: date_cls,
     grand_mtd_budget = round(sum(mtd_budget.values()), 2)
     grand_month_budget = round(sum(month_budget.values()), 2)
     grand_amount_to_budget = round(grand_mtd - grand_month_budget, 2)
+    grand_month_forecast = round(sum(month_forecast.values()), 2)
+    grand_amount_to_forecast = round(grand_mtd - grand_month_forecast, 2)
 
     kpis = await _kpis_for_day(session, pid, business_date)
     if business_date not in integrity_by_day and business_date in actual_by_day:
@@ -663,6 +708,9 @@ async def daily_report(session: AsyncSession, business_date: date_cls,
             "mtd_var_pct": _pct(grand_mtd - grand_mtd_budget, grand_mtd_budget),
             "month_budget_total": grand_month_budget, "amount_to_budget": grand_amount_to_budget,
             "monthly_var_pct": _pct(grand_amount_to_budget, grand_month_budget),
+            "month_forecast_total": grand_month_forecast,
+            "amount_to_forecast": grand_amount_to_forecast,
+            "monthly_fcst_var_pct": _pct(grand_amount_to_forecast, grand_month_forecast),
         },
         "fb_detail": {"today": today_fb, "mtd": mtd_fb},
         "otros": today_otros,

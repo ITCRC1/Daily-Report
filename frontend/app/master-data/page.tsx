@@ -11,6 +11,7 @@ type Col = { key: string; label: string; required?: boolean };
 
 const ALL_SUBTABS = [
   { id: "6.1", label: "6.1 Monthly Budget" },
+  { id: "6.1.1", label: "6.1.1 Forecast" },
   { id: "6.2", label: "6.2 Cash Mapping" },
   { id: "6.3", label: "6.3 Integrity Mapping" },
   { id: "6.4", label: "6.4 Daily Revenue by Day/Dept" },
@@ -83,7 +84,13 @@ const bThN = "px-4 py-3 text-right font-medium text-ink/70 whitespace-nowrap";
 const bTd = "px-4 py-2.5 text-ink/85";
 const bTdN = "px-4 py-2.5 text-right tabular-nums text-ink/85";
 
-function YearBudget() {
+// 6.1 Budget y 6.1.1 Forecast son el mismo panel con distinto endpoint: mismo
+// grano (depto x mes), misma plantilla y mismo reemplazo total del anio.
+function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
+  const isForecast = kind === "forecast";
+  const endpoint = `/master-data/${kind}`;
+  const noun = isForecast ? "forecast" : "budget";
+  const Noun = isForecast ? "Forecast" : "Budget";
   const [year, setYear] = useState(new Date().getFullYear());
   const [rows, setRows] = useState<BudgetMonthlyRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -93,14 +100,14 @@ function YearBudget() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/master-data/budget?year=${year}`, { cache: "no-store" });
+      const res = await fetch(`${API_URL}${endpoint}?year=${year}`, { cache: "no-store" });
       setRows(res.ok ? await res.json() : []);
     } catch {
       setRows([]);
     } finally {
       setLoading(false);
     }
-  }, [year]);
+  }, [year, endpoint]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -109,11 +116,11 @@ function YearBudget() {
     try {
       // fetch (not a plain <a href>) so a backend failure surfaces as a
       // message here instead of a blank browser tab.
-      const res = await fetch(`${API_URL}/master-data/budget/template?year=${year}`);
+      const res = await fetch(`${API_URL}${endpoint}/template?year=${year}`);
       if (!res.ok) throw new Error(`API ${res.status}`);
       const disposition = res.headers.get("content-disposition") || "";
       const match = disposition.match(/filename="?([^"]+)"?/);
-      const filename = match ? match[1] : `Budget_${year}_template.xlsx`;
+      const filename = match ? match[1] : `${Noun}_${year}_template.xlsx`;
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -129,7 +136,7 @@ function YearBudget() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch(`${API_URL}/master-data/budget/upload?year=${year}`, { method: "POST", body: form });
+      const res = await fetch(`${API_URL}${endpoint}/upload?year=${year}`, { method: "POST", body: form });
       const body = await res.json();
       if (!res.ok) throw new Error(body.detail || `API ${res.status}`);
       setMsg(`Loaded: ${body.rows_loaded} rows${body.dept_codes_no_reconocidos?.length ? ` (⚠ unrecognized codes: ${body.dept_codes_no_reconocidos.join(", ")})` : ""}.`);
@@ -209,7 +216,8 @@ function YearBudget() {
       </div>
       <p className="text-[11px] text-ink/60">
         Cycle: download the template (comes pre-filled with what&apos;s already loaded for the year), fill
-        it out in Excel, and upload it again — this fully replaces that year&apos;s budget ("annual reset").
+        it out in Excel, and upload it again — this fully replaces that year&apos;s {noun}{" "}
+        {isForecast ? "(full-year replacement)" : '("annual reset")'}.
       </p>
       {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
       {loading && <div className="text-xs text-ink/60">Loading…</div>}
@@ -242,7 +250,7 @@ function YearBudget() {
         </div>
       ) : (
         !loading && <div className="rounded-lg border border-dashed border-ink/12 bg-[#fcfcfb]/50 p-4 text-xs text-ink/60">
-          No budget loaded for {year} yet.
+          No {noun} loaded for {year} yet.
         </div>
       )}
 
@@ -1018,6 +1026,7 @@ export default function MasterDataPage() {
       </nav>
 
       {tab === "6.1" && <YearBudget />}
+      {tab === "6.1.1" && <YearBudget kind="forecast" />}
       {tab === "6.2" && <EditableTable cols={PAYMENT_MAP_COLS} endpoint="/master-data/payment-map" />}
       {tab === "6.3" && <EditableTable cols={DEPARTMENT_COLS} endpoint="/master-data/departments" />}
       {tab === "6.7" && <EditableTable cols={ROOM_CATEGORY_COLS} endpoint="/master-data/room-categories" />}

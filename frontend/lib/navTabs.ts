@@ -22,6 +22,7 @@ export const SUB_TABS: Record<string, { id: string; label: string }[]> = {
   ],
   "master-data": [
     { id: "6.1", label: "6.1 Monthly Budget" },
+    { id: "6.1.1", label: "6.1.1 Forecast" },
     { id: "6.2", label: "6.2 Cash Mapping" },
     { id: "6.3", label: "6.3 Integrity Mapping" },
     { id: "6.4", label: "6.4 Daily Revenue by Day/Dept" },

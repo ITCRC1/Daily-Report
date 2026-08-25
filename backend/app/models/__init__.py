@@ -333,6 +333,38 @@ class Budget(Base):
     amount_usd: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
 
 
+class ForecastMonthly(Base, TimestampMixin):
+    """Tab 6.1.1 -- gemelo de BudgetMonthly para el Forecast. Mismo grano
+    (property, year, month, dept) y mismo ciclo de carga; tabla propia para que
+    el reemplazo anual de uno no pise al otro."""
+    __tablename__ = "forecast_monthly"
+    __table_args__ = (CheckConstraint("month BETWEEN 1 AND 12"),)
+    id: Mapped[uuid.UUID] = UUIDpk()
+    property_id: Mapped[uuid.UUID] = prop_fk()
+    year: Mapped[int] = mapped_column(Integer)
+    month: Mapped[int] = mapped_column(Integer)
+    dept_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("dim_department.id"))
+    amount_usd: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
+    available_rooms: Mapped[Decimal | None] = mapped_column(Numeric(15, 2))
+    rooms_occupied: Mapped[Decimal | None] = mapped_column(Numeric(15, 2))
+    guests: Mapped[Decimal | None] = mapped_column(Numeric(15, 2))
+    occupancy_pct: Mapped[Decimal | None] = mapped_column(Numeric(9, 4))
+    adr: Mapped[Decimal | None] = mapped_column(Numeric(15, 2))
+    food: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
+    beverage: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
+    misc: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
+
+
+class Forecast(Base):
+    """Diario derivado del forecast mensual -- mismo reparto que fact_budget."""
+    __tablename__ = "fact_forecast"
+    id: Mapped[uuid.UUID] = UUIDpk()
+    property_id: Mapped[uuid.UUID] = prop_fk()
+    date: Mapped[date] = mapped_column(Date, index=True)
+    dept_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("dim_department.id"))
+    amount_usd: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
+
+
 class RoomStatOpening(Base, TimestampMixin):
     """Anclaje MANUAL editable del acumulado YTD por categoría de habitación
     (mismo patrón que LedgerOpening) -- Tab 6.6. `room_category` usa el mismo
