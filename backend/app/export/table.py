@@ -143,6 +143,16 @@ def _hoja(wb: Workbook, spec: dict, title: str, subtitle: str | None, usados: se
     rows: list[list] = spec.get("rows") or []
     if not columns:
         columns = [{"label": "", "type": "text"}]
+
+    # Guarda: si alguna fila trae más celdas que columnas declaradas, se agregan
+    # columnas en blanco. Antes esas celdas se perdían sin aviso -- inaceptable
+    # en un libro contable, y justo el síntoma de un encabezado mal resuelto
+    # (una celda con rowSpan que no se contó). Mejor una columna sin título que
+    # una cifra que desaparece.
+    ancho_datos = max((len(f) for f in rows), default=0)
+    while len(columns) < ancho_datos:
+        columns = columns + [{"label": "", "type": "text"}]
+
     n_cols = len(columns)
 
     ws = wb.create_sheet(_sanitize_sheet_name(spec.get("name") or "Hoja", usados))

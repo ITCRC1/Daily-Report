@@ -68,31 +68,73 @@ function cellText(el: Element): string {
 }
 
 /**
- * Serializa una <table> renderizada. Toma la última fila de <thead> como los
- * encabezados de columna y las anteriores con colSpan>1 como grupos (TODAY /
- * MONTH TO DAY / FULL MONTH RESULT). Detecta filas de total por el texto.
+ * Resuelve el <thead> a una grilla, respetando colSpan Y rowSpan.
+ *
+ * El rowSpan importa: en el cuadro del Tab 3 la primera columna es
+ * `<th rowSpan={2}>Revenue Center</th>`, así que vive en la PRIMERA fila del
+ * encabezado y no en la última. Leer sólo la última fila devolvía 14 rótulos
+ * para 15 columnas de datos y los corría todos un lugar a la izquierda.
+ */
+function headerGrid(table: HTMLTableElement): { labels: string[]; groups: ExcelGroup[] } {
+  const filas = Array.from(table.querySelectorAll("thead tr"));
+  if (filas.length === 0) return { labels: [], groups: [] };
+
+  const grid: (string | undefined)[][] = [];
+  filas.forEach((tr, r) => {
+    grid[r] = grid[r] ?? [];
+    let c = 0;
+    for (const th of Array.from(tr.children)) {
+      while (grid[r][c] !== undefined) c++; // saltar lo que ocupa un rowSpan de arriba
+      const celda = th as HTMLTableCellElement;
+      const cs = Math.max(1, Number(celda.colSpan || 1));
+      const rs = Math.max(1, Number(celda.rowSpan || 1));
+      const texto = cellText(th).trim();
+      for (let dr = 0; dr < rs; dr++) {
+        const rr = r + dr;
+        grid[rr] = grid[rr] ?? [];
+        for (let dc = 0; dc < cs; dc++) grid[rr][c + dc] = texto;
+      }
+      c += cs;
+    }
+  });
+
+  const nCols = Math.max(...grid.map((g) => g.length));
+  const labels = Array.from({ length: nCols }, (_, i) => {
+    for (let r = grid.length - 1; r >= 0; r--) {
+      const v = grid[r]?.[i];
+      if (v) return v;
+    }
+    return "";
+  });
+
+  // Grupos: la primera fila, comprimiendo columnas consecutivas con el mismo
+  // rótulo. Una celda con rowSpan (mismo texto que su columna) va en blanco,
+  // para no repetir el rótulo arriba de sí mismo.
+  const groups: ExcelGroup[] = [];
+  if (grid.length > 1) {
+    for (let i = 0; i < nCols; i++) {
+      const bruto = grid[0]?.[i] ?? "";
+      const label = bruto && bruto === labels[i] ? "" : bruto;
+      const previo = groups[groups.length - 1];
+      if (previo && previo.label === label && bruto === (grid[0]?.[i - 1] ?? "")) previo.span += 1;
+      else groups.push({ label, span: 1 });
+    }
+  }
+  return { labels, groups };
+}
+
+/**
+ * Serializa una <table> renderizada: los encabezados salen de la grilla del
+ * <thead> (colSpan + rowSpan) y los grupos de su primera fila (TODAY / MONTH TO
+ * DAY / FULL MONTH RESULT). Detecta filas de total por el texto.
  */
 export function tableToSheet(table: HTMLTableElement, sheet: Partial<ExcelSheet> & { name: string }): ExcelSheet {
-  const filasHead = Array.from(table.querySelectorAll("thead tr"));
-  const filaEncabezado = filasHead[filasHead.length - 1];
-  const columnas: string[] = filaEncabezado
-    ? Array.from(filaEncabezado.children).flatMap((th) => {
-        const span = Number((th as HTMLTableCellElement).colSpan || 1);
-        const texto = cellText(th).trim();
-        return span > 1 ? Array.from({ length: span }, () => texto) : [texto];
-      })
-    : [];
-
-  // Grupos: la fila de arriba, expandiendo el rowSpan de la primera celda.
-  let grupos: ExcelGroup[] = [];
-  if (filasHead.length > 1) {
-    grupos = Array.from(filasHead[0].children).map((th) => ({
-      label: cellText(th).trim(),
-      span: Number((th as HTMLTableCellElement).colSpan || 1),
-    }));
-  }
+  const { labels: columnas, groups: grupos } = headerGrid(table);
 
   const filasCuerpo = Array.from(table.querySelectorAll("tbody tr"));
+  const anchoDatos = Math.max(0, ...filasCuerpo.map((tr) => tr.children.length));
+  const nCols = Math.max(columnas.length, anchoDatos);
+  while (columnas.length < nCols) columnas.push("");
   const rows: (string | number | null)[][] = [];
   const tiposPorColumna: ExcelColumnType[][] = columnas.map(() => []);
   const total_rows: number[] = [];
@@ -114,7 +156,7 @@ export function tableToSheet(table: HTMLTableElement, sheet: Partial<ExcelSheet>
     columns: columnas.map((label, i) => ({ label, type: columnType(tiposPorColumna[i] ?? []) })),
     rows,
     total_rows,
-    ...(grupos.length > 1 ? { header_groups: grupos } : {}),
+    ...(grupos.some((g) => g.span > 1) ? { header_groups: grupos } : {}),
     ...sheet,
     name: sheet.name,
   };

@@ -119,3 +119,19 @@ def test_fila_mas_corta_que_las_columnas_no_explota():
     p = _payload(rows=[["Solo la etiqueta"]])
     ws = _abrir(p).active
     assert ws.max_column == 4
+
+
+def test_no_descarta_celdas_si_faltan_columnas_declaradas():
+    """Si el encabezado trae menos columnas que las filas (el síntoma de un
+    `rowSpan` mal resuelto), las celdas sobrantes NO se pueden perder: se
+    agregan columnas en blanco. Una cifra que desaparece de un libro contable
+    es peor que una columna sin título."""
+    wb = _abrir({"sheets": [{
+        "name": "Corridas",
+        "columns": [{"label": "Centro", "type": "text"}, {"label": "Actual", "type": "money"}],
+        "rows": [["Rooms", 100.0, 200.0, 300.0]],
+    }]})
+    ws = wb.active
+    assert ws.max_column == 4
+    fila = next(r for r in ws.iter_rows(values_only=True) if r and r[0] == "Rooms")
+    assert fila[1] == 100.0 and fila[2] == 200.0 and fila[3] == 300.0
