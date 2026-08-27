@@ -123,10 +123,13 @@ def _classify(inputs_dir: Path) -> dict:
         try:
             wb = load_workbook(f, read_only=True)
             sheets = set(wb.sheetnames)
-            if integrity_file is None and "Datos" in sheets:
-                integrity_file = f
-            elif pos_file is None and POS_SHEETS & sheets:
+            # POS primero: se reconoce por nombres de hoja fijos. El Integrity
+            # se detecta por el ENCABEZADO de la hoja, no por su nombre --
+            # el emisor lo renombró de 'Datos' a 'Asiento' sin aviso.
+            if pos_file is None and POS_SHEETS & sheets:
                 pos_file = f
+            elif integrity_file is None and integ.find_sheet(wb) is not None:
+                integrity_file = f
             wb.close()
         except Exception:
             continue
@@ -216,7 +219,10 @@ async def ingest_day(
                 )
     if "integrity" in required:
         if not cls["integrity"]:
-            problems.append("Integrity: no se encontró el archivo (hoja 'Datos').")
+            problems.append(
+                "Integrity: no se encontró el archivo. Se busca un .xlsx con una hoja "
+                "cuyo encabezado traiga las columnas 'Cuenta' y 'Referencia'."
+            )
         elif not integ.parse_integrity_lines(cls["integrity"]):
             problems.append(
                 f"Integrity: el archivo '{Path(cls['integrity']).name}' se leyó "
