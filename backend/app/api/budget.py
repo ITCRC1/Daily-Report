@@ -7,7 +7,8 @@ from __future__ import annotations
 
 from io import BytesIO
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import (APIRouter, Body, Depends, File, HTTPException,
+                     Query, UploadFile)
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -54,6 +55,27 @@ async def budget_monthly_view(
 ) -> list[dict]:
     code = prop or settings.DEFAULT_PROPERTY
     return await budget_service.monthly_summary(session, year, property_code=code)
+
+
+@router.put("")
+async def budget_save(
+    year: int = Query(...), payload: dict = Body(...),
+    prop: str = Query(default=None), session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Guarda la reja editada EN PANTALLA (Tab 6.1).
+
+    Owner, 2026-11-04: *«dame la opcion de editar directamente en la pantalla y
+    con copy pasted para todo y poder guardar»*.
+
+    Mismo reemplazo total del anio que `/upload`, por el mismo camino de
+    escritura: editar en pantalla y subir la plantilla con esos numeros dan lo
+    mismo.
+    """
+    code = prop or settings.DEFAULT_PROPERTY
+    try:
+        return await budget_service.save_monthly(session, year, payload, property_code=code)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/daily")

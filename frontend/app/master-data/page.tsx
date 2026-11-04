@@ -83,6 +83,20 @@ const valueColor = (v: number) => (v < 0 ? "!text-rose-600" : "");
 const bTh = "px-4 py-3 text-left font-medium text-ink/70 whitespace-nowrap";
 const bThN = "px-4 py-3 text-right font-medium text-ink/70 whitespace-nowrap";
 const bTd = "px-4 py-2.5 text-ink/85";
+// Lo que Excel deja en el portapapeles no es un numero: trae simbolo de
+// moneda, separador de miles, el porcentaje y los parentesis del negativo
+// contable. Number("$1,226.42") es NaN, y un NaN silencioso en una reja de
+// 13x12 se guarda como cero sin que nada lo avise.
+function num(v: string | number | null | undefined): number | null {
+  const t = (v ?? "").toString().trim();
+  if (!t || t === "\u2014" || t === "-") return null;
+  const neg = t.startsWith("(") && t.endsWith(")");
+  const limpio = t.replace(/[()$%,\s]/g, "");
+  if (!limpio) return null;
+  const n = Number(limpio);
+  if (!Number.isFinite(n)) return null;
+  return neg ? -n : n;
+}
 const bTdN = "px-4 py-2.5 text-right tabular-nums text-ink/85";
 
 // 6.1 Budget y 6.1.1 Forecast son el mismo panel con distinto endpoint: mismo
@@ -97,6 +111,16 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const [uploading, setUploading] = useState(false);
+  // Edicion en pantalla (owner, 2026-11-04: *«dame la opcion de editar
+  // directamente en la pantalla y con copy pasted para todo y poder guardar»*).
+  //
+  // ⚠️ Guardar REEMPLAZA el anio completo, igual que subir la plantilla. Por eso
+  // hay un modo edicion explicito y no inputs siempre vivos: un clic distraido
+  // sobre una reja de 13x12 no puede convertirse en una escritura del anio.
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [draft, setDraft] = useState<{ code: string; name: string; vals: string[] }[]>([]);
+  const [draftStats, setDraftStats] = useState<Record<string, string[]>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -197,6 +221,110 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
     { key: "adr", label: "ADR", fmt: (v) => `$${money(v)}` },
   ];
 
+  function startEdit() {
+    setDraft([...byDept.entries()].map(([code, { name, amounts }]) => ({
+      code, name, vals: amounts.map((a) => (a ? String(a) : "")),
+    })));
+    // La ocupacion se guarda como fraccion y se EDITA en puntos porcentuales,
+    // que es como la tipea una persona. La vuelta se hace al guardar.
+    setDraftStats(Object.fromEntries(STAT_ROWS.map(({ key }) => [
+      key, stats[key].map((v) => (v === null ? "" : String(key === "occupancy_pct" ? +(v * 100).toFixed(4) : v))),
+    ])));
+    setEditing(true); setMsg("");
+  }
+
+  function setCell(r: number, c: number, value: string) {
+    setDraft((prev) => prev.map((f, i) => (i === r
+      ? { ...f, vals: f.vals.map((v, j) => (j === c ? value : v)) } : f)));
+  }
+
+  function setStatCell(key: string, c: number, value: string) {
+    setDraftStats((prev) => ({
+      ...prev,
+      [key]: (prev[key] ?? Array(12).fill("")).map((v, j) => (j === c ? value : v)),
+    }));
+  }
+
+  // Pegar un BLOQUE de Excel: filas por salto de linea, columnas por tab, y se
+  // reparte hacia abajo y a la derecha desde la celda donde se pego -- que es
+  // lo que hace Excel. Asi un anio entero entra con un solo Ctrl+V en vez de
+  // 156 celdas a mano. Devuelve true cuando consumio el pegado, para que el
+  // input no reciba ademas el texto crudo.
+  function pegarBloque(r0: number, c0: number, text: string): boolean {
+    const bloque = text.replace(/\r/g, "").split("\n")
+      .filter((l) => l.trim().length > 0).map((l) => l.split("\t"));
+    if (!bloque.length || (bloque.length === 1 && bloque[0].length === 1)) return false;
+    setDraft((prev) => {
+      const next = prev.map((f) => ({ ...f, vals: [...f.vals] }));
+      bloque.forEach((fila, i) => {
+        const r = r0 + i;
+        if (r >= next.length) return;
+        fila.forEach((celda, j) => {
+          const c = c0 + j;
+          if (c > 11) return;
+          next[r].vals[c] = celda.trim();
+        });
+      });
+      return next;
+    });
+    return true;
+  }
+
+  function pegarStats(k0: number, c0: number, text: string): boolean {
+    const bloque = text.replace(/\r/g, "").split("\n")
+      .filter((l) => l.trim().length > 0).map((l) => l.split("\t"));
+    if (!bloque.length || (bloque.length === 1 && bloque[0].length === 1)) return false;
+    setDraftStats((prev) => {
+      const next = { ...prev };
+      bloque.forEach((fila, i) => {
+        const row = STAT_ROWS[k0 + i];
+        if (!row) return;
+        const vals = [...(next[row.key] ?? Array(12).fill(""))];
+        fila.forEach((celda, j) => {
+          const c = c0 + j;
+          if (c > 11) return;
+          vals[c] = celda.trim();
+        });
+        next[row.key] = vals;
+      });
+      return next;
+    });
+    return true;
+  }
+
+  async function save() {
+    setSaving(true); setMsg("Saving\u2026");
+    try {
+      const body = {
+        rows: draft.map((f) => ({ dept_code: f.code, amounts: f.vals.map((v) => num(v) ?? 0) })),
+        stats: Object.fromEntries(STAT_ROWS.map(({ key }) => [key,
+          (draftStats[key] ?? Array(12).fill("")).map((v) => {
+            const n = num(v);
+            // De vuelta a fraccion: la pantalla manda el dato exacto y el
+            // backend no tiene que adivinar si 1.2 es 1,2% o 120%.
+            return n !== null && key === "occupancy_pct" ? n / 100 : n;
+          })]),
+        ),
+      };
+      const res = await fetch(`${API_URL}${endpoint}?year=${year}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const out = await res.json();
+      if (!res.ok) throw new Error(out.detail || `API ${res.status}`);
+      const raros = out.dept_codes_no_reconocidos ?? [];
+      setMsg(`Saved: ${out.rows_loaded} rows${raros.length ? ` (\u26a0 unrecognized codes: ${raros.join(", ")})` : ""}.`);
+      setEditing(false);
+      await load();
+    } catch (e: any) {
+      setMsg(`Error: ${e.message}`);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const cellInput = "w-24 rounded border border-ink/12 bg-[#f9f9f7] px-1.5 py-1 text-right tabular-nums text-ink";
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
@@ -214,6 +342,27 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
           <input type="file" accept=".xlsx" className="hidden" disabled={uploading}
             onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
         </label>
+        <span className="h-4 w-px bg-ink/12" />
+        {!editing ? (
+          <button onClick={startEdit} disabled={byDept.size === 0}
+            className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-white hover:bg-ink/8 disabled:opacity-40">
+            ✎ Edit on screen
+          </button>
+        ) : (
+          <>
+            <button onClick={save} disabled={saving}
+              className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50">
+              {saving ? "Saving…" : "💾 Save year"}
+            </button>
+            <button onClick={() => { setEditing(false); setMsg(""); }} disabled={saving}
+              className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-white hover:bg-ink/8">
+              Cancel
+            </button>
+            <span className="text-[11px] text-ink/60">
+              Paste a block from Excel into any cell — it fills right and down. Saving replaces the whole year.
+            </span>
+          </>
+        )}
       </div>
       <p className="text-[11px] text-ink/60">
         Cycle: download the template (comes pre-filled with what&apos;s already loaded for the year), fill
@@ -234,17 +383,43 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
               </tr>
             </thead>
             <tbody>
-              {[...byDept.entries()].map(([code, { name, amounts }]) => (
-                <tr key={code} className="border-t border-ink/8">
-                  <td className={bTd}>{code} · {name}</td>
-                  {amounts.map((a, i) => <td key={i} className={`${bTdN} ${valueColor(a)}`}>{a ? `$${money(a)}` : <span className="text-ink/45">—</span>}</td>)}
-                  <td className={`${bTdN} font-medium ${valueColor(amounts.reduce((a, b) => a + b, 0))}`}>${money(amounts.reduce((a, b) => a + b, 0))}</td>
-                </tr>
-              ))}
+              {editing
+                ? draft.map((f, r) => {
+                    const suma = f.vals.reduce((a, v) => a + (num(v) ?? 0), 0);
+                    return (
+                      <tr key={f.code} className="border-t border-ink/8">
+                        <td className={bTd}>{f.code} · {f.name}</td>
+                        {f.vals.map((v, c) => (
+                          <td key={c} className="px-1 py-1 text-right">
+                            <input type="text" inputMode="decimal" value={v}
+                              onChange={(e) => setCell(r, c, e.target.value)}
+                              onPaste={(e) => { if (pegarBloque(r, c, e.clipboardData.getData("text"))) e.preventDefault(); }}
+                              onFocus={(e) => e.target.select()}
+                              className={cellInput} />
+                          </td>
+                        ))}
+                        <td className={`${bTdN} font-medium ${valueColor(suma)}`}>${money(suma)}</td>
+                      </tr>
+                    );
+                  })
+                : [...byDept.entries()].map(([code, { name, amounts }]) => (
+                    <tr key={code} className="border-t border-ink/8">
+                      <td className={bTd}>{code} · {name}</td>
+                      {amounts.map((a, i) => <td key={i} className={`${bTdN} ${valueColor(a)}`}>{a ? `$${money(a)}` : <span className="text-ink/45">—</span>}</td>)}
+                      <td className={`${bTdN} font-medium ${valueColor(amounts.reduce((a, b) => a + b, 0))}`}>${money(amounts.reduce((a, b) => a + b, 0))}</td>
+                    </tr>
+                  ))}
               <tr className="border-t-2 border-ink/15 bg-[#fcfcfb] font-bold">
                 <td className={bTd}>TOTAL</td>
-                {totals.map((t, i) => <td key={i} className={`${bTdN} ${valueColor(t)}`}>${money(t)}</td>)}
-                <td className={`${bTdN} ${valueColor(totals.reduce((a, b) => a + b, 0))}`}>${money(totals.reduce((a, b) => a + b, 0))}</td>
+                {/* El total sigue vivo mientras se edita: es el control de que
+                    el bloque pegado cayo donde se queria. */}
+                {(editing
+                  ? Array.from({ length: 12 }, (_, i) => draft.reduce((a, f) => a + (num(f.vals[i]) ?? 0), 0))
+                  : totals
+                ).map((t, i) => <td key={i} className={`${bTdN} ${valueColor(t)}`}>${money(t)}</td>)}
+                <td className={`${bTdN} ${valueColor((editing ? draft.reduce((a, f) => a + f.vals.reduce((x, v) => x + (num(v) ?? 0), 0), 0) : totals.reduce((a, b) => a + b, 0)))}`}>
+                  ${money(editing ? draft.reduce((a, f) => a + f.vals.reduce((x, v) => x + (num(v) ?? 0), 0), 0) : totals.reduce((a, b) => a + b, 0))}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -255,7 +430,7 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
         </div>
       )}
 
-      {hasStats && (
+      {(hasStats || editing) && (
         <div className="overflow-x-auto rounded-lg border border-ink/10">
           <table className="w-full text-sm">
             <thead className="bg-[#fcfcfb]">
@@ -266,13 +441,28 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
               </tr>
             </thead>
             <tbody>
-              {STAT_ROWS.map(({ key, label, fmt }) => (
+              {STAT_ROWS.map(({ key, label, fmt }, k) => (
                 <tr key={key} className="border-t border-ink/8">
-                  <td className={bTd}>{label}</td>
-                  {stats[key].map((v, i) => (
-                    <td key={i} className={`${bTdN} ${v !== null ? valueColor(v) : ""}`}>{v !== null ? fmt(v) : <span className="text-ink/45">—</span>}</td>
-                  ))}
-                  <td className={`${bTdN} font-medium ${valueColor(STAT_TOTALS[key])}`}>{fmt(STAT_TOTALS[key])}</td>
+                  <td className={bTd}>
+                    {label}
+                    {editing && key === "occupancy_pct" && (
+                      <span className="ml-2 text-[10px] text-ink/50">en %, ej. 41.7</span>
+                    )}
+                  </td>
+                  {editing
+                    ? (draftStats[key] ?? Array(12).fill("")).map((v, c) => (
+                        <td key={c} className="px-1 py-1 text-right">
+                          <input type="text" inputMode="decimal" value={v}
+                            onChange={(e) => setStatCell(key, c, e.target.value)}
+                            onPaste={(e) => { if (pegarStats(k, c, e.clipboardData.getData("text"))) e.preventDefault(); }}
+                            onFocus={(e) => e.target.select()}
+                            className={cellInput} />
+                        </td>
+                      ))
+                    : stats[key].map((v, i) => (
+                        <td key={i} className={`${bTdN} ${v !== null ? valueColor(v) : ""}`}>{v !== null ? fmt(v) : <span className="text-ink/45">—</span>}</td>
+                      ))}
+                  <td className={`${bTdN} font-medium ${valueColor(STAT_TOTALS[key])}`}>{editing ? "" : fmt(STAT_TOTALS[key])}</td>
                 </tr>
               ))}
             </tbody>

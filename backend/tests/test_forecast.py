@@ -19,12 +19,34 @@ def test_plantilla_identica_a_la_del_budget():
     assert forecast_service.HEADERS == budget_service.HEADERS
 
 
-def test_las_cuatro_rutas_quedan_registradas():
-    rutas = {r.path: getattr(r, "methods", set()) for r in app.routes}
+def _metodos_por_ruta():
+    """Los metodos de cada ruta, UNIDOS.
+
+    ⚠️ Esto era `{r.path: r.methods}` y una ruta tapaba a la otra cuando dos
+    comparten camino: al agregar el `PUT /master-data/forecast` (guardar desde
+    la pantalla) el GET desaparecio del diccionario y la prueba se puso roja
+    sin que el GET hubiera dejado de existir.
+    """
+    rutas: dict[str, set] = {}
+    for r in app.routes:
+        rutas.setdefault(r.path, set()).update(getattr(r, "methods", set()) or set())
+    return rutas
+
+
+def test_las_cinco_rutas_quedan_registradas():
+    rutas = _metodos_por_ruta()
     assert "GET" in rutas["/master-data/forecast"]
+    assert "PUT" in rutas["/master-data/forecast"], "falta guardar desde la pantalla"
     assert "GET" in rutas["/master-data/forecast/daily"]
     assert "GET" in rutas["/master-data/forecast/template"]
     assert "POST" in rutas["/master-data/forecast/upload"]
+
+
+def test_el_budget_tambien_se_guarda_desde_la_pantalla():
+    """Los dos tabs son el mismo panel: si uno se edita en pantalla, el otro
+    tambien. Dejar el gemelo de solo lectura es la asimetria que despues nadie
+    se acuerda de por que existe."""
+    assert "PUT" in _metodos_por_ruta()["/master-data/budget"]
 
 
 def test_no_pisa_las_rutas_del_budget():
