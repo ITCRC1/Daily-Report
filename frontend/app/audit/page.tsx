@@ -294,7 +294,7 @@ export default function AuditPage() {
           {data?.status === "cerrado" ? (
             <>
               <button onClick={refresh} disabled={loading}
-                className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-white hover:bg-ink/8 disabled:opacity-50">
+                className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-ink/85 hover:bg-ink/8hover:text-ink disabled:opacity-50">
                 {loading ? "…" : "🔄 REFRESH"}
               </button>
               <button onClick={reopen} disabled={loading}
@@ -315,11 +315,11 @@ export default function AuditPage() {
           </button>
           <div className="flex gap-1 border-l border-ink/10 pl-2">
             <button onClick={() => downloadExport("excel")}
-              className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-white hover:bg-ink/8">
+              className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-ink/85 hover:bg-ink/8hover:text-ink">
               📊 Excel
             </button>
             <button onClick={() => downloadExport("pdf")}
-              className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-white hover:bg-ink/8">
+              className="rounded bg-ink/5 px-3 py-2 text-xs font-medium text-ink/85 hover:bg-ink/8hover:text-ink">
               📄 PDF
             </button>
           </div>

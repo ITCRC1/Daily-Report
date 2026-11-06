@@ -87,6 +87,21 @@ const bTd = "px-4 py-2.5 text-ink/85";
 // moneda, separador de miles, el porcentaje y los parentesis del negativo
 // contable. Number("$1,226.42") es NaN, y un NaN silencioso en una reja de
 // 13x12 se guarda como cero sin que nada lo avise.
+/** ¿Esta celda tiene algo escrito que NO se entiende?
+ *
+ *  ⚠️ Vacia y rota no son lo mismo, y confundirlas costaba plata. Guardar
+ *  hacia `num(v) ?? 0`: una celda vacia valia cero --correcto-- pero un
+ *  "1,2OO" con O en vez de cero, o una columna corrida al pegar, TAMBIEN
+ *  valia cero. El total bajaba, nada se ponia rojo, y el numero resultante se
+ *  ve igual de plausible que el bueno.
+ *
+ *  El guion es un "sin dato" legitimo: la pantalla lo usa para mostrar cero. */
+function celdaInvalida(v: string | null | undefined): boolean {
+  const t = (v ?? "").toString().trim();
+  if (!t || t === "\u2014" || t === "-") return false;
+  return num(t) === null;
+}
+
 function num(v: string | number | null | undefined): number | null {
   const t = (v ?? "").toString().trim();
   if (!t || t === "\u2014" || t === "-") return null;
@@ -121,6 +136,12 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState<{ code: string; name: string; vals: string[] }[]>([]);
   const [draftStats, setDraftStats] = useState<Record<string, string[]>>({});
+  /** Celdas que no se entienden, como `fila:columna` o `s<clave>:columna`. */
+  const [invalidas, setInvalidas] = useState<Set<string>>(new Set());
+  /** El resumen del cambio, mientras espera que lo confirmen. */
+  const [confirmando, setConfirmando] = useState<null | {
+    cambios: number; antes: number; despues: number;
+  }>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -292,8 +313,69 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
     return true;
   }
 
+  /** Lo que corre el boton Guardar: revisa y, si esta todo bien, PREGUNTA.
+   *
+   *  Guardar reemplaza el anio completo y no hay undo, asi que entre apretar
+   *  el boton y escribir en la base tiene que haber una pantalla que diga que
+   *  cambia. Es ademas la red que atrapa un bloque pegado una fila mas abajo:
+   *  se ve en "cambian N celdas" antes de tocar nada.
+   */
+  function revisar() {
+    const malas = new Set<string>();
+    draft.forEach((f, r) => f.vals.forEach((v, c) => {
+      if (celdaInvalida(v)) malas.add(`${r}:${c}`);
+    }));
+    for (const { key } of STAT_ROWS) {
+      (draftStats[key] ?? []).forEach((v, c) => {
+        if (celdaInvalida(v)) malas.add(`s${key}:${c}`);
+      });
+    }
+    setInvalidas(malas);
+    if (malas.size > 0) {
+      setMsg(`No se guardó: ${malas.size} celda(s) no se entienden. Están marcadas en rojo — corregilas o dejalas vacías (vacío = 0).`);
+      setConfirmando(null);
+      return;
+    }
+    const antes = [...byDept.values()].reduce((a, d) => a + d.amounts.reduce((x, v) => x + v, 0), 0);
+    const despues = draft.reduce((a, f) => a + f.vals.reduce((x, v) => x + (num(v) ?? 0), 0), 0);
+    let cambios = 0;
+    for (const f of draft) {
+      const orig = byDept.get(f.code)?.amounts ?? Array(12).fill(0);
+      f.vals.forEach((v, c) => {
+        if (Math.abs((num(v) ?? 0) - (orig[c] ?? 0)) > 0.005) cambios++;
+      });
+    }
+    setMsg("");
+    setConfirmando({ cambios, antes, despues });
+  }
+
+  /** Arranca un anio que no tiene nada cargado, desde el catalogo de
+   *  departamentos. Sin esto la reja sale vacia y el unico camino es bajar la
+   *  plantilla -- justo lo que la edicion en pantalla vino a evitar.
+   *
+   *  Solo aparece cuando el anio esta vacio: en un anio con datos la reja
+   *  muestra los departamentos que TIENEN saldo, y traer los 23 agregaria
+   *  ocho renglones en cero que el backend omite a proposito. */
+  async function empezarEnBlanco() {
+    setMsg("Cargando departamentos…");
+    try {
+      const res = await fetch(`${API_URL}/master-data/departments`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      const deps: { cost_center: string; outlet_name: string }[] = await res.json();
+      if (!deps.length) throw new Error("no hay departamentos cargados (Tab 6.3)");
+      setDraft(deps.map((d) => ({
+        code: d.cost_center, name: d.outlet_name ?? "", vals: Array(12).fill(""),
+      })));
+      setDraftStats(Object.fromEntries(STAT_ROWS.map(({ key }) => [key, Array(12).fill("")])));
+      setInvalidas(new Set());
+      setEditing(true); setMsg("");
+    } catch (e: any) {
+      setMsg(`Error: ${e.message}`);
+    }
+  }
+
   async function save() {
-    setSaving(true); setMsg("Saving\u2026");
+    setSaving(true); setMsg("Saving…");
     try {
       const body = {
         rows: draft.map((f) => ({ dept_code: f.code, amounts: f.vals.map((v) => num(v) ?? 0) })),
@@ -315,6 +397,8 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
       const raros = out.dept_codes_no_reconocidos ?? [];
       setMsg(`Saved: ${out.rows_loaded} rows${raros.length ? ` (\u26a0 unrecognized codes: ${raros.join(", ")})` : ""}.`);
       setEditing(false);
+      setConfirmando(null);
+      setInvalidas(new Set());
       await load();
     } catch (e: any) {
       setMsg(`Error: ${e.message}`);
@@ -334,7 +418,7 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
             className="w-24 rounded border border-ink/12 bg-[#f9f9f7] px-2 py-1 text-ink" />
         </label>
         <button onClick={downloadTemplate}
-          className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-white hover:bg-ink/8">
+          className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink/85 hover:bg-ink/8hover:text-ink">
           📥 Download {year} template
         </button>
         <label className="cursor-pointer rounded bg-accent px-3 py-1.5 text-xs font-medium text-white">
@@ -345,17 +429,17 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
         <span className="h-4 w-px bg-ink/12" />
         {!editing ? (
           <button onClick={startEdit} disabled={byDept.size === 0}
-            className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-white hover:bg-ink/8 disabled:opacity-40">
+            className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink/85 hover:bg-ink/8hover:text-ink disabled:opacity-40">
             ✎ Edit on screen
           </button>
         ) : (
           <>
-            <button onClick={save} disabled={saving}
+            <button onClick={revisar} disabled={saving}
               className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50">
               {saving ? "Saving…" : "💾 Save year"}
             </button>
-            <button onClick={() => { setEditing(false); setMsg(""); }} disabled={saving}
-              className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-white hover:bg-ink/8">
+            <button onClick={() => { setEditing(false); setMsg(""); setConfirmando(null); setInvalidas(new Set()); }} disabled={saving}
+              className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink/85 hover:bg-ink/8hover:text-ink">
               Cancel
             </button>
             <span className="text-[11px] text-ink/60">
@@ -369,7 +453,43 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
         it out in Excel, and upload it again — this fully replaces that year&apos;s {noun}{" "}
         {isForecast ? "(full-year replacement)" : '("annual reset")'}.
       </p>
-      {msg && <div className="rounded border border-ink/10 bg-[#fcfcfb] p-2 text-xs text-ink/75">{msg}</div>}
+      {msg && <div className={`rounded border p-2 text-xs ${msg.startsWith("No se guardó") || msg.startsWith("Error")
+        ? "border-danger/40 bg-danger/5 text-danger" : "border-ink/10 bg-[#fcfcfb] text-ink/75"}`}>{msg}</div>}
+
+      {/* La pantalla que se interpone entre el boton y la base. Dice QUE
+          cambia, no solo que se va a guardar: un bloque pegado una fila mas
+          abajo se delata en el numero de celdas y en el salto del total. */}
+      {confirmando && (
+        <div className="rounded-lg border border-accent/40 bg-[#f4f8fe] p-3 text-xs text-ink/85">
+          <div className="font-bold text-ink">Vas a reemplazar el {noun} {year} completo.</div>
+          <div className="mt-1.5 space-y-0.5">
+            <div><span className="font-medium">{confirmando.cambios}</span> celda(s) cambian.</div>
+            <div>
+              Total del año: <span className="tabular-nums">${money(confirmando.antes)}</span>
+              {" → "}
+              <span className="font-bold tabular-nums">${money(confirmando.despues)}</span>
+              {Math.abs(confirmando.despues - confirmando.antes) > 0.005 && (
+                <span className={confirmando.despues >= confirmando.antes ? "text-brand" : "text-danger"}>
+                  {" "}({confirmando.despues >= confirmando.antes ? "+" : "−"}${money(Math.abs(confirmando.despues - confirmando.antes))})
+                </span>
+              )}
+            </div>
+            {confirmando.cambios === 0 && (
+              <div className="text-ink/60">No hay cambios: guardar deja todo igual.</div>
+            )}
+          </div>
+          <div className="mt-2 flex gap-2">
+            <button onClick={save} disabled={saving}
+              className="rounded bg-accent px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50">
+              {saving ? "Guardando…" : "Confirmar y guardar"}
+            </button>
+            <button onClick={() => setConfirmando(null)} disabled={saving}
+              className="rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink/85 hover:bg-ink/8">
+              Volver a editar
+            </button>
+          </div>
+        </div>
+      )}
       {loading && <div className="text-xs text-ink/60">Loading…</div>}
 
       {byDept.size > 0 ? (
@@ -395,7 +515,8 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
                               onChange={(e) => setCell(r, c, e.target.value)}
                               onPaste={(e) => { if (pegarBloque(r, c, e.clipboardData.getData("text"))) e.preventDefault(); }}
                               onFocus={(e) => e.target.select()}
-                              className={cellInput} />
+                              title={invalidas.has(`${r}:${c}`) ? "No se entiende este valor" : undefined}
+                              className={`${cellInput} ${invalidas.has(`${r}:${c}`) ? "border-danger bg-danger/10 text-danger" : ""}`} />
                           </td>
                         ))}
                         <td className={`${bTdN} font-medium ${valueColor(suma)}`}>${money(suma)}</td>
@@ -425,9 +546,16 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
           </table>
         </div>
       ) : (
-        !loading && <div className="rounded-lg border border-dashed border-ink/12 bg-[#fcfcfb]/50 p-4 text-xs text-ink/60">
-          No {noun} loaded for {year} yet.
-        </div>
+        !loading && !editing && (
+          <div className="rounded-lg border border-dashed border-ink/12 bg-[#fcfcfb]/50 p-4 text-xs text-ink/60">
+            <div>No {noun} loaded for {year} yet.</div>
+            <button onClick={empezarEnBlanco}
+              className="mt-2 rounded bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink/85 hover:bg-ink/8">
+              ✎ Empezar el año en blanco
+            </button>
+            <span className="ml-2">o bajá la plantilla y subila llena.</span>
+          </div>
+        )
       )}
 
       {(hasStats || editing) && (
@@ -456,7 +584,8 @@ function YearBudget({ kind = "budget" }: { kind?: "budget" | "forecast" }) {
                             onChange={(e) => setStatCell(key, c, e.target.value)}
                             onPaste={(e) => { if (pegarStats(k, c, e.clipboardData.getData("text"))) e.preventDefault(); }}
                             onFocus={(e) => e.target.select()}
-                            className={cellInput} />
+                            title={invalidas.has(`s${key}:${c}`) ? "No se entiende este valor" : undefined}
+                            className={`${cellInput} ${invalidas.has(`s${key}:${c}`) ? "border-danger bg-danger/10 text-danger" : ""}`} />
                         </td>
                       ))
                     : stats[key].map((v, i) => (
