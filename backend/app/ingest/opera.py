@@ -360,33 +360,67 @@ def history_forecast_monthly(files: list[str | Path]) -> dict:
 
 
 def history_forecast_daily(files: list[str | Path]) -> dict:
-    """Ocupación DIARIA del OTB (para el heatmap, Tab 8.3). Del archivo de mayor
-    revenue anual (Full) toma NO_ROOMS (vendidas) e INVENTORY_ROOMS (disponibles)
-    por día. Devuelve {iso_date: {rooms_sold, rooms_avail}}."""
-    def _annual(path):
-        root = ET.parse(path).getroot()
-        total = 0.0
-        for gd in root.iter("G_CONSIDERED_DATE"):
-            total += _f(gd, "REVENUE")
-        return total, root
+    """Día por día del OTB. Alimenta el heatmap (Tab 8.3) y el bloque Forecast
+    de la hoja History and Forecast (hoja 3 del reporte a dueños).
 
-    scored = [(_annual(f)) for f in files]
-    if not scored:
+    Opera manda DOS history_forecast y hay que leer los dos: el de mayor
+    revenue anual es el **Full** (todo el hotel) y el otro es **Only Rooms**
+    (solo habitación). Del Full salen el revenue total, las habitaciones y los
+    pax; del Only Rooms sale la tarifa, porque eso es lo que significa ADR
+    -- el ADR del revenue total no es una tarifa de habitación. Antes esta
+    función leía sólo el Full y descartaba el otro archivo entero.
+
+    Devuelve {iso_date: {rooms_sold, rooms_avail, revenue, persons,
+    rooms_revenue, adr}}.
+
+    `rooms_avail` es el INVENTORY_ROOMS de Opera y se guarda tal cual porque el
+    heatmap lo usa, pero ⚠️ NO sirve para el Occ.% del reporte: descuenta las
+    habitaciones fuera de servicio y cambia día a día (23, 28...). El Occ.% va
+    contra las unidades vigentes del hotel (`engine/inventory.py`), si no la
+    misma columna se leería con dos criterios y parece un error.
+    """
+    def _parsed(path):
+        root = ET.parse(path).getroot()
+        por_dia, annual = {}, 0.0
+        for gd in root.iter("G_CONSIDERED_DATE"):
+            raw = (gd.findtext("CONSIDERED_DATE") or "").strip()
+            if not raw:
+                continue
+            try:
+                d = datetime.strptime(raw, "%d-%b-%y").date()
+            except ValueError:
+                continue
+            rev = _f(gd, "REVENUE")
+            annual += rev
+            por_dia[d.isoformat()] = {
+                "rooms_sold": _f(gd, "NO_ROOMS"),
+                "rooms_avail": _f(gd, "INVENTORY_ROOMS"),
+                "revenue": rev,
+                "persons": _f(gd, "NO_PERSONS"),
+                "adr": _f(gd, "CF_AVERAGE_ROOM_RATE"),
+            }
+        return annual, por_dia
+
+    parsed = [_parsed(f) for f in files]
+    if not parsed:
         return {}
-    scored.sort(key=lambda s: s[0], reverse=True)
-    root = scored[0][1]  # Full = mayor revenue anual
+    parsed.sort(key=lambda p: p[0], reverse=True)
+    full = parsed[0][1]
+    rooms_only = parsed[1][1] if len(parsed) > 1 else parsed[0][1]
 
     out = {}
-    for gd in root.iter("G_CONSIDERED_DATE"):
-        raw = (gd.findtext("CONSIDERED_DATE") or "").strip()
-        if not raw:
-            continue
-        try:
-            d = datetime.strptime(raw, "%d-%b-%y").date()
-        except ValueError:
-            continue
-        out[d.isoformat()] = {
-            "rooms_sold": _f(gd, "NO_ROOMS"),
-            "rooms_avail": _f(gd, "INVENTORY_ROOMS"),
+    for iso, v in full.items():
+        ro = rooms_only.get(iso, {})
+        out[iso] = {
+            "rooms_sold": v["rooms_sold"],
+            "rooms_avail": v["rooms_avail"],
+            "revenue": v["revenue"],
+            "persons": v["persons"],
+            # Del archivo Only Rooms: la tarifa de habitación y su revenue. El
+            # revenue de habitación se guarda además del ADR porque el ADR de
+            # un subtotal es un promedio PONDERADO (Σ revenue / Σ noches), no
+            # el promedio de los ADR de cada día.
+            "rooms_revenue": ro.get("revenue", 0.0),
+            "adr": ro.get("adr", 0.0),
         }
     return out

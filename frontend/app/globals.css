@@ -387,6 +387,19 @@ table, .tabular, input[inputmode="decimal"] {
      adentro pesando mas que lo que la contiene. */
   #tab3-export table { border: 2px solid #0b0f0d !important; }
 
+  /* Hoja 3 -- la banda que separa History de Forecast dentro de la tabla.
+     Mismo lavado que la fila de grupos (#dcebe3) y, como manda la regla de la
+     casa, CON filete: si la impresora no pinta fondos, el bloque se tiene que
+     seguir distinguiendo. Lleva regla propia porque la banda ocupa la primera
+     celda de la fila, y la regla de la columna de rotulos (#f4f6f4) se la
+     comeria. */
+  #tab3-export tbody tr.hf-band td {
+    background: #dcebe3 !important;
+    border-top: 2px solid #0b0f0d !important;
+    border-bottom: 1px solid #dfe4e0 !important;
+    letter-spacing: 0.08em !important;
+  }
+
   /* La columna de rotulos es el eje de lectura, no una celda mas. */
   #tab3-export thead th:first-child { background: #dcebe3 !important; border-right: 2px solid #0b0f0d !important; }
   #tab3-export tbody td:first-child { background: #f4f6f4 !important; border-right: 2px solid #0b0f0d !important; }

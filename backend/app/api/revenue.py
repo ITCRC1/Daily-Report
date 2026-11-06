@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.db import get_session
-from app.services import revenue_service
+from app.services import history_forecast_service, revenue_service
 
 router = APIRouter(prefix="/revenue", tags=["revenue"])
 settings = get_settings()
@@ -46,6 +46,23 @@ async def revenue_market_segment_view(
     """Tab 3.2 -- Análisis por Market Code (canal/COM/In-house) Today + MTD."""
     code = prop or settings.DEFAULT_PROPERTY
     return await revenue_service.market_segment_report(session, business_date, property_code=code)
+
+
+@router.get("/history-forecast/{business_date}")
+async def revenue_history_forecast_view(
+    business_date: date,
+    prop: str = Query(default=None),
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Hoja 3 del reporte a dueños -- History and Forecast del mes.
+
+    History = del 1 al día del Daily, de la app. Forecast = del siguiente al
+    fin de mes, del history_forecast de Opera. Va ANTES de `/{business_date}`:
+    si no, la ruta genérica se traga "history-forecast" como si fuera fecha.
+    """
+    code = prop or settings.DEFAULT_PROPERTY
+    return await history_forecast_service.history_forecast_report(
+        session, business_date, property_code=code)
 
 
 @router.get("/{business_date}")

@@ -386,12 +386,14 @@ async def _kpis_for_range(session, pid, start, end) -> dict:
     }
 
 
-async def _comps_by_category(session, pid, start, end) -> dict[str, dict]:
-    """Comps/in-house (market_code COM/INHOUSE del XML STATISTICS) agrupados por
-    categoría de habitación vía `room_class` (dim_room_category.room_class,
-    mapeo confirmado por Bismark en Tab 3.1). Alimenta el neteo de ADR/Occ en
-    las tablas §5.2 -- STATISTICS no trae monto, así que revenue=0 (el comp no
-    aporta revenue; solo se le resta la habitación/persona al RN)."""
+async def comps_by_day_and_category(session, pid, start, end) -> dict[date_cls, dict[str, dict]]:
+    """Comps/in-house por DÍA y categoría. Igual que `_comps_by_category` pero
+    sin colapsar los días -- la hoja History and Forecast necesita el ADR neto
+    de CADA día, y pedirlo día por día serían 31 consultas.
+
+    `_comps_by_category` suma este mismo detalle, así que el criterio de
+    clasificación vive en un solo lugar.
+    """
     depts = (await session.execute(
         select(RoomCategory).where(RoomCategory.property_id == pid)
     )).scalars().all()
@@ -405,12 +407,29 @@ async def _comps_by_category(session, pid, start, end) -> dict[str, dict]:
             OccupancyStat.market_code.in_(NON_REVENUE_MARKET_CODES),
         )
     )).scalars().all()
-    out: dict[str, dict] = {}
+    out: dict[date_cls, dict[str, dict]] = defaultdict(dict)
     for r in rows:
         cat = room_class_to_category.get(r.room_class or "", "Otros")
-        c = out.setdefault(cat, {"stay_rooms": 0, "stay_persons": 0, "revenue": 0.0})
+        c = out[r.business_date].setdefault(cat, {"stay_rooms": 0, "stay_persons": 0, "revenue": 0.0})
         c["stay_rooms"] += int(r.rooms or 0)
         c["stay_persons"] += int(r.persons or 0)
+    return out
+
+
+async def _comps_by_category(session, pid, start, end) -> dict[str, dict]:
+    """Comps/in-house (market_code COM/INHOUSE del XML STATISTICS) agrupados por
+    categoría de habitación vía `room_class` (dim_room_category.room_class,
+    mapeo confirmado por Bismark en Tab 3.1). Alimenta el neteo de ADR/Occ en
+    las tablas §5.2 -- STATISTICS no trae monto, así que revenue=0 (el comp no
+    aporta revenue; solo se le resta la habitación/persona al RN)."""
+    out: dict[str, dict] = {}
+    por_dia = await comps_by_day_and_category(session, pid, start, end)
+    for by_cat in por_dia.values():
+        for cat, c in by_cat.items():
+            t = out.setdefault(cat, {"stay_rooms": 0, "stay_persons": 0, "revenue": 0.0})
+            t["stay_rooms"] += c["stay_rooms"]
+            t["stay_persons"] += c["stay_persons"]
+            t["revenue"] += c["revenue"]
     return out
 
 
@@ -449,6 +468,51 @@ def _pct(numerator: float, denominator: float) -> float:
     return round(numerator / denominator, 4) if denominator else 0.0
 
 
+def _integrity_daily_cols(rows: list[dict]) -> tuple[dict, dict, float]:
+    """Pivote Daily de un día Integrity usando EXACTAMENTE el mismo motor que
+    Tab 4 (`weekly_pivot`), remapeado al esquema Daily (outlet colapsado):
+    Rooms = Rooms + Rooms Others; Sustainable Fee = solo naturaleza 4880;
+    Misc. Revenue = "Misc. Rev Others" (0170 no-4880) + otros (fuera de mapa).
+    Así Tab 3 y Tab 4 usan los mismos números por día -> reconcilian."""
+    wp = weekly_pivot(lines_from_integrity(rows))
+    wc = wp["columns"]
+    cols = {c: wc.get(c, 0.0) for c in OUTPUT_COLUMNS}
+    cols["Rooms"] = round(cols["Rooms"] + wc["Rooms Others"], 2)
+    misc = round(wc["Misc. Rev Others"] + wp["otros_total"], 2)
+    return cols, wp["fb_detail"], misc
+
+
+def _pivot_of_day(d: date_cls, integrity_by_day: dict, actual_by_day: dict
+                  ) -> tuple[dict, dict, float]:
+    """(cols, fb_detail, misc) de un día -- Integrity si está, si no 6.4.
+
+    Vive a nivel de módulo (antes era un closure de `daily_report`) para que la
+    hoja History and Forecast saque el Total Revenue de cada día con la MISMA
+    combinación de fuentes que el grand total del Tab 3, y no con una copia que
+    se puede desincronizar."""
+    if d in integrity_by_day:
+        return _integrity_daily_cols(integrity_by_day[d])
+    if d in actual_by_day:
+        a = actual_by_day[d]
+        return a["cols"], a["fb"], a["misc"]
+    return _empty_cols(), {"food": 0.0, "beverage": 0.0, "misc": 0.0}, 0.0
+
+
+async def revenue_total_by_day(session, pid, start: date_cls, end: date_cls) -> dict[date_cls, float]:
+    """Total Revenue de cada día del rango (sólo los días que tienen algo).
+
+    Es el mismo numero que el `grand_total.today_actual` del Tab 3 de ese día:
+    la suma de las columnas del pivote más Misc. Lo usa el bloque History de la
+    hoja History and Forecast, donde cada fila es el Daily de ese día."""
+    integrity_by_day = await _integrity_by_day(session, pid, start, end)
+    actual_by_day = await _actual_daily_by_day_output_cols(session, pid, start, end)
+    out: dict[date_cls, float] = {}
+    for d in set(integrity_by_day) | set(actual_by_day):
+        cols, _fb, misc = _pivot_of_day(d, integrity_by_day, actual_by_day)
+        out[d] = round(sum(cols.values()) + misc, 2)
+    return out
+
+
 async def daily_report(session: AsyncSession, business_date: date_cls,
                        property_code: str = "COWLCR") -> dict:
     """Daily Revenue Report (Summary) para un día: Today + MTD + Full Month + KPIs.
@@ -463,27 +527,8 @@ async def daily_report(session: AsyncSession, business_date: date_cls,
     integrity_by_day = await _integrity_by_day(session, pid, month_start, business_date)
     actual_by_day = await _actual_daily_by_day_output_cols(session, pid, month_start, business_date)
 
-    def _integrity_daily_cols(rows: list[dict]) -> tuple[dict, dict, float]:
-        """Pivote Daily de un día Integrity usando EXACTAMENTE el mismo motor que
-        Tab 4 (`weekly_pivot`), remapeado al esquema Daily (outlet colapsado):
-        Rooms = Rooms + Rooms Others; Sustainable Fee = solo naturaleza 4880;
-        Misc. Revenue = "Misc. Rev Others" (0170 no-4880) + otros (fuera de mapa).
-        Así Tab 3 y Tab 4 usan los mismos números por día -> reconcilian."""
-        wp = weekly_pivot(lines_from_integrity(rows))
-        wc = wp["columns"]
-        cols = {c: wc.get(c, 0.0) for c in OUTPUT_COLUMNS}
-        cols["Rooms"] = round(cols["Rooms"] + wc["Rooms Others"], 2)
-        misc = round(wc["Misc. Rev Others"] + wp["otros_total"], 2)
-        return cols, wp["fb_detail"], misc
-
     def _day_pivot(d: date_cls) -> tuple[dict, dict, float]:
-        """(cols, fb_detail, misc) de un día -- Integrity si está, si no 6.4."""
-        if d in integrity_by_day:
-            return _integrity_daily_cols(integrity_by_day[d])
-        if d in actual_by_day:
-            a = actual_by_day[d]
-            return a["cols"], a["fb"], a["misc"]
-        return _empty_cols(), {"food": 0.0, "beverage": 0.0, "misc": 0.0}, 0.0
+        return _pivot_of_day(d, integrity_by_day, actual_by_day)
 
     # Today
     today_cols, today_fb, today_misc = _day_pivot(business_date)

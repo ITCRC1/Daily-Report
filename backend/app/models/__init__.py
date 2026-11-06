@@ -338,8 +338,17 @@ class OtbMonthly(Base):
 
 
 class OtbDaily(Base):
-    """Ocupación DIARIA del OTB por snapshot — heatmap (Tab 8.3). Rooms vendidas
-    y disponibles por día del año, del history_forecast del snapshot."""
+    """Día por día del OTB por snapshot — heatmap (Tab 8.3) y el bloque Forecast
+    de la hoja History and Forecast (hoja 3 del reporte a dueños).
+
+    `rooms_sold`/`rooms_avail` salen del archivo Full; `revenue` y `persons`
+    también. `rooms_revenue` y `adr` salen del archivo **Only Rooms**: el ADR
+    es una tarifa de habitación, no el revenue total dividido entre noches.
+
+    ⚠️ `rooms_avail` es el INVENTORY_ROOMS de Opera (descuenta las fuera de
+    servicio y cambia día a día). El Occ.% del reporte NO lo usa: va contra las
+    unidades vigentes del hotel, ver `engine/inventory.py`.
+    """
     __tablename__ = "fact_otb_daily"
     __table_args__ = (UniqueConstraint("property_id", "snapshot_date", "the_date"),)
     id: Mapped[uuid.UUID] = UUIDpk()
@@ -348,6 +357,10 @@ class OtbDaily(Base):
     the_date: Mapped[date] = mapped_column(Date)
     rooms_sold: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
     rooms_avail: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
+    revenue: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
+    persons: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
+    rooms_revenue: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
+    adr: Mapped[Decimal] = mapped_column(Numeric(15, 2), server_default="0")
 
 
 class BudgetMonthly(Base, TimestampMixin):

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { API_URL } from "@/lib/api";
 import ExcelButton from "@/components/ExcelButton";
 import { useBusinessDate } from "@/lib/useBusinessDate";
@@ -41,6 +42,22 @@ type Report = {
   on_property_production: { rows: Center[]; total: Center };
 };
 type FbSplit = { food: number; beverage: number; misc: number };
+
+// ---- Hoja 3 del reporte a duenos: History and Forecast --------------------
+type HfRow = {
+  date: string; day: number; dow: string; block: string; units: number;
+  occ: number; occ_pct: number; revenue: number; rooms_revenue: number;
+  adr: number; pax: number; loaded: boolean;
+};
+type HfTotal = {
+  label: string; days: number; available: number; occ: number; occ_pct: number;
+  revenue: number; rooms_revenue: number; adr: number; pax: number;
+};
+type HfReport = {
+  business_date: string; month_label: string; snapshot_date: string | null;
+  columns: string[]; rows: HfRow[];
+  totals: { history: HfTotal; forecast: HfTotal; month: HfTotal };
+};
 
 const money = (v: number | null | undefined) =>
   v === null || v === undefined ? "—"
@@ -358,6 +375,8 @@ export default function RevenueDailyPage() {
             </p>
           </div>
 
+          <HistoryForecast day={data.business_date} />
+
           {data.otros.length > 0 && (
             <div>
               <div className="mb-1 text-[11px] uppercase tracking-wide text-amber-600">⚠ Accounts outside the canonical map (Other)</div>
@@ -398,6 +417,144 @@ type OperaValReport = {
   reconciled?: { rn_daily: number; rn_history: number; pax_daily: number; pax_history: number };
   room_class_mapping: Record<string, string>;
 };
+
+// Hoja 3 del reporte a duenos -- History and Forecast del mes.
+//
+// Owner, 2026-11-06, sobre maqueta en mano: seis columnas (Date, Total Occ,
+// Occ.%, Total Revenue, ADR Rooms Only, PAX), SIN "Arr. Rooms". El corte es el
+// dia del Daily: hasta ahi History (datos reales de la app), desde el
+// siguiente Forecast (history_forecast de Opera).
+//
+// ⚠️ Va en DOS QUINCENAS lado a lado, no en una lista corrida. Medido sobre el
+// impreso: una lista de 30 dias ocupa el 97% de una hoja y empuja una segunda
+// al 16%; partida en dos usa el ancho de oficio apaisado que ya se paga (1298px
+// contra ~650 que usan seis columnas) y baja el alto a la mitad -> 72%.
+//
+// ⚠️ Los anchos salen del rotulo MAS LARGO de cada columna, no en partes
+// iguales: con 13% parejo "Total Revenue" se imprimia como "Total Reven",
+// recortado y sin aviso.
+const HF_W = ["23%", "13%", "13%", "20%", "21%", "10%"];
+
+function HfHalf({ rows }: { rows: HfRow[] }) {
+  const out: ReactNode[] = [];
+  let bloque = "";
+  for (const r of rows) {
+    if (r.block !== bloque) {
+      out.push(
+        <tr key={`band-${r.date}`} className="hf-band">
+          <td className="px-3 py-1 text-left text-[11px] font-bold uppercase tracking-wide text-ink/85" colSpan={6}>
+            {r.block}
+          </td>
+        </tr>
+      );
+      bloque = r.block;
+    }
+    out.push(
+      <tr key={r.date} className={`border-t border-ink/8 ${r.loaded ? "" : "!text-[#8a6902]"}`}>
+        <td className={td}>
+          {String(r.day).padStart(2, "0")} {r.dow}
+          {!r.loaded && <span className="ml-1 text-[10px] font-bold">sin cargar</span>}
+        </td>
+        <td className={tdN}>{num(r.occ)}</td>
+        <td className={tdN}>{(r.occ_pct * 100).toFixed(1)}%</td>
+        <td className={tdN}>${money(r.revenue)}</td>
+        <td className={tdN}>${money(r.adr)}</td>
+        <td className={tdN}>{num(r.pax)}</td>
+      </tr>
+    );
+  }
+  return (
+    <table className="w-full rounded-lg border border-ink/10 text-xs">
+      <colgroup>{HF_W.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
+      <thead className="bg-[#fcfcfb]">
+        <tr>
+          <th className={th}>Date</th>
+          <th className={thN}>Total Occ</th>
+          <th className={thN}>Occ.%</th>
+          <th className={thN}>Total Revenue</th>
+          <th className={thN}>ADR Rooms Only</th>
+          <th className={thN}>PAX</th>
+        </tr>
+      </thead>
+      <tbody>{out}</tbody>
+    </table>
+  );
+}
+
+function HfTotalRow({ t }: { t: HfTotal }) {
+  return (
+    <tr className="border-t border-ink/8 font-bold">
+      <td className={td}>{t.label}</td>
+      <td className={tdN}>{num(t.occ)}</td>
+      <td className={tdN}>{(t.occ_pct * 100).toFixed(1)}%</td>
+      <td className={tdN}>${money(t.revenue)}</td>
+      <td className={tdN}>${money(t.adr)}</td>
+      <td className={tdN}>{num(t.pax)}</td>
+    </tr>
+  );
+}
+
+function HistoryForecast({ day }: { day: string }) {
+  const [data, setData] = useState<HfReport | null>(null);
+  const [msg, setMsg] = useState("");
+
+  const load = useCallback(async () => {
+    setMsg("");
+    try {
+      const res = await fetch(`${API_URL}/revenue/history-forecast/${day}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      setData(await res.json());
+    } catch {
+      // Falla sola: el resto del reporte no se cae porque esta hoja no cargue.
+      setData(null); setMsg(`No se pudo armar History and Forecast para ${day}.`);
+    }
+  }, [day]);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (msg) return <div className="text-[11px] text-amber-600 print:hidden">{msg}</div>;
+  if (!data) return null;
+
+  const mitad = Math.ceil(data.rows.length / 2);
+  return (
+    <div className="print-page-break">
+      <div className="mb-2 print-section-title text-center text-lg font-bold uppercase tracking-wide text-ink/85">
+        History and Forecast — rest of the month · {data.month_label}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <HfHalf rows={data.rows.slice(0, mitad)} />
+        <HfHalf rows={data.rows.slice(mitad)} />
+      </div>
+      <table className="mt-3 w-full rounded-lg border border-ink/10 text-xs">
+        <colgroup>
+          <col style={{ width: "28%" }} />
+          {[0, 1, 2, 3, 4].map((i) => <col key={i} style={{ width: "14.4%" }} />)}
+        </colgroup>
+        <thead className="bg-[#fcfcfb]">
+          <tr>
+            <th className={th}>Resumen</th>
+            <th className={thN}>Total Occ</th>
+            <th className={thN}>Occ.%</th>
+            <th className={thN}>Total Revenue</th>
+            <th className={thN}>ADR Rooms Only</th>
+            <th className={thN}>PAX</th>
+          </tr>
+        </thead>
+        <tbody>
+          <HfTotalRow t={data.totals.history} />
+          <HfTotalRow t={data.totals.forecast} />
+          <HfTotalRow t={{ ...data.totals.month, label: `TOTAL ${data.month_label.toUpperCase()}` }} />
+        </tbody>
+      </table>
+      <p className="mt-1 text-[11px] text-ink/60">
+        HISTORY: todo del Daily — Total Revenue del grand total, ADR Rooms Only de Room
+        Statistics, Occ y PAX de los KPI del día. FORECAST: history_forecast de Opera
+        {data.snapshot_date ? ` (corte ${data.snapshot_date})` : " — sin OTB cargado, los días por venir salen en cero"},
+        con el ADR del archivo Only Rooms. Occ.% sobre las unidades vigentes de cada día.
+      </p>
+    </div>
+  );
+}
 
 function OperaValidation({ day }: { day: string }) {
   const [data, setData] = useState<OperaValReport | null>(null);

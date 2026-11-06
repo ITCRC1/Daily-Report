@@ -338,6 +338,11 @@ async def ingest_day(
                 property_id=pid, snapshot_date=business_date,
                 the_date=date_cls.fromisoformat(iso),
                 rooms_sold=dv["rooms_sold"], rooms_avail=dv["rooms_avail"],
+                # Revenue/pax del archivo Full y tarifa del Only Rooms: los usa
+                # el bloque Forecast de la hoja History and Forecast. Antes se
+                # leían del XML y se tiraban.
+                revenue=dv["revenue"], persons=dv["persons"],
+                rooms_revenue=dv["rooms_revenue"], adr=dv["adr"],
             ))
         counts["otb_daily"] = len(daily)
 
