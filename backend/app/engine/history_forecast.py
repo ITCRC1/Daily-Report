@@ -107,6 +107,16 @@ def armar_hoja(dias: list[date_cls], corte: date_cls, history: dict, forecast: d
 
     hist = [f for f in filas if f["block"] == HISTORY]
     fcst = [f for f in filas if f["block"] == FORECAST]
+
+    # ⚠️ Un snapshot de OTB cargado ANTES de que el OTB diario guardara revenue,
+    # pax y tarifa trae las habitaciones vendidas pero esas tres columnas en 0.
+    # La hoja saldría con ocupación de verdad y $0 de revenue, y el TOTAL del
+    # mes quedaría corto sin decir por qué -- justo la cifra que cuadra consigo
+    # misma y miente. Se detecta y se avisa: hay que volver a subir el
+    # history_forecast de ese mes.
+    otb_sin_revenue = (any(f["occ"] for f in fcst)
+                       and not any(f["revenue"] for f in fcst))
+
     return {
         "columns": COLUMNAS,
         "rows": filas,
@@ -115,4 +125,5 @@ def armar_hoja(dias: list[date_cls], corte: date_cls, history: dict, forecast: d
             "forecast": _total(f"Forecast — {len(fcst)} días restantes", fcst, tramos),
             "month": _total("TOTAL", filas, tramos),
         },
+        "otb_sin_revenue": otb_sin_revenue,
     }

@@ -55,6 +55,7 @@ type HfTotal = {
 };
 type HfReport = {
   business_date: string; month_label: string; snapshot_date: string | null;
+  otb_sin_revenue: boolean;
   columns: string[]; rows: HfRow[];
   totals: { history: HfTotal; forecast: HfTotal; month: HfTotal };
 };
@@ -525,6 +526,18 @@ function HistoryForecast({ day }: { day: string }) {
         <HfHalf rows={data.rows.slice(0, mitad)} />
         <HfHalf rows={data.rows.slice(mitad)} />
       </div>
+      {data.otb_sin_revenue && (
+        // Se IMPRIME a proposito (sin print:hidden): en papel es donde el total
+        // corto enganya, porque la hoja cuadra consigo misma. Lleva borde
+        // ademas del fondo, como toda marca del reporte -- Chrome puede estar
+        // configurado para no imprimir fondos.
+        <div className="mt-2 border-2 border-[#8a6902] bg-[#fdf6e3] px-3 py-1.5 text-[11px] font-bold text-[#8a6902]">
+          ⚠ El OTB cargado trae las noches pero no el revenue: este snapshot se
+          subió antes de que el OTB diario guardara revenue, PAX y tarifa. El
+          bloque Forecast y el TOTAL del mes están cortos — volvé a subir el
+          history_forecast de {data.month_label} en el Tab 1.
+        </div>
+      )}
       <table className="mt-3 w-full rounded-lg border border-ink/10 text-xs">
         <colgroup>
           <col style={{ width: "28%" }} />

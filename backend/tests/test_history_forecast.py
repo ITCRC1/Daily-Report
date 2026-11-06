@@ -256,3 +256,36 @@ def test_history_forecast_daily_conserva_el_inventory_rooms_de_opera(tmp_path):
     # Un solo archivo: el Only Rooms no existe, así que la tarifa queda en 0 y
     # no se inventa dividiendo el revenue total.
     assert d["adr"] == pytest.approx(0.0)
+
+
+# ---------------------------------------------------------------------------
+# El OTB viejo, sin revenue
+# ---------------------------------------------------------------------------
+
+def test_avisa_cuando_el_otb_tiene_noches_pero_no_revenue():
+    """Los snapshots cargados antes de que el OTB diario guardara revenue traen
+    las habitaciones vendidas y las otras tres columnas en 0.
+
+    Sin aviso, la hoja sale con ocupación de verdad y $0 de revenue, y el TOTAL
+    del mes queda corto sin que nada lo señale: cuadra consigo misma y miente.
+    Hay que volver a subir el history_forecast de ese mes.
+    """
+    viejo = {date(2026, 11, n): dato(occ=12, pax=0, revenue=0, rooms_revenue=0, adr=0)
+             for n in range(6, 31)}
+    h = armar_hoja(NOV, CORTE, HIST_NOV, viejo, TRAMOS)
+    assert h["otb_sin_revenue"] is True
+    # La ocupación sí está, y por eso el cero de revenue se nota tanto.
+    assert h["totals"]["forecast"]["occ"] > 0
+    assert h["totals"]["forecast"]["revenue"] == 0.0
+
+
+def test_no_avisa_cuando_el_otb_esta_completo():
+    h = armar_hoja(NOV, CORTE, HIST_NOV, FCST_NOV, TRAMOS)
+    assert h["otb_sin_revenue"] is False
+
+
+def test_no_avisa_cuando_directamente_no_hay_otb():
+    """Mes cerrado o sin OTB: no hay nada que volver a subir, no es el mismo
+    problema y no tiene que gritar lo mismo."""
+    h = armar_hoja(NOV, CORTE, HIST_NOV, {}, TRAMOS)
+    assert h["otb_sin_revenue"] is False
