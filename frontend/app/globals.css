@@ -28,8 +28,19 @@ table, .tabular, input[inputmode="decimal"] {
    porque los lavados y filetes finos de pantalla no rinden bien impresos. Se
    fuerza horizontal: las tablas de 11+ columnas no entran en vertical. */
 @media print {
+  /* OFICIO horizontal (owner, 2026-11-05: *«ponlo horizontal en oficio»*).
+     Oficio es mas ANCHO pero igual de alto que carta: 1298 x 770 px utiles
+     contra 1010 x 770 con los mismos margenes de 6mm. Por eso la ganancia esta
+     toda en el ancho, que es justo donde apretaba -- la tabla principal de 14
+     columnas sube de 10,5px a 12px y deja de rozar el borde (1283 de 1298).
+     El alto no cambia, asi que el cuerpo apenas se mueve: sigue mandando
+     cuanto entra en los 770px de la hoja.
+
+     ⚠️ `@page` es del DOCUMENTO: esto cambia el papel de TODOS los tabs que se
+     imprimen, no solo del 3. Para el heatmap de Tab 8 (~40 columnas) es una
+     mejora; si alguno quedara raro, se ajusta ese tab, no el papel. */
   @page {
-    size: landscape;
+    size: legal landscape;
     margin: 6mm 6mm;
   }
 
@@ -225,34 +236,36 @@ table, .tabular, input[inputmode="decimal"] {
 
      La salida: achicar SOLO la tabla ancha hasta que entre, y devolverle en
      ALTO lo que se le quita de ancho -- junto con mas aire en KPIs y
-     separaciones. Medido con esta configuracion: hoja 1 al **87%**, hoja 2 al
-     **90%**, tabla mas ancha en **1001px**, y **dos** hojas.
+     separaciones. En CARTA eso daba hoja 1 al 87%, hoja 2 al 90% y la tabla en
+     1001 de 1010px -- entraba, pero rozando. Con el cambio a OFICIO (ver
+     `@page`) la tabla respira: **hoja 1 al 92%, hoja 2 al 92%**, tabla mas
+     ancha en **1283 de 1298px**, y **dos** hojas.
 
      ⚠️ Todo va con `#tab3-export` por delante a proposito. Las reglas
      generales de arriba las comparten Tab 8 y Tab 9, que tienen su propio
      ajuste medido; tocarlas para arreglar Tab 3 habria roto los otros dos. */
-  #tab3-export, #tab3-export * { font-size: 12px !important; line-height: 1.3 !important; }
-  #tab3-export th, #tab3-export td { padding: 2px 3px !important; }
+  #tab3-export, #tab3-export * { font-size: 12.5px !important; line-height: 1.3 !important; }
+  #tab3-export th, #tab3-export td { padding: 2px 4px !important; }
 
   /* La tabla principal: 14 columnas. A 12px se pasa 94px de la hoja. */
-  #tab3-export > table, #tab3-export > table * { font-size: 10.5px !important; }
-  #tab3-export > table th, #tab3-export > table td { padding: 5.5px 3px !important; }
+  #tab3-export > table, #tab3-export > table * { font-size: 12px !important; }
+  #tab3-export > table th, #tab3-export > table td { padding: 6.5px 4px !important; }
 
-  #tab3-export .p-4 { padding: 11px 7px !important; }
+  #tab3-export .p-4 { padding: 13px 7px !important; }
   #tab3-export > * + * { margin-top: 11px !important; }
   #tab3-export .print-header-block { padding-bottom: 10px !important; margin-bottom: 4px !important; }
 
   /* Los titulos, otra vez: las reglas de arriba usan clase (0,1,1) y las de
      este bloque llevan ID (1,0,0), asi que sin repetirlas el `#tab3-export *`
      les aplastaria el tamano. */
-  #tab3-export .print-header-block .print-subtitle { font-size: 10.5px !important; }
-  #tab3-export .print-header-block .print-title { font-size: 21px !important; line-height: 1.1 !important; }
-  #tab3-export .print-header-block .print-date { font-size: 33px !important; line-height: 1.1 !important; }
+  #tab3-export .print-header-block .print-subtitle { font-size: 11px !important; }
+  #tab3-export .print-header-block .print-title { font-size: 22px !important; line-height: 1.1 !important; }
+  #tab3-export .print-header-block .print-date { font-size: 34px !important; line-height: 1.1 !important; }
   #tab3-export .print-header-block .print-meta { font-size: 10px !important; }
-  #tab3-export .print-section-title { font-size: 16px !important; }
-  #tab3-export .print-table-title { font-size: 13px !important; }
-  #tab3-export .print-kpi-label { font-size: 9.5px !important; }
-  #tab3-export .print-kpi-value { font-size: 19px !important; line-height: 1.15 !important; }
+  #tab3-export .print-section-title { font-size: 17px !important; }
+  #tab3-export .print-table-title { font-size: 14px !important; }
+  #tab3-export .print-kpi-label { font-size: 10px !important; }
+  #tab3-export .print-kpi-value { font-size: 20px !important; line-height: 1.15 !important; }
 
   /* Página 1 = encabezado + KPIs + tabla principal. Página 2 = todo lo demás
      (On-Property + Room Statistics + Months to Day + Otros). Un solo corte
