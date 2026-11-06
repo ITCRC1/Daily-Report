@@ -249,9 +249,9 @@ table, .tabular, input[inputmode="decimal"] {
 
   /* La tabla principal: 14 columnas. A 12px se pasa 94px de la hoja. */
   #tab3-export > table, #tab3-export > table * { font-size: 12px !important; }
-  #tab3-export > table th, #tab3-export > table td { padding: 6.5px 4px !important; }
+  #tab3-export > table th, #tab3-export > table td { padding: 5.5px 4px !important; }
 
-  #tab3-export .p-4 { padding: 13px 7px !important; }
+  #tab3-export .p-4 { padding: 11px 7px !important; }
   #tab3-export > * + * { margin-top: 11px !important; }
   #tab3-export .print-header-block { padding-bottom: 10px !important; margin-bottom: 4px !important; }
 
@@ -266,6 +266,64 @@ table, .tabular, input[inputmode="decimal"] {
   #tab3-export .print-table-title { font-size: 14px !important; }
   #tab3-export .print-kpi-label { font-size: 10px !important; }
   #tab3-export .print-kpi-value { font-size: 20px !important; line-height: 1.15 !important; }
+
+  /* ---- Lineas y color: que la hoja no sea una planilla blanca ----------
+     Owner, 2026-11-05: *«se lo podra poner mas color para que no se vea tan
+     blanco.. o darle diseño a las lineas para que se vea mas elaborado»*.
+
+     Lo que faltaba no era adorno: era que **las lineas no hacian ningun
+     trabajo**. Con un filete gris igual en todos lados, nada decia donde
+     termina TODAY y empieza MONTH TO DAY -- catorce columnas corridas a la
+     misma distancia. El markup ya marcaba el arranque de cada bloque con
+     `border-l-2`, pero en papel ese borde salia del mismo gris que los demas.
+
+     Por eso cada cosa de aca abajo separa algo:
+       · banda de marca en la fila de GRUPOS,
+       · filete de tinta donde empieza cada bloque,
+       · la columna de rotulos marcada como columna, con su propio corte,
+       · un acento en las tarjetas de KPI y en los titulos de seccion.
+
+     ⚠️ Color y tinta SIEMPRE juntos. Chrome imprime sin graficos de fondo por
+     defecto: si el bloque se distinguiera solo por su banda verde, en esa
+     configuracion la tabla volveria a ser catorce columnas iguales. Las bandas
+     van acompanadas de filetes, que si se imprimen siempre.
+
+     El diseno cuesta alto: con el padding anterior la hoja 1 se iba a 98%, al
+     filo de una tercera hoja. Se le devolvio bajando el padding vertical de la
+     tabla principal y de los KPI. Medido de nuevo: **91% y 91%**. */
+  #tab3-export thead tr:first-child th {
+    background: #dcebe3 !important;
+    letter-spacing: 0.08em !important;
+    border-top: 1.5px solid #0b0f0d !important;
+    border-bottom: 1px solid #b9d4c6 !important;
+  }
+  /* Donde arranca cada bloque de columnas. El `border-l-2` ya existe en el
+     markup; aca pasa de gris a tinta. */
+  #tab3-export [class*="border-l-2"] { border-left: 1.5px solid #0b0f0d !important; }
+
+  /* La columna de rotulos es el eje de lectura, no una celda mas. */
+  #tab3-export thead th:first-child { background: #dcebe3 !important; border-right: 1.5px solid #0b0f0d !important; }
+  #tab3-export tbody td:first-child { background: #f4f6f4 !important; border-right: 1.5px solid #0b0f0d !important; }
+  /* ...salvo en la fila de total, que manda sobre la columna. */
+  #tab3-export tbody tr[class*="font-bold"] td:first-child { background: #eef2ef !important; }
+
+  /* Tarjetas de KPI: un acento, no un relleno. Tres puntos de verde al
+     costado alcanzan para que dejen de ser rectangulos vacios. */
+  #tab3-export .p-4 {
+    border-left: 3px solid #2a7c5a !important;
+    background: #fbfdfc !important;
+  }
+
+  /* Titulos de seccion: marca verde al costado y corte de tinta abajo. */
+  #tab3-export .print-section-title {
+    letter-spacing: 0.06em !important;
+    border-left: 4px solid #5fc99d !important;
+    border-bottom: 1.5px solid #0b0f0d !important;
+    padding-left: 8px !important;
+    padding-bottom: 2px !important;
+    margin-top: 2px !important;
+    margin-bottom: 3px !important;
+  }
 
   /* Página 1 = encabezado + KPIs + tabla principal. Página 2 = todo lo demás
      (On-Property + Room Statistics + Months to Day + Otros). Un solo corte
