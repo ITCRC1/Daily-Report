@@ -734,6 +734,16 @@ async def daily_report(session: AsyncSession, business_date: date_cls,
         "business_date": business_date.isoformat(),
         "property": property_code,
         "days_loaded_mtd": days_loaded,
+        # ¿El día que se está mirando tiene ingesta propia? Sin esto, un día
+        # que nadie subió y un día tranquilo se ven EXACTAMENTE igual: una
+        # pantalla de $0,00. El owner abrió el 4 de octubre y preguntó "no hay
+        # datos, qué pasó" -- y tenía razón en preguntar, porque la pantalla no
+        # distinguía "no se subió" de "se subió y dio cero".
+        "today_loaded": business_date in integrity_by_day or business_date in actual_by_day,
+        # Noches vendidas del mes. Un mes con días cargados y CERO noches no
+        # está roto: es el hotel cerrado (CWL no opera en octubre). Que lo diga
+        # la pantalla en vez de dejar que cada uno lo deduzca.
+        "mtd_rooms_sold": round(float(mtd_rn), 2),
         "budget_status": ("Connected to fact_budget (Tab 6.1)." if has_budget else
                           "No budget loaded for this period — upload it in Tab 6.1."),
         "centers": centers,
