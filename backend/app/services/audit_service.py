@@ -33,6 +33,7 @@ from app.models import (
     RoomStat,
     TrialBalanceLine,
 )
+from app.services import inventory_service
 
 
 async def _property_id(session: AsyncSession, code: str):
@@ -186,20 +187,24 @@ async def run_audit(session: AsyncSession, business_date: date_cls,
             generated_keys=generated_keys,
         )
 
-    # Inventario disponible: el hotel SIEMPRE tiene 30 habitaciones (§Bismark,
-    # confirmado) -- si Opera reporta menos ese día (fact_room_stat con menos
-    # categorías activas), NO se ajusta el número reportado (Occupancy%/ADR
-    # siguen usando 30), pero la diferencia real queda como hallazgo a revisar.
+    # Inventario disponible: el hotel tiene el inventario CONFIGURADO para ese
+    # día (§Bismark, confirmado) -- si Opera reporta menos (fact_room_stat con
+    # menos categorías activas), NO se ajusta el número reportado (Occupancy%/
+    # ADR siguen usando el configurado), pero la diferencia queda como hallazgo.
+    # El configurado tiene vigencia: 30 hasta 2027-01-31 y 33 desde el 02-01,
+    # así que el hallazgo se compara contra el inventario DE ESE DÍA y no
+    # contra un número único que volvería "desviación" a todo un año.
     actual_stats = otb.get("actual_stats") or {}
     real_opera = actual_stats.get("available_real_opera")
-    total_rooms = await _total_rooms_config(session, pid)
-    if real_opera is not None and real_opera != total_rooms:
+    unidades_vigentes = await inventory_service.unidades(session, pid, business_date)
+    if real_opera is not None and real_opera != unidades_vigentes:
         await _upsert_finding(
             session, pid, business_date, source_view="Inventario Disponible",
             area="Habitaciones físicas reportadas por Opera", tipo_desviacion="DIF_OPERATIVA",
-            monto=round(real_opera - total_rooms, 2),
+            monto=round(real_opera - unidades_vigentes, 2),
             comentario=f"Opera reportó {real_opera} habitaciones activas ese día, "
-                      f"pero los reportes siempre usan {total_rooms} (fijo, confirmado por el owner).",
+                      f"pero los reportes siempre usan {unidades_vigentes} "
+                      f"(inventario vigente ese día, confirmado por el owner).",
             generated_keys=generated_keys,
         )
 
@@ -537,25 +542,11 @@ async def _actual_revenue_pivot(session, pid, bdate) -> dict:
     }
 
 
-async def _total_rooms_config(session, pid) -> int:
-    """Habitaciones físicas del hotel (app_config.total_rooms, default 30) --
-    §Bismark confirmado: los reportes SIEMPRE usan este número, sin importar
-    la disponibilidad que reporte Opera ese día (la diferencia real se
-    documenta como hallazgo, no se esconde ni mueve el número reportado)."""
-    row = (await session.execute(
-        select(AppConfig).where(AppConfig.property_id == pid, AppConfig.key == "total_rooms")
-    )).scalar_one_or_none()
-    try:
-        return int(row.value) if row else 30
-    except (TypeError, ValueError):
-        return 30
-
-
 async def _actual_operational_stats(session, pid, bdate, room_revenue_integrity: float) -> dict:
     """Habitaciones/Pax/Disponibles reales del día. RN/Pax de fact_room_stat
     (única fuente posible, Integrity no tiene datos de habitaciones/ocupación).
-    Disponibilidad = total_rooms fijo (§Bismark) si hubo ingesta ese día --
-    NO la Σ physical_rooms real (esa diferencia se documenta como hallazgo
+    Disponibilidad = el inventario VIGENTE ese día (§Bismark) si hubo ingesta
+    -- NO la Σ physical_rooms real (esa diferencia se documenta como hallazgo
     aparte, ver `_upsert_finding` en run_audit, no afecta este número).
 
     El ADR SÍ usa el revenue de habitaciones que viene de Integrity
@@ -567,7 +558,7 @@ async def _actual_operational_stats(session, pid, bdate, room_revenue_integrity:
     )).scalars().all()
     rn_gross = int(sum(r.stay_rooms for r in rows))
     pax_gross = int(sum(r.stay_persons for r in rows))
-    available = await _total_rooms_config(session, pid) if rows else 0
+    available = await inventory_service.unidades(session, pid, bdate) if rows else 0
     # Comps/in-house del día (market_code COM/INHOUSE del XML STATISTICS): se
     # RESTAN del RN/Pax para que el ADR y la ocupación mostrados sean de las
     # habitaciones que PAGAN (mismo criterio que §5.2 / Tab 6.6 / 7.3). Se

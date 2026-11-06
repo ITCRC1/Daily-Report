@@ -69,9 +69,13 @@ PARAM_DEFS: list[dict] = [
     {
         "key": "total_rooms", "type": "int",
         "default": "30",
-        "label": "Habitaciones fisicas del hotel", "group": "Operacion",
-        "affects": "Occupancy% / ADR (Tabs 3/4/8)",
-        "help": "Los reportes SIEMPRE usan este numero, sin importar la disponibilidad que reporte Opera ese dia.",
+        "label": "Habitaciones fisicas del hotel (historico, ya no manda)", "group": "Operacion",
+        "affects": "Nada: respaldo si no hay tramos de inventario cargados",
+        "help": "El inventario ahora se guarda CON VIGENCIA en dim_inventario_tramo "
+                "(30 hasta el 2027-01-31, 33 desde el 2027-02-01). Editar este numero "
+                "no cambia ningun reporte, y es a proposito: cuando mandaba, subirlo a 33 "
+                "para que feb-2027 saliera bien recalculaba el historico entero contra 33 "
+                "en el acto -- el Occ% de 2026 bajaba ~9% sin un solo error en pantalla.",
     },
     {
         "key": "recon_tolerance", "type": "number",

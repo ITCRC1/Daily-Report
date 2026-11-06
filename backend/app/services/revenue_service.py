@@ -33,10 +33,10 @@ from app.engine.room_stats import (
     NON_REVENUE_MARKET_CODES, market_segment_rollup, opera_daily_vs_history, room_stats_rollup,
 )
 from app.models import (
-    AppConfig, Budget, BudgetMonthly, Department, Forecast, IntegrityLine,
+    Budget, BudgetMonthly, Department, Forecast, IntegrityLine,
     MarketCode, OccupancyStat, Property, RevenueActualDaily, RoomCategory, RoomStat, WeekCalendar,
 )
-from app.services import room_stats_service
+from app.services import inventory_service, room_stats_service
 
 # outlet (output_column, §5.1b) -> columna Weekly correspondiente (§5.1a). Las
 # columnas *_Others no tienen contraparte en el budget por departamento.
@@ -125,25 +125,12 @@ async def _room_stats(session, pid, start, end) -> list[RoomStat]:
     )).scalars().all()
 
 
-async def _total_rooms(session, pid) -> int:
-    """Habitaciones físicas del hotel (app_config.total_rooms, default 30) --
-    §Bismark confirmado: los reportes SIEMPRE usan este número para Occupancy%/
-    ADR, sin importar qué disponibilidad reporte Opera ese día. Cualquier
-    diferencia real se documenta como hallazgo (run_audit), nunca se fabrica
-    en silencio pero tampoco mueve el número reportado."""
-    row = (await session.execute(
-        select(AppConfig).where(AppConfig.property_id == pid, AppConfig.key == "total_rooms")
-    )).scalar_one_or_none()
-    try:
-        return int(row.value) if row else 30
-    except (TypeError, ValueError):
-        return 30
-
-
 async def _kpis_for_day(session, pid, bdate) -> dict:
-    """Pax / RN / ADR / Occupancy del día. Disponibilidad = total_rooms fijo
-    (§Bismark) si hubo ingesta STATISTICS ese día; 0 si no hay ingesta (no se
-    fabrica un día sin datos)."""
+    """Pax / RN / ADR / Occupancy del día. Disponibilidad = el inventario
+    VIGENTE ese día (§Bismark: el configurado, no el que reporte Opera) si
+    hubo ingesta STATISTICS; 0 si no hay ingesta (no se fabrica un día sin
+    datos). Vigente y no fijo: CWL pasa de 30 a 33 el 2027-02-01 y los días
+    de antes tienen que seguir dividiendo por 30."""
     stats = (await session.execute(
         select(OccupancyStat).where(
             OccupancyStat.property_id == pid, OccupancyStat.business_date == bdate
@@ -151,7 +138,7 @@ async def _kpis_for_day(session, pid, bdate) -> dict:
     )).scalars().all()
     rn = sum(s.rooms for s in stats)
     pax = sum(s.persons for s in stats)
-    available = await _total_rooms(session, pid) if stats else 0
+    available = await inventory_service.unidades(session, pid, bdate) if stats else 0
     return {"rn": rn, "pax": pax, "available_rooms": available}
 
 
@@ -380,19 +367,22 @@ def _room_stats_records(rows: list[RoomStat]) -> list[dict]:
 
 async def _kpis_for_range(session, pid, start, end) -> dict:
     """Pax / RN / disponibles sumados sobre un rango de días (los que estén
-    cargados). Disponibilidad = total_rooms fijo (§Bismark) × cantidad de días
-    con ingesta STATISTICS en el rango -- no la suma de physical_rooms real."""
+    cargados). Disponibilidad = SUMA del inventario vigente de cada día con
+    ingesta STATISTICS (§Bismark: el configurado, no la Σ physical_rooms que
+    reporte Opera). Se suma día a día y no "días × unidades" porque un rango
+    puede cruzar un cambio de inventario -- CWL pasa de 30 a 33 el
+    2027-02-01."""
     stats = (await session.execute(
         select(OccupancyStat).where(
             OccupancyStat.property_id == pid,
             OccupancyStat.business_date >= start, OccupancyStat.business_date <= end,
         )
     )).scalars().all()
-    days_with_data = len({s.business_date for s in stats})
-    total_rooms = await _total_rooms(session, pid)
+    dias_con_datos = {s.business_date for s in stats}
     return {
         "rn": sum(s.rooms for s in stats), "pax": sum(s.persons for s in stats),
-        "available_rooms": days_with_data * total_rooms,
+        "available_rooms": await inventory_service.noches_disponibles(
+            session, pid, dias_con_datos),
     }
 
 
@@ -668,7 +658,8 @@ async def daily_report(session: AsyncSession, business_date: date_cls,
     budget_adr_occ = await _budget_adr_occ(session, pid, business_date.year,
                                            business_date.month, business_date.month)
 
-    units_map = await room_stats_service.units_by_category(session, property_code=property_code)
+    units_map = await room_stats_service.units_by_category(
+        session, property_code=property_code, as_of=business_date)
 
     room_stats_today = await _room_stats(session, pid, business_date, business_date)
     room_categories_today_full = room_stats_rollup(
@@ -928,7 +919,8 @@ async def weekly_report(session: AsyncSession, business_date: date_cls,
     week_comps = await _comps_by_category(session, pid, cal.week_start, cal.week_end)
     week_room_stats = await _room_stats(session, pid, cal.week_start, cal.week_end)
     room_categories_full = room_stats_rollup(_room_stats_records(week_room_stats), comp_by_category=week_comps)
-    units_map = await room_stats_service.units_by_category(session, property_code=property_code)
+    units_map = await room_stats_service.units_by_category(
+        session, property_code=property_code, as_of=cal.week_end)
     room_categories = [
         {**c, "units": units_map.get(c["category"], 0)} for c in room_categories_full["categories"]
     ]

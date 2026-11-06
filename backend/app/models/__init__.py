@@ -97,7 +97,52 @@ class RoomCategory(Base, TimestampMixin):
     # categoría automáticamente, sería frágil (§10, no inventar un parser que
     # no es confiable).
     integrity_string: Mapped[str | None] = mapped_column(Text)
+    # Unidades SIN fecha -- se conserva como el valor "de hoy" para no romper
+    # nada, pero el número con vigencia vive en RoomCategoryUnitsTramo: en
+    # feb-2027 entra SH07 y esta columna sola no sabría decir desde cuándo.
     units: Mapped[int | None] = mapped_column(Integer)
+
+
+class InventoryTramo(Base, TimestampMixin):
+    """Inventario de la propiedad CON VIGENCIA -- el divisor de Occupancy%/RevPAR.
+
+    Un tramo rige DESDE `desde` (inclusive) hasta el día anterior al `desde` del
+    tramo siguiente. No lleva `hasta` a propósito: dos bordes que se pueden
+    contradecir dejan huecos o solapes, y acá un hueco significa dividir por
+    cero o por el número de otra época.
+
+    Existe porque el inventario era un solo `app_config.total_rooms` sin fecha.
+    Subirlo de 30 a 33 para que feb-2027 saliera bien recalculaba el histórico
+    entero contra 33 en el acto -- el Occ% de 2026 bajaba ~9% sin un error ni
+    un aviso, porque los reportes seguían cuadrando. Ver engine/inventory.py.
+    """
+    __tablename__ = "dim_inventario_tramo"
+    __table_args__ = (UniqueConstraint("property_id", "desde"),)
+    id: Mapped[uuid.UUID] = UUIDpk()
+    property_id: Mapped[uuid.UUID] = prop_fk()
+    desde: Mapped[date] = mapped_column(Date, index=True)
+    unidades: Mapped[int] = mapped_column(Integer)
+    nota: Mapped[str | None] = mapped_column(Text)
+
+
+class RoomCategoryUnitsTramo(Base, TimestampMixin):
+    """Unidades POR CATEGORÍA con vigencia -- mismo criterio que InventoryTramo.
+
+    Hace falta además del tramo de propiedad porque las 3 unidades de feb-2027
+    no se reparten entre las categorías de hoy: son una categoría nueva (SH07
+    "Villas Deluxe", confirmado por el owner el 2026-11-06). Sin fecha acá, la
+    tabla de units por categoría sumaría 33 también para 2026.
+    """
+    __tablename__ = "dim_categoria_unidades_tramo"
+    __table_args__ = (UniqueConstraint("room_category_id", "desde"),)
+    id: Mapped[uuid.UUID] = UUIDpk()
+    property_id: Mapped[uuid.UUID] = prop_fk()
+    room_category_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("dim_room_category.id"), nullable=False, index=True
+    )
+    desde: Mapped[date] = mapped_column(Date, index=True)
+    unidades: Mapped[int] = mapped_column(Integer)
+    nota: Mapped[str | None] = mapped_column(Text)
 
 
 class PaymentMap(Base, TimestampMixin):

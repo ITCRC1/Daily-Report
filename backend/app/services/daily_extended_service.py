@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import (
     AppConfig, Budget, Department, FbCovers, IntegrityLine, OccupancyStat, Property,
 )
-from app.services import market_code_service, revenue_service
+from app.services import inventory_service, market_code_service, revenue_service
 
 NON_REVENUE_MARKET_CODES = {"COM", "INHOUSE"}
 
@@ -39,16 +39,6 @@ async def _pid(session, code):
     if pid is None:
         raise ValueError(f"Propiedad '{code}' no existe.")
     return pid
-
-
-async def _total_rooms(session, pid) -> int:
-    row = (await session.execute(
-        select(AppConfig).where(AppConfig.property_id == pid, AppConfig.key == "total_rooms")
-    )).scalar_one_or_none()
-    try:
-        return int(row.value) if row else 30
-    except Exception:  # noqa: BLE001
-        return 30
 
 
 async def _dept_cat(session, pid) -> dict:
@@ -131,12 +121,16 @@ def _col(today, mtd_actual, mtd_budget=None, month_budget=None):
 
 async def summary(session: AsyncSession, business_date: date_cls, property_code: str = "COWLCR") -> dict:
     pid = await _pid(session, property_code)
-    total_rooms = await _total_rooms(session, pid)
     dept_cat = await _dept_cat(session, pid)
 
     month_start = date_cls(business_date.year, business_date.month, 1)
     days_mtd = business_date.day
-    avail_today, avail_mtd = total_rooms, total_rooms * days_mtd
+    # Disponibilidad: inventario VIGENTE del día, y para el MTD la suma día a
+    # día -- no "unidades × días". El inventario cambia de 30 a 33 el
+    # 2027-02-01 y un período que cruce el cambio no se puede multiplicar.
+    avail_today = await inventory_service.unidades(session, pid, business_date)
+    avail_mtd = await inventory_service.noches_disponibles_rango(
+        session, pid, month_start, business_date)
 
     rs_today = await _rooms_stats(session, pid, business_date, business_date)
     rs_mtd = await _rooms_stats(session, pid, month_start, business_date)
@@ -149,6 +143,8 @@ async def summary(session: AsyncSession, business_date: date_cls, property_code:
     # corridos, así que contra el mes entero se ve cuánto falta para cerrarlo.
     days_in_month = calendar.monthrange(business_date.year, business_date.month)[1]
     month_end = date_cls(business_date.year, business_date.month, days_in_month)
+    avail_month = await inventory_service.noches_disponibles_rango(
+        session, pid, month_start, month_end)
     bud_month = await _budget_by_cat(session, pid, dept_cat, month_start, month_end)
 
     def cat(d, k): return round(d.get(k, 0.0), 2)
@@ -162,7 +158,7 @@ async def summary(session: AsyncSession, business_date: date_cls, property_code:
     o_t, o_m = rs_today["occupied"], rs_mtd["occupied"]
 
     rooms_stats = {
-        "available": _col(avail_today, avail_mtd, avail_mtd, total_rooms * days_in_month),
+        "available": _col(avail_today, avail_mtd, avail_mtd, avail_month),
         "occupied": _col(o_t, o_m, None),
         "occupancy": _col(occ_pct(o_t, avail_today), occ_pct(o_m, avail_mtd), None),
         "adr": _col(adr(rooms_rev_today, o_t), adr(rooms_rev_mtd, o_m), None),
@@ -218,11 +214,13 @@ def _seg_metrics(rn: int, rev: float, avail: int) -> dict:
 async def rooms_by_segment(session: AsyncSession, business_date: date_cls,
                            property_code: str = "COWLCR") -> dict:
     pid = await _pid(session, property_code)
-    total_rooms = await _total_rooms(session, pid)
 
     month_start = date_cls(business_date.year, business_date.month, 1)
     days_mtd = business_date.day
-    avail_today, avail_mtd = total_rooms, total_rooms * days_mtd
+    # Mismo criterio que 9.1: vigente el día, sumado día a día el MTD.
+    avail_today = await inventory_service.unidades(session, pid, business_date)
+    avail_mtd = await inventory_service.noches_disponibles_rango(
+        session, pid, month_start, business_date)
 
     rep_today = await market_code_service.market_code_report(
         session, property_code=property_code, date_from=business_date, date_to=business_date)

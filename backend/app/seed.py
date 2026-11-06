@@ -19,11 +19,13 @@ from app.engine.week_calendar import generate_weeks
 from app.models import (
     AppConfig,
     Calendar,
+    InventoryTramo,
     MarketCode,
     OperaRevenueCat,
     Property,
     Role,
     RoomCategory,
+    RoomCategoryUnitsTramo,
     WeekCalendar,
 )
 
@@ -51,7 +53,29 @@ ROOM_CATEGORIES = [
     ("04", "Sirena Suites", "Sirena Suites", "FVR4", "4000-0110-006-001-001-15-04", 8),
     ("05", "Treehouse King", "Treehouse", "OVR", "4000-0110-003-001-001-15-05", 5),
     ("06", "5 Elements Treehouse", "5 Elements", "OVR2", "4000-0110-003-001-001-15-06", 5),
+    # SH07 -- 3 villas que entran el 2027-02-01 (owner, 2026-11-06). units=0:
+    # hoy no existen, y el 3 va fechado en CATEGORIA_UNIDADES_TRAMOS. El
+    # opera_short_desc y el room_class van en None A PROPOSITO -- son las
+    # llaves con las que se une al XML de Opera y todavia no esta dada de alta
+    # ahi; inventarlas haria que su revenue cayera en "Otros" sin aviso.
+    ("07", "Villas Deluxe", None, None, None, 0),
     ("00", "Other Rooms Revenue", None, None, None, None),
+]
+
+# ---- inventario CON VIGENCIA (§engine/inventory.py) -------------------------
+# El inventario es el divisor de Occupancy% y RevPAR. Guardarlo como un solo
+# numero (como hacia app_config.total_rooms) significaba que subirlo a 33 para
+# feb-2027 recalculaba el historico entero contra 33 en el acto, sin error y
+# sin aviso. Por eso va por tramos: (desde, unidades).
+INVENTARIO_TRAMOS = [
+    (date(2000, 1, 1), 30, "CWL opera con 30 unidades."),
+    (date(2027, 2, 1), 33, "Owner 2026-11-06: entran 3 unidades (SH07 Villas Deluxe)."),
+]
+
+# Unidades por categoria, tambien con vigencia: las 3 nuevas no se reparten
+# entre las categorias de hoy, son una categoria nueva.
+CATEGORIA_UNIDADES_TRAMOS = [
+    ("07", date(2027, 2, 1), 3, "Owner 2026-11-06: 3 villas nuevas."),
 ]
 
 # §5.6 — market codes (catálogo confirmado por Bismark, 2026-07-03 -- reemplaza
@@ -89,11 +113,16 @@ APP_CONFIG = [
     ("recon_tolerance", "0.01"),
     ("gate_min_set", "opera,integrity"),
     ("gate_hard", "false"),  # TODO(bismark): confirmar default definitivo suave vs duro.
-    # El hotel tiene 30 habitaciones físicas -- los reportes SIEMPRE usan este
-    # número para Occupancy%/ADR, sin importar qué disponibilidad reporte Opera
-    # ese día (§Bismark, confirmado: "no importa si en Opera viajan menos").
-    # Cualquier diferencia real vs Opera se documenta como hallazgo (2.10),
-    # nunca se descarta ni se esconde -- solo no afecta el número reportado.
+    # Habitaciones físicas -- los reportes SIEMPRE usan el inventario
+    # configurado para Occupancy%/ADR, sin importar qué disponibilidad reporte
+    # Opera ese día (§Bismark, confirmado: "no importa si en Opera viajan
+    # menos"). Cualquier diferencia real vs Opera se documenta como hallazgo
+    # (2.10), nunca se descarta ni se esconde.
+    # OJO: este valor YA NO MANDA. El inventario vive con vigencia en
+    # `dim_inventario_tramo` (30 hasta 2027-01-31, 33 desde el 02-01) y esto
+    # quedó solo como respaldo de una base sin tramos cargados. Editarlo acá
+    # no cambia ningún reporte -- y ese es justamente el punto: editado, antes
+    # recalculaba el histórico entero en silencio.
     ("total_rooms", "30"),
 ]
 
@@ -161,6 +190,41 @@ async def seed() -> None:
                     property_id=pid, code2=code2, report_name=report_name, opera_short_desc=opera,
                     room_class=room_class, integrity_string=integrity_string, units=units,
                 ).on_conflict_do_nothing(index_elements=["property_id", "code2"])
+            )
+
+        # --- inventario con vigencia ---
+        # Se siembra DESPUES de room categories porque los tramos por categoria
+        # necesitan el id de la fila. El tramo "desde siempre" de cada
+        # categoria sale de su propio `units`, para no repetir el numero.
+        for desde, unidades, nota in INVENTARIO_TRAMOS:
+            await s.execute(
+                pg_insert(InventoryTramo).values(
+                    property_id=pid, desde=desde, unidades=unidades, nota=nota,
+                ).on_conflict_do_nothing(index_elements=["property_id", "desde"])
+            )
+        cat_ids = {
+            c.code2: c.id for c in (await s.execute(
+                select(RoomCategory).where(RoomCategory.property_id == pid)
+            )).scalars().all()
+        }
+        for code2, report_name, opera, room_class, integrity_string, units in ROOM_CATEGORIES:
+            if code2 not in cat_ids:
+                continue
+            await s.execute(
+                pg_insert(RoomCategoryUnitsTramo).values(
+                    property_id=pid, room_category_id=cat_ids[code2],
+                    desde=date(2000, 1, 1), unidades=(units or 0),
+                    nota="Inventario de la categoria desde siempre.",
+                ).on_conflict_do_nothing(index_elements=["room_category_id", "desde"])
+            )
+        for code2, desde, unidades, nota in CATEGORIA_UNIDADES_TRAMOS:
+            if code2 not in cat_ids:
+                continue
+            await s.execute(
+                pg_insert(RoomCategoryUnitsTramo).values(
+                    property_id=pid, room_category_id=cat_ids[code2],
+                    desde=desde, unidades=unidades, nota=nota,
+                ).on_conflict_do_nothing(index_elements=["room_category_id", "desde"])
             )
 
         # --- market codes ---

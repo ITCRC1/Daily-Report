@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.engine.room_stats import CATEGORY_ORDER, NON_REVENUE_MARKET_CODES, room_stats_rollup
 from app.models import OccupancyStat, Property, RoomCategory, RoomStat, RoomStatOpening
+from app.services import inventory_service
 
 # Fila especial (no es categoría) para el ancla acumulado de comps/in-house
 # hasta el corte -- Tab 6.6. Reusa los mismos campos del ancla (stay_rooms=RN
@@ -39,24 +40,29 @@ def _opening_row(r: RoomStatOpening) -> dict:
     }
 
 
-async def _units_by_category(session: AsyncSession, pid) -> dict[str, int]:
-    rows = (await session.execute(
-        select(RoomCategory).where(RoomCategory.property_id == pid)
-    )).scalars().all()
-    return {r.opera_short_desc: (r.units or 0) for r in rows if r.opera_short_desc}
+async def _units_by_category(session: AsyncSession, pid, as_of: date) -> dict[str, int]:
+    return await inventory_service.unidades_por_categoria(session, pid, as_of)
 
 
-async def units_by_category(session: AsyncSession, property_code: str = "COWLCR") -> dict[str, int]:
-    """Units (habitaciones físicas) por categoría -- Tab 6.7, no depende de período."""
+async def units_by_category(session: AsyncSession, property_code: str = "COWLCR",
+                            as_of: date | None = None) -> dict[str, int]:
+    """Units (habitaciones físicas) por categoría VIGENTES a `as_of` -- Tab 6.7.
+
+    Antes esto no dependía del período y por eso no podía estar bien dos veces:
+    CWL pasa de 30 a 33 unidades el 2027-02-01 (entra SH07 "Villas Deluxe"), y
+    un mapa sin fecha le pondría 33 también a 2026. `as_of` por default es hoy,
+    que es lo correcto para las pantallas de catálogo; los reportes pasan la
+    fecha del período que están mostrando.
+    """
     pid = await _property_id(session, property_code)
-    return await _units_by_category(session, pid)
+    return await _units_by_category(session, pid, as_of or date.today())
 
 
 async def list_openings(session: AsyncSession, property_code: str = "COWLCR") -> list[dict]:
     """Un ancla por categoría (CATEGORY_ORDER), con units para contexto de UI --
     categorías sin ancla guardada todavía se devuelven en 0."""
     pid = await _property_id(session, property_code)
-    units = await _units_by_category(session, pid)
+    units = await _units_by_category(session, pid, date.today())
     rows = (await session.execute(
         select(RoomStatOpening).where(RoomStatOpening.property_id == pid)
     )).scalars().all()
@@ -127,7 +133,7 @@ async def room_stats_ytd(session: AsyncSession, as_of: date, property_code: str 
     XML STATISTICS de los días POSTERIORES al corte (COM/INHOUSE). Se devuelve
     `net` (bruto − comps, con ADR limpio) y `comps_line` para la reconciliación."""
     pid = await _property_id(session, property_code)
-    units = await _units_by_category(session, pid)
+    units = await _units_by_category(session, pid, as_of)
     openings = (await session.execute(
         select(RoomStatOpening).where(RoomStatOpening.property_id == pid)
     )).scalars().all()
