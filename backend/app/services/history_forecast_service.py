@@ -104,7 +104,17 @@ async def _history_by_day(session: AsyncSession, pid, start: date_cls, end: date
             "revenue": revenue,
             "rooms_revenue": float(overall["revenue"]),
             "adr": float(overall["adr"]),
-            "loaded": bool(revenue or rn_bruto or overall["revenue"]),
+            # Cargado = el día TIENE ingesta, no que tenga números distintos de
+            # cero. `out` solo recibe días que aparecieron en alguna fuente
+            # (Integrity, la grilla 6.4, fact_room_stat o fact_occupancy_stat),
+            # así que llegar hasta acá ya es estar cargado.
+            #
+            # ⚠️ Antes esto miraba los VALORES, y en octubre --el mes que CWL
+            # cierra-- marcaba "sin cargar" días que sí estaban ingestados y
+            # que legítimamente dan cero. La misma hoja decía "3 días cargados
+            # en el mes" arriba y "sin cargar" abajo. Un día cerrado con cero
+            # actividad no es un día que falte subir.
+            "loaded": True,
         }
     return out
 

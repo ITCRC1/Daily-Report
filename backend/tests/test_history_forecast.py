@@ -289,3 +289,23 @@ def test_no_avisa_cuando_directamente_no_hay_otb():
     problema y no tiene que gritar lo mismo."""
     h = armar_hoja(NOV, CORTE, HIST_NOV, {}, TRAMOS)
     assert h["otb_sin_revenue"] is False
+
+
+def test_un_dia_cargado_en_cero_no_se_marca_como_sin_cargar():
+    """Octubre es el mes que CWL cierra: hay ingesta y los números dan cero.
+
+    Marcarlo "sin cargar" hacía que la hoja se contradijera con el encabezado
+    del propio reporte ("3 día(s) cargados en el mes") y mandaba a resubir algo
+    que ya estaba. Un día cerrado no es un día que falte.
+    """
+    oct_ = dias(2026, 10, 31)
+    # Los cuatro primeros estan ingestados; el 1 tiene una venta suelta y el
+    # resto, cero -- el hotel esta cerrado.
+    hist = {date(2026, 10, 1): dato(revenue=3.52, loaded=True)}
+    hist.update({date(2026, 10, n): dato(loaded=True) for n in (2, 3, 4)})
+    h = armar_hoja(oct_, date(2026, 10, 4), hist, {}, TRAMOS)
+
+    cargados = [f for f in h["rows"] if f["block"] == HISTORY and f["loaded"]]
+    assert len(cargados) == 4, "los cuatro dias estan ingestados, cero o no"
+    assert all(f["revenue"] == 0.0 for f in cargados if f["day"] != 1)
+    assert h["totals"]["history"]["revenue"] == pytest.approx(3.52, abs=0.01)
