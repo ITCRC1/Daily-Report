@@ -328,8 +328,35 @@ table, .tabular, input[inputmode="decimal"] {
     border-bottom: 1px solid #b9d4c6 !important;
   }
   /* Donde arranca cada bloque de columnas. El `border-l-2` ya existe en el
-     markup; aca pasa de gris a tinta. */
-  #tab3-export [class*="border-l-2"] { border-left: 1.5px solid #0b0f0d !important; }
+     markup; aca pasa de gris a tinta.
+
+     ⚠️ Owner, 2026-11-06, dibujando tres rayas a mano sobre el impreso:
+     *«que se puedan ver mas claro las lineas de division»*. El filete de
+     bloque ya era tinta, pero medido contra su vecino **pesaba lo mismo que
+     cualquier borde de celda** (#cbd0da a 1px): catorce columnas con la misma
+     raya entre todas, y el ojo no tenia como saber donde termina TODAY y
+     empieza MONTH TO DAY. Un separador no se ve por ser oscuro -- se ve por
+     ser DISTINTO del resto.
+
+     Por eso van juntos los dos movimientos: el de bloque sube a 2,5px y el de
+     celda baja a un gris mucho mas claro. Subir solo el de bloque no alcanza;
+     el contraste es contra el vecino, no contra el papel. */
+  #tab3-export th, #tab3-export td { border-color: #dfe4e0 !important; }
+  /* ⚠️ Aclarar los bordes por ID se lleva puestas dos reglas de tinta que
+     estaban escritas con clase -- `main thead tr:last-child th` y
+     `main tbody tr[class*="font-bold"] td` -- porque (1,0,1) le gana a
+     (0,1,3). Son justamente las dos que sostienen la lectura cuando no hay
+     fondos: el corte entre cabeza y cuerpo, y el filete sobre el GRAND TOTAL.
+     Se reponen con el mismo ID. */
+  #tab3-export thead tr:last-child th { border-bottom: 1.5px solid #0b0f0d !important; }
+  #tab3-export tbody tr[class*="font-bold"] td { border-top: 1.5px solid #0b0f0d !important; }
+  #tab3-export [class*="border-l-2"] { border-left: 2.5px solid #0b0f0d !important; }
+  /* Y cada tabla cierra en tinta, para que los bloques queden ENTRE lineas y
+     no se desflequen contra el borde de la hoja. Va para TODAS las del
+     reporte, no solo la principal: con los bordes de celda aclarados, una
+     tabla con marco claro y rayas de bloque negras se lee al reves -- lo de
+     adentro pesando mas que lo que la contiene. */
+  #tab3-export table { border: 1.5px solid #0b0f0d !important; }
 
   /* La columna de rotulos es el eje de lectura, no una celda mas. */
   #tab3-export thead th:first-child { background: #dcebe3 !important; border-right: 1.5px solid #0b0f0d !important; }
@@ -342,6 +369,50 @@ table, .tabular, input[inputmode="decimal"] {
   #tab3-export .p-4 {
     border-left: 3px solid #2a7c5a !important;
     background: #fbfdfc !important;
+  }
+
+  /* ---- El bloque de arriba (TODAY / MONTH TO DAY) ---------------------
+     Owner, 2026-11-06, encerrando toda la zona alta en un circulo rojo:
+     *«mejorar la definicion de la linea continua en la parte alta»*.
+
+     El defecto era de origen: la banda "TODAY" usa `print-section-title`, que
+     esta pensado para un titulo ALINEADO A LA IZQUIERDA -- barra verde al
+     costado y texto pegado a ella. Aca el texto va centrado (`text-center`),
+     asi que la barra verde quedaba **huerfana**, sola contra el margen
+     izquierdo y a treinta centimetros de la palabra que deberia marcar. Y la
+     banda flotaba separada de sus tarjetas por un hueco, de modo que el
+     encabezado y lo que encabeza se leian como dos cosas distintas.
+
+     La salida no es mas color: es CERRAR. La banda pasa a ser una banda de
+     verdad -- lavado de marca, el mismo #dcebe3 de la fila de GRUPOS de la
+     tabla, para que arriba y abajo hablen el mismo idioma -- y se le pegan las
+     cuatro tarjetas sin hueco, todo dentro de un solo recuadro de tinta. Esa
+     es la linea continua que faltaba.
+
+     Se distingue de los titulos de seccion de mas abajo por `.text-center`,
+     que es lo que de verdad los diferencia: esos van a la izquierda con su
+     barra, este va centrado sobre su grupo. */
+  #tab3-export .print-section-title.text-center {
+    background: #dcebe3 !important;
+    border: 1.5px solid #0b0f0d !important;
+    border-bottom: 1px solid #0b0f0d !important;
+    padding: 2px 8px !important;
+    margin: 0 !important;
+    letter-spacing: 0.14em !important;
+  }
+  #tab3-export .print-section-title.text-center + .grid {
+    border: 1.5px solid #0b0f0d !important;
+    border-top: none !important;
+    gap: 0 !important;
+  }
+  /* Las tarjetas dejan de ser cajas sueltas y pasan a ser celdas del bloque.
+     Conservan su barra verde al costado -- ahi si marca algo, porque esta
+     pegada a lo que marca. */
+  #tab3-export .print-section-title.text-center + .grid > * {
+    border-top: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    border-radius: 0 !important;
   }
 
   /* Titulos de seccion: marca verde al costado y corte de tinta abajo. */
