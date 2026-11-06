@@ -47,6 +47,21 @@ _DESDE_33 = "2027-02-01"
 
 
 def upgrade() -> None:
+    # Idempotente a propósito, igual que `f2a3b4c5d6e7`: en el deploy de Railway
+    # la raíz del build del backend es `backend/`, así que alembic no llega al
+    # contenedor y las tablas las crea el arranque del app
+    # (`db.ensure_inventario_schema`). Correr esta migración después, contra una
+    # base ya inicializada así, no debe fallar.
+    existentes = set(sa.inspect(op.get_bind()).get_table_names())
+    if "dim_inventario_tramo" not in existentes:
+        _crear_inventario_tramo()
+    if "dim_categoria_unidades_tramo" not in existentes:
+        _crear_categoria_unidades_tramo()
+
+    _sembrar()
+
+
+def _crear_inventario_tramo() -> None:
     op.create_table(
         "dim_inventario_tramo",
         sa.Column("id", postgresql.UUID(as_uuid=True),
@@ -63,6 +78,8 @@ def upgrade() -> None:
     op.create_index("ix_invtramo_prop", "dim_inventario_tramo", ["property_id"])
     op.create_index("ix_invtramo_desde", "dim_inventario_tramo", ["desde"])
 
+
+def _crear_categoria_unidades_tramo() -> None:
     op.create_table(
         "dim_categoria_unidades_tramo",
         sa.Column("id", postgresql.UUID(as_uuid=True),
@@ -81,6 +98,11 @@ def upgrade() -> None:
     op.create_index("ix_cattramo_prop", "dim_categoria_unidades_tramo", ["property_id"])
     op.create_index("ix_cattramo_cat", "dim_categoria_unidades_tramo", ["room_category_id"])
 
+
+def _sembrar() -> None:
+    """Los datos. Todos con ON CONFLICT / NOT EXISTS: si el arranque del app ya
+    sembró los tramos de propiedad, esto sólo agrega lo que falta (la categoría
+    SH07 y los tramos por categoría, que el arranque no toca)."""
     # --- tramo "desde siempre": el numero que YA regia, sin cambiar nada -----
     # Sale del app_config de cada propiedad (no un 30 a ciegas: otra propiedad
     # podria tener otro inventario). Si el valor guardado no es un entero, cae

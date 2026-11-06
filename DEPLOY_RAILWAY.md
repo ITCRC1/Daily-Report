@@ -139,6 +139,54 @@ ocupación 59,1 %. Si eso cuadra, la base y el backend están bien enganchados.
 
 ---
 
+## Desplegar un cambio (y volver atrás)
+
+El deploy es por servicio y por separado. **Backend primero, frontend después**:
+el frontend nuevo llama endpoints que el backend viejo no tiene.
+
+```powershell
+railway up backend -s backend --ci
+railway up frontend -s frontend --ci
+```
+
+### Las migraciones NO corren solas
+
+El `startCommand` es sólo uvicorn, y la raíz del build del backend es
+`backend/`, así que `db/alembic` **no viaja al contenedor**: allá no hay forma
+de correr `alembic upgrade`. Hay dos caminos y conviene conocer los dos:
+
+1. **Automático, al arrancar.** `db.ensure_forecast_schema` y
+   `db.ensure_inventario_schema` crean/actualizan lo que el código nuevo
+   necesita, en una sola transacción e idempotente. Si algo falla, la
+   transacción revierte, el healthcheck no pasa y **Railway deja viva la
+   versión anterior** — el sitio no queda a medias.
+2. **A mano, desde esta PC**, contra la URL pública de la base:
+
+   ```powershell
+   $env:DATABASE_URL_SYNC="<DATABASE_PUBLIC_URL>"; backend/.venv/Scripts/alembic.exe -c db/alembic.ini upgrade head
+   ```
+
+   Es lo que deja el `alembic_version` al día. Las migraciones son idempotentes
+   (inspeccionan antes de crear), así que correrlas después de que el arranque
+   ya hizo lo suyo no falla.
+
+`GET /health` dice en qué migración está la base (`alembic_base`) y de qué
+commit es el código (`git_sha`). Es la forma rápida de ver si el código y la
+base están en sincronía.
+
+### Volver atrás
+
+- **Sólo sacar algo de la pantalla** (por ejemplo una hoja nueva del reporte):
+  Railway → servicio `frontend` → el deploy anterior → **Redeploy**. Un clic,
+  un minuto, y el backend y la base quedan como están.
+- **Volver todo:** lo mismo en `backend` y en `frontend`.
+- **La base casi nunca hay que tocarla.** Las migraciones de este repo son
+  ADITIVAS: agregan tablas y columnas que el código viejo simplemente ignora.
+  Volver el código no exige bajar la base. Sólo si se quiere dejarla limpia:
+  `alembic ... downgrade <revision_anterior>`.
+
+---
+
 ## Lo que quedó preparado en el repo
 
 | Archivo | Para qué |

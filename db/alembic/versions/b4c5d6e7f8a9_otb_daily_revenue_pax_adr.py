@@ -40,11 +40,17 @@ _COLS = ("revenue", "persons", "rooms_revenue", "adr")
 
 
 def upgrade() -> None:
+    # Idempotente, igual que `f2a3b4c5d6e7` y `a3b4c5d6e7f8`: alembic no llega
+    # al contenedor de Railway, así que estas columnas las puede haber agregado
+    # ya el arranque del app (`db.ensure_inventario_schema`). Correr la
+    # migración después no debe fallar.
+    ya = {c["name"] for c in sa.inspect(op.get_bind()).get_columns("fact_otb_daily")}
     for col in _COLS:
-        op.add_column(
-            "fact_otb_daily",
-            sa.Column(col, sa.Numeric(15, 2), server_default="0", nullable=False),
-        )
+        if col not in ya:
+            op.add_column(
+                "fact_otb_daily",
+                sa.Column(col, sa.Numeric(15, 2), server_default="0", nullable=False),
+            )
 
 
 def downgrade() -> None:

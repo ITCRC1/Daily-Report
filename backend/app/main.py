@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -6,7 +7,7 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
-from app.db import ensure_forecast_schema, get_session
+from app.db import ensure_forecast_schema, ensure_inventario_schema, get_session
 from app.models import Property
 
 settings = get_settings()
@@ -14,10 +15,15 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Las tablas del Forecast (Tab 6.1.1) se crean acá si faltan: la raíz del
-    build del backend es `backend/`, así que alembic no viaja al contenedor.
-    Ver `db.ensure_forecast_schema`."""
+    """Lo que la base necesita y alembic no puede poner allá: la raíz del build
+    del backend es `backend/`, así que `db/alembic` no viaja al contenedor.
+
+    Las dos funciones son idempotentes y arrancan en orden: tablas del Forecast
+    (Tab 6.1.1) y después el inventario con vigencia + las columnas nuevas del
+    OTB diario (hoja 3). Ver `db.ensure_forecast_schema` y
+    `db.ensure_inventario_schema`."""
     await ensure_forecast_schema()
+    await ensure_inventario_schema()
     yield
 
 
@@ -49,9 +55,31 @@ app.add_middleware(
 
 @app.get("/health")
 async def health(session: AsyncSession = Depends(get_session)) -> dict:
-    """Ping + verifica conexión a Postgres. Lo usa Railway para el healthcheck."""
+    """Ping + verifica conexión a Postgres. Lo usa Railway para el healthcheck.
+
+    Devuelve además en qué migración está la BASE (`alembic_base`) y de qué
+    commit es el código (`git_sha`). Acá las migraciones NO corren solas en el
+    deploy (el startCommand es sólo uvicorn): hay que correr `alembic upgrade`
+    a mano contra la base. Sin esto no había forma de mirar desde afuera si la
+    base ya tiene lo que el código nuevo espera -- y un código que llega antes
+    que su migración no falla al arrancar, falla recién cuando alguien abre el
+    Tab 3 y le sale 500.
+
+    Nunca revienta: si no puede leer la versión devuelve None. Un healthcheck
+    que falla bloquea el deploy, y esto es informativo.
+    """
     await session.execute(text("SELECT 1"))
-    return {"status": "ok", "db": "up"}
+    try:
+        base = (await session.execute(
+            text("SELECT version_num FROM alembic_version"))).scalar_one_or_none()
+    except Exception:  # noqa: BLE001 -- informativo, no puede tumbar el healthcheck
+        base = None
+    return {
+        "status": "ok",
+        "db": "up",
+        "alembic_base": base,
+        "git_sha": os.environ.get("RAILWAY_GIT_COMMIT_SHA"),
+    }
 
 
 @app.get("/properties")
