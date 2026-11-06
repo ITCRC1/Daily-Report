@@ -284,6 +284,13 @@ table, .tabular, input[inputmode="decimal"] {
   #tab3-export .p-4 { padding: 11px 7px !important; }
   #tab3-export > * + * { margin-top: 11px !important; }
   #tab3-export .print-header-block { padding-bottom: 10px !important; margin-bottom: 4px !important; }
+  /* Y el filete bajo el encabezado, que eran DOS trazos superpuestos de
+     distinto color (2px verde + una sombra de tinta de 1px) y por eso se veia
+     sucio de cerca, pasa a ser uno solo de estructura. */
+  #tab3-export .print-header-block {
+    border-bottom: 2px solid #0b0f0d !important;
+    box-shadow: none !important;
+  }
 
   /* Los titulos, otra vez: las reglas de arriba usan clase (0,1,1) y las de
      este bloque llevan ID (1,0,0), asi que sin repetirlas el `#tab3-export *`
@@ -324,8 +331,8 @@ table, .tabular, input[inputmode="decimal"] {
   #tab3-export thead tr:first-child th {
     background: #dcebe3 !important;
     letter-spacing: 0.08em !important;
-    border-top: 1.5px solid #0b0f0d !important;
-    border-bottom: 1px solid #b9d4c6 !important;
+    border-top: 2px solid #0b0f0d !important;
+    border-bottom: 1px solid #dfe4e0 !important;
   }
   /* Donde arranca cada bloque de columnas. El `border-l-2` ya existe en el
      markup; aca pasa de gris a tinta.
@@ -341,6 +348,28 @@ table, .tabular, input[inputmode="decimal"] {
      Por eso van juntos los dos movimientos: el de bloque sube a 2,5px y el de
      celda baja a un gris mucho mas claro. Subir solo el de bloque no alcanza;
      el contraste es contra el vecino, no contra el papel. */
+  /* ⚠️ UNA SOLA PLUMA. Owner, 2026-11-06, sobre el impreso: *«este juego en
+     las lineas delgadas y gruesas se hace ver raro... hay que cerrar todo con
+     lineas gruesas para que se vea congruente»*.
+
+     Tenia razon y era medible: en la hoja convivian CUATRO grosores -- 1px,
+     1,5px, 2,5px y una barra verde de 3px -- sin que la diferencia entre
+     ellos significara nada. Un sistema de lineas solo comunica si cada
+     grosor quiere decir una cosa; cuatro grosores arbitrarios no son
+     jerarquia, son ruido, y el ojo los lee como un error de armado.
+
+     Desde aca el reporte entero tiene DOS trazos y nada mas:
+
+       ESTRUCTURA   2px de tinta #0b0f0d  -- todo lo que CIERRA o SEPARA
+                    bloques: el marco de cada tabla y del bloque de KPIs, el
+                    corte entre cabeza y cuerpo, el filete del GRAND TOTAL,
+                    las divisiones entre bloques de columnas y entre tarjetas.
+       CELDA        1px de #dfe4e0        -- la cuadricula interna, que solo
+                    acompana la lectura y nunca compite.
+
+     Y el verde deja de ser linea: vive en los LAVADOS (#dcebe3 en las bandas,
+     #f4f6f4 en la columna de rotulos) y en el texto de las variaciones. Un
+     color que a veces es fondo y a veces es raya tampoco se lee como sistema. */
   #tab3-export th, #tab3-export td { border-color: #dfe4e0 !important; }
   /* ⚠️ Aclarar los bordes por ID se lleva puestas dos reglas de tinta que
      estaban escritas con clase -- `main thead tr:last-child th` y
@@ -348,26 +377,28 @@ table, .tabular, input[inputmode="decimal"] {
      (0,1,3). Son justamente las dos que sostienen la lectura cuando no hay
      fondos: el corte entre cabeza y cuerpo, y el filete sobre el GRAND TOTAL.
      Se reponen con el mismo ID. */
-  #tab3-export thead tr:last-child th { border-bottom: 1.5px solid #0b0f0d !important; }
-  #tab3-export tbody tr[class*="font-bold"] td { border-top: 1.5px solid #0b0f0d !important; }
-  #tab3-export [class*="border-l-2"] { border-left: 2.5px solid #0b0f0d !important; }
+  #tab3-export thead tr:last-child th { border-bottom: 2px solid #0b0f0d !important; }
+  #tab3-export tbody tr[class*="font-bold"] td { border-top: 2px solid #0b0f0d !important; }
+  #tab3-export [class*="border-l-2"] { border-left: 2px solid #0b0f0d !important; }
   /* Y cada tabla cierra en tinta, para que los bloques queden ENTRE lineas y
      no se desflequen contra el borde de la hoja. Va para TODAS las del
      reporte, no solo la principal: con los bordes de celda aclarados, una
      tabla con marco claro y rayas de bloque negras se lee al reves -- lo de
      adentro pesando mas que lo que la contiene. */
-  #tab3-export table { border: 1.5px solid #0b0f0d !important; }
+  #tab3-export table { border: 2px solid #0b0f0d !important; }
 
   /* La columna de rotulos es el eje de lectura, no una celda mas. */
-  #tab3-export thead th:first-child { background: #dcebe3 !important; border-right: 1.5px solid #0b0f0d !important; }
-  #tab3-export tbody td:first-child { background: #f4f6f4 !important; border-right: 1.5px solid #0b0f0d !important; }
+  #tab3-export thead th:first-child { background: #dcebe3 !important; border-right: 2px solid #0b0f0d !important; }
+  #tab3-export tbody td:first-child { background: #f4f6f4 !important; border-right: 2px solid #0b0f0d !important; }
   /* ...salvo en la fila de total, que manda sobre la columna. */
   #tab3-export tbody tr[class*="font-bold"] td:first-child { background: #eef2ef !important; }
 
-  /* Tarjetas de KPI: un acento, no un relleno. Tres puntos de verde al
-     costado alcanzan para que dejen de ser rectangulos vacios. */
+  /* Tarjetas de KPI. La barra del costado separa una tarjeta de la otra, o
+     sea que es ESTRUCTURA: va con el trazo de estructura, igual que la
+     division entre bloques de columnas de la tabla. Antes era verde y de 3px
+     -- el cuarto grosor y el unico color de linea de toda la hoja. */
   #tab3-export .p-4 {
-    border-left: 3px solid #2a7c5a !important;
+    border-left: 2px solid #0b0f0d !important;
     background: #fbfdfc !important;
   }
 
@@ -394,32 +425,38 @@ table, .tabular, input[inputmode="decimal"] {
      barra, este va centrado sobre su grupo. */
   #tab3-export .print-section-title.text-center {
     background: #dcebe3 !important;
-    border: 1.5px solid #0b0f0d !important;
-    border-bottom: 1px solid #0b0f0d !important;
+    border: 2px solid #0b0f0d !important;
     padding: 2px 8px !important;
     margin: 0 !important;
     letter-spacing: 0.14em !important;
   }
   #tab3-export .print-section-title.text-center + .grid {
-    border: 1.5px solid #0b0f0d !important;
+    border: 2px solid #0b0f0d !important;
     border-top: none !important;
     gap: 0 !important;
   }
-  /* Las tarjetas dejan de ser cajas sueltas y pasan a ser celdas del bloque.
-     Conservan su barra verde al costado -- ahi si marca algo, porque esta
-     pegada a lo que marca. */
+  /* Las tarjetas dejan de ser cajas sueltas y pasan a ser celdas del bloque:
+     sin bordes propios, separadas entre si por el trazo de estructura. */
   #tab3-export .print-section-title.text-center + .grid > * {
     border-top: none !important;
     border-right: none !important;
     border-bottom: none !important;
     border-radius: 0 !important;
   }
+  /* ...y la primera no lleva la suya, o se suma al marco y ese costado queda
+     con doble trazo. */
+  #tab3-export .print-section-title.text-center + .grid > *:first-child {
+    border-left: none !important;
+  }
 
-  /* Titulos de seccion: marca verde al costado y corte de tinta abajo. */
+  /* Titulos de seccion (los de la izquierda, sobre cada tabla de la hoja 2).
+     Misma pluma: la marca del costado y el corte de abajo son el trazo de
+     estructura. Antes eran 4px de verde claro y 1,5px de tinta -- dos pesos y
+     dos colores para una sola cosa. */
   #tab3-export .print-section-title {
     letter-spacing: 0.06em !important;
-    border-left: 4px solid #5fc99d !important;
-    border-bottom: 1.5px solid #0b0f0d !important;
+    border-left: 2px solid #0b0f0d !important;
+    border-bottom: 2px solid #0b0f0d !important;
     padding-left: 8px !important;
     padding-bottom: 2px !important;
     margin-top: 2px !important;
