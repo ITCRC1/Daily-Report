@@ -44,6 +44,36 @@ table, .tabular, input[inputmode="decimal"] {
     margin: 6mm 6mm;
   }
 
+  /* ⚠️ EL TILDE DE "GRAFICOS DE FONDO" NO DECIDE SI HAY COLOR.
+     Owner, 2026-11-06, mandando el PDF que le llega a los duenos:
+     *«todavia se ve asi»* -- una planilla blanca, despues de todo el trabajo
+     de color del commit anterior.
+
+     No era el diseno: era que **Chrome imprime sin graficos de fondo por
+     defecto** y se llevaba puesto TODO lo que distingue por lavado. Medido
+     sobre su PDF: de los rellenos de la hoja, ni uno solo era de fondo --
+     los unicos colores que sobrevivian eran los filetes (#0b0f0d, #2a7c5a,
+     #d8ded9), porque un borde si se imprime siempre. Por eso la hoja salia
+     blanca aunque en pantalla se viera armada.
+
+     `print-color-adjust: exact` le gana al tilde: Chrome pinta los fondos
+     aunque la casilla este destildada, que es como la tiene el owner y como
+     la va a tener cualquiera que reciba el link.
+
+     Comprobado imprimiendo la pagina desplegada con el Chrome de la maquina
+     y `printBackground: false` -- el default exacto del owner. Antes: 6
+     colores, ninguno de fondo. Despues: 11, con los cinco lavados del diseno
+     presentes (#dcebe3 banda de grupos, #f4f6f4 columna de rotulos, #eef2ef
+     cabecera y total, #fbfdfc tarjetas de KPI, #f7f9f8 cebra).
+
+     Sigue valiendo la regla de abajo -- color y tinta SIEMPRE juntos. Esto
+     hace que el fondo llegue en Chrome; no cubre a una impresora en blanco y
+     negro, ni a un lector que imprima desde otro motor. */
+  html, body, main, main * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   html, body {
     background: #ffffff !important;
     color: #111318 !important;
