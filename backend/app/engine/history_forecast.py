@@ -70,12 +70,15 @@ def _fila(d: date_cls, bloque: str, dato: dict, tramos: Iterable[Tramo]) -> dict
     }
 
 
-def _total(rotulo: str, filas: list[dict], tramos: Iterable[Tramo]) -> dict:
+def _total(filas: list[dict], tramos: Iterable[Tramo]) -> dict:
+    """Los totales de un bloque. SIN rótulo: el texto que se muestra lo arma
+    quien dibuja. Este módulo calcula; que devolviera "History — 5 días
+    cerrados" metía castellano dentro del cálculo y obligaba a desplegar el
+    backend para cambiar una palabra de una pantalla que está en inglés."""
     occ = sum(f["occ"] for f in filas)
     rooms_rev = sum(f["rooms_revenue"] for f in filas)
     disponibles = noches_disponibles(tramos, [date_cls.fromisoformat(f["date"]) for f in filas])
     return {
-        "label": rotulo,
         "days": len(filas),
         "available": disponibles,
         "occ": round(occ, 2),
@@ -121,9 +124,9 @@ def armar_hoja(dias: list[date_cls], corte: date_cls, history: dict, forecast: d
         "columns": COLUMNAS,
         "rows": filas,
         "totals": {
-            "history": _total(f"History — {len(hist)} días cerrados", hist, tramos),
-            "forecast": _total(f"Forecast — {len(fcst)} días restantes", fcst, tramos),
-            "month": _total("TOTAL", filas, tramos),
+            "history": _total(hist, tramos),
+            "forecast": _total(fcst, tramos),
+            "month": _total(filas, tramos),
         },
         "otb_sin_revenue": otb_sin_revenue,
     }

@@ -55,7 +55,8 @@ type HfRow = {
   adr: number; pax: number; loaded: boolean;
 };
 type HfTotal = {
-  label: string; days: number; available: number; occ: number; occ_pct: number;
+  // Sin `label`: el texto lo arma esta pantalla. El backend calcula.
+  days: number; available: number; occ: number; occ_pct: number;
   revenue: number; rooms_revenue: number; adr: number; pax: number;
 };
 type HfReport = {
@@ -480,7 +481,7 @@ function HfHalf({ rows }: { rows: HfRow[] }) {
       <tr key={r.date} className={`border-t border-ink/8 ${r.loaded ? "" : "!text-[#8a6902]"}`}>
         <td className={td}>
           {String(r.day).padStart(2, "0")} {r.dow}
-          {!r.loaded && <span className="ml-1 text-[10px] font-bold">sin cargar</span>}
+          {!r.loaded && <span className="ml-1 text-[10px] font-bold">not loaded</span>}
         </td>
         <td className={tdN}>{num(r.occ)}</td>
         <td className={tdN}>{(r.occ_pct * 100).toFixed(1)}%</td>
@@ -508,10 +509,10 @@ function HfHalf({ rows }: { rows: HfRow[] }) {
   );
 }
 
-function HfTotalRow({ t }: { t: HfTotal }) {
+function HfTotalRow({ t, label }: { t: HfTotal; label: string }) {
   return (
     <tr className="border-t border-ink/8 font-bold">
-      <td className={td}>{t.label}</td>
+      <td className={td}>{label}</td>
       <td className={tdN}>{num(t.occ)}</td>
       <td className={tdN}>{(t.occ_pct * 100).toFixed(1)}%</td>
       <td className={tdN}>${money(t.revenue)}</td>
@@ -558,10 +559,10 @@ function HistoryForecast({ day }: { day: string }) {
         // ademas del fondo, como toda marca del reporte -- Chrome puede estar
         // configurado para no imprimir fondos.
         <div className="mt-2 border-2 border-[#8a6902] bg-[#fdf6e3] px-3 py-1.5 text-[11px] font-bold text-[#8a6902]">
-          ⚠ El OTB cargado trae las noches pero no el revenue: este snapshot se
-          subió antes de que el OTB diario guardara revenue, PAX y tarifa. El
-          bloque Forecast y el TOTAL del mes están cortos — volvé a subir el
-          history_forecast de {data.month_label} en el Tab 1.
+          ⚠ The loaded OTB has the nights but not the revenue: this snapshot was
+          uploaded before the daily OTB stored revenue, PAX and rate. The Forecast
+          block and the month TOTAL are short — re-upload the history_forecast for
+          {data.month_label} in Tab 1.
         </div>
       )}
       <table className="mt-3 w-full rounded-lg border border-ink/10 text-xs">
@@ -571,7 +572,7 @@ function HistoryForecast({ day }: { day: string }) {
         </colgroup>
         <thead className="bg-[#fcfcfb]">
           <tr>
-            <th className={th}>Resumen</th>
+            <th className={th}>Summary</th>
             <th className={thN}>Total Occ</th>
             <th className={thN}>Occ.%</th>
             <th className={thN}>Total Revenue</th>
@@ -580,16 +581,19 @@ function HistoryForecast({ day }: { day: string }) {
           </tr>
         </thead>
         <tbody>
-          <HfTotalRow t={data.totals.history} />
-          <HfTotalRow t={data.totals.forecast} />
-          <HfTotalRow t={{ ...data.totals.month, label: `TOTAL ${data.month_label.toUpperCase()}` }} />
+          <HfTotalRow t={data.totals.history}
+            label={`History — ${data.totals.history.days} closed day${data.totals.history.days === 1 ? "" : "s"}`} />
+          <HfTotalRow t={data.totals.forecast}
+            label={`Forecast — ${data.totals.forecast.days} remaining day${data.totals.forecast.days === 1 ? "" : "s"}`} />
+          <HfTotalRow t={data.totals.month} label={`TOTAL ${data.month_label.toUpperCase()}`} />
         </tbody>
       </table>
       <p className="mt-1 text-[11px] text-ink/60">
-        HISTORY: todo del Daily — Total Revenue del grand total, ADR Rooms Only de Room
-        Statistics, Occ y PAX de los KPI del día. FORECAST: history_forecast de Opera
-        {data.snapshot_date ? ` (corte ${data.snapshot_date})` : " — sin OTB cargado, los días por venir salen en cero"},
-        con el ADR del archivo Only Rooms. Occ.% sobre las unidades vigentes de cada día.
+        HISTORY: all from the Daily — Total Revenue from the grand total, ADR Rooms Only
+        from Room Statistics, Occ and PAX from the day&apos;s KPIs. FORECAST: Opera&apos;s
+        history_forecast
+        {data.snapshot_date ? ` (snapshot ${data.snapshot_date})` : " — no OTB loaded, the days ahead show zero"},
+        with the ADR from the Only Rooms file. Occ.% over the rooms in service each day.
       </p>
     </div>
   );
