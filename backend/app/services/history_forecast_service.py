@@ -120,16 +120,28 @@ async def _history_by_day(session: AsyncSession, pid, start: date_cls, end: date
 
 
 async def _forecast_by_day(session: AsyncSession, pid, start: date_cls,
-                           end: date_cls, as_of: date_cls) -> tuple[dict, date_cls | None]:
+                           end: date_cls) -> tuple[dict, date_cls | None]:
     """Los días por venir, del `history_forecast` de Opera.
 
-    Se toma el snapshot más reciente que NO sea posterior al día del reporte
-    (mismo criterio que On The Books): un snapshot más nuevo que el Daily
-    traería como "forecast" días que Opera ya cerró.
+    Siempre el snapshot MÁS RECIENTE que haya, sin importar el día del reporte
+    (owner, 2026-11-06: *«siempre debemos tomar forecast on the books del día
+    más reciente»*). On The Books es lo que hay reservado AHORA: el corte más
+    fresco es la mejor respuesta sobre lo que queda del mes, y un corte viejo
+    subestima lo que entró desde entonces.
+
+    Antes esto se limitaba a los snapshots `<= as_of`, por miedo a que un corte
+    posterior al Daily trajera como "forecast" días que Opera ya cerró. Dos
+    razones por las que el criterio del owner gana: esos días vienen con el
+    dato REAL de Opera, que es mejor información y no peor; y Tab 8 (On The
+    Books) ya tomaba por defecto el último corte de todos, así que la hoja 3
+    estaba contradiciendo a la pantalla de al lado con los mismos datos.
+
+    De qué corte salió se devuelve igual (`snapshot_date`) y la hoja lo
+    imprime al pie: tomar el más fresco no exime de decir cuál fue.
     """
     snapshot = (await session.execute(
         select(func.max(OtbDaily.snapshot_date)).where(
-            OtbDaily.property_id == pid, OtbDaily.snapshot_date <= as_of)
+            OtbDaily.property_id == pid)
     )).scalar_one_or_none()
     if snapshot is None:
         return {}, None
@@ -166,7 +178,7 @@ async def history_forecast_report(session: AsyncSession, business_date: date_cls
     forecast, snapshot = ({}, None)
     if business_date < month_end:
         forecast, snapshot = await _forecast_by_day(
-            session, pid, business_date + timedelta(days=1), month_end, business_date)
+            session, pid, business_date + timedelta(days=1), month_end)
 
     hoja = armar_hoja(dias, business_date, history, forecast,
                       await inventory_service.tramos(session, pid))
