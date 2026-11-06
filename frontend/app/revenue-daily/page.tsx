@@ -71,7 +71,11 @@ const countColor = (v: number) => (v < 0 ? "!text-red-600" : "");
 function Kpi({ label, value, tone, small }: { label: string; value: number | string; tone?: string; small?: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-ink/10 bg-[#fcfcfb] p-4 text-center">
-      <div className={`${small ? "text-lg" : "text-2xl"} whitespace-nowrap font-bold ${tone || "text-ink"}`}>{value}</div>
+      {/* `print-kpi-value` existe sólo para la impresión: allí la regla
+          general `main * { font-size: 11px }` aplastaba el número al mismo
+          tamaño que su rótulo, y un KPI cuyo valor no domina al rótulo deja
+          de ser un KPI. */}
+      <div className={`print-kpi-value ${small ? "text-lg" : "text-2xl"} whitespace-nowrap font-bold ${tone || "text-ink"}`}>{value}</div>
       <div className="print-kpi-label text-[11px] font-bold uppercase tracking-wide text-ink/60">{label}</div>
     </div>
   );
@@ -115,11 +119,21 @@ export default function RevenueDailyPage() {
 
   return (
     <section id="tab3-export" className="space-y-4">
-      {/* Print header -- only visible when printing (Ctrl+P), large and centered date */}
-      <div className="print-header-block hidden print:flex print:flex-col print:items-center print:border-b print:border-ink/15">
-        <div className="print-subtitle uppercase tracking-wide text-ink/60">Corcovado Wilderness Lodge</div>
+      {/* Encabezado SOLO de impresion (Ctrl+P o el boton Print).
+          La jerarquia es deliberada y pedida por el owner: la FECHA es lo mas
+          grande, porque es lo que identifica el reporte cuando hay doce de
+          estos sobre un escritorio. El titulo va en serif y el nombre de la
+          propiedad arriba, chico y espaciado -- el orden en que se lee una
+          portada. El filete verde bajo el bloque lo pone `globals.css`. */}
+      <div className="print-header-block hidden print:flex print:flex-col print:items-center">
+        <div className="print-subtitle uppercase tracking-wide">Corcovado Wilderness Lodge</div>
         <div className="print-title font-bold">Daily Revenue Report</div>
         <div className="print-date font-extrabold tracking-tight">{fmtDate(data?.business_date ?? day)}</div>
+        {data && (
+          <div className="print-meta">
+            {data.days_loaded_mtd} día(s) cargados en el mes · Actual vs Budget vs Variance
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap items-start justify-between gap-3 print:hidden">
