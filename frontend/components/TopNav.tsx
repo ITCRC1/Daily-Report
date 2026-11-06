@@ -22,8 +22,18 @@ export default function TopNav() {
 
   const tabs = NAV_TABS.filter((t) => !disabled.includes(t.id));
 
+  // Verde profundo de glif (`--surface-highlight`), no negro.
+  //
+  // Owner, 2026-11-05: *«no me gusta ese negro de fondo»*. Era `#1a1a19`, que
+  // en una app de plano claro es la unica pieza que no pertenece a ninguna
+  // paleta -- se lee como un hueco, no como una decision. El verde ancla
+  // igual (blanco sobre el da 12,57:1, y el `white/65` de los tabs 6,21:1) y
+  // ademas dice de que marca es la barra.
+  //
+  // El chip del tab activo pasa de azul a `#5fc99d` con tinta encima (9,8:1):
+  // azul sobre verde se peleaban.
   return (
-    <header className="sticky top-0 z-10 bg-[#1a1a19] print:hidden">
+    <header className="sticky top-0 z-10 bg-[#0a3b29] print:hidden">
       <div className="flex items-center justify-between px-5 py-3">
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold tracking-wide text-white">DAILY-OPS</span>
@@ -33,7 +43,7 @@ export default function TopNav() {
           <DaySelector />
           <Link href="/admin" title="Admin — prender/apagar tabs"
             className={`rounded px-2 py-1 text-xs transition ${pathname === "/admin"
-              ? "bg-accent text-white"
+              ? "bg-[#5fc99d] text-[#0b0f0d]"
               : "text-white/60 hover:bg-white/10 hover:text-white"}`}>
             ⚙
           </Link>
@@ -51,7 +61,7 @@ export default function TopNav() {
               href={t.href}
               className={`rounded px-3 py-1.5 text-xs transition ${
                 active
-                  ? "bg-accent font-medium text-white"
+                  ? "bg-[#5fc99d] font-medium text-[#0b0f0d]"
                   : "text-white/65 hover:bg-white/10 hover:text-white"
               }`}
             >
