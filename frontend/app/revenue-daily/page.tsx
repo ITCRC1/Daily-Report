@@ -17,7 +17,11 @@ type Center = {
 type Otros = { cuenta: string; nombre: string | null; amount: number };
 type Report = {
   business_date: string; days_loaded_mtd: number; budget_status: string;
-  today_loaded: boolean; mtd_rooms_sold: number;
+  // Opcionales a propósito: si el frontend sube antes que el backend,
+  // llegan `undefined` y los avisos de abajo NO se muestran. Con
+  // `!data.today_loaded` el aviso saldría en TODOS los días contra un
+  // backend viejo, que es exactamente el ruido que vienen a evitar.
+  today_loaded?: boolean; mtd_rooms_sold?: number;
   centers: Center[];
   grand_total: {
     today_actual: number; today_budget: number; today_var_pct: number;
@@ -235,14 +239,14 @@ export default function RevenueDailyPage() {
               4 de octubre y preguntó "no hay datos, qué pasó" -- la pantalla
               tenía la respuesta y no la decía. Se IMPRIME: un reporte en cero
               sin explicación es peor en papel que en pantalla. */}
-          {!data.today_loaded && (
+          {data.today_loaded === false && (
             <div className="rounded border-2 border-[#8a6902] bg-[#fdf6e3] px-3 py-2 text-[11px] font-bold text-[#8a6902]">
               ⚠ Este día no tiene ingesta cargada. Los ceros de TODAY no son
               actividad en cero: es que todavía no se subió nada para
               {" "}{fmtDate(data.business_date)}. Se carga en el Tab 1 · Data Input.
             </div>
           )}
-          {data.today_loaded && data.days_loaded_mtd > 0 && data.mtd_rooms_sold === 0 && (
+          {data.today_loaded === true && data.days_loaded_mtd > 0 && data.mtd_rooms_sold === 0 && (
             <div className="rounded border border-ink/20 bg-[#fcfcfb] px-3 py-2 text-[11px] text-ink/70">
               El mes tiene {data.days_loaded_mtd} día(s) cargados y cero noches
               vendidas: el hotel no operó en este período. Los ceros son el dato,
