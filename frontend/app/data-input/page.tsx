@@ -35,19 +35,61 @@ type StatusGridData = { year: number; property: string; gate_min_set: string[]; 
 
 // The values (keys) come straight from the backend (ingest_day_status.estado)
 // -- don't translate the keys, only the label that gets displayed.
-// Lavado al 40 % con el número en el tono 800: sobre fondo claro los textos
-// casi blancos de antes (amber-100, sky-50…) quedaban ilegibles. Medido, los
-// cuatro estados dan ~5:1.
+// Color fuerte con el número en el tono 900.
+//
+// Venían todos al 40 % y el owner los vio "muy apagados" (2026-11-06). El
+// 40 % no era capricho: con el número en el tono 800 era lo que daba ~5:1 de
+// contraste, y antes de eso el texto casi blanco no se leía. Así que el color
+// se subió MIDIENDO, no a ojo: se oscureció el número al tono 900 (que compra
+// margen) y se buscó el alpha más alto que siga pasando AA 4.5:1 sobre el
+// panel #fcfcfb. El número de la celda mide 9px, así que no aplica la
+// excepción de "texto grande" (3:1) -- hay que dar 4.5.
+//
+// ⚠️ El alpha es DISTINTO en cada color a propósito. El violeta es oscuro de
+// suyo y el ámbar es clarísimo: con el mismo porcentaje, los cuatro chips
+// pesan distinto y la grilla se lee como si unos estados importaran más que
+// otros. Elegidos así, la dispersión de luminancia entre los cuatro baja de
+// 0,145 a 0,050 -- se leen como una familia.
+//
+//   estado       color            alpha  contraste  en hover
+//   Incompleto   amber-500          85 %     4,69       4,38
+//   Listo        sky-500            65 %     4,76       4,34
+//   Auditado     violet (marca)     45 %     9,34       7,86
+//   Cerrado      emerald-500        75 %     4,75       4,34
+//
+// Si se toca un color, volver a medir: subir un escalón más tira a cualquiera
+// de los tres de Tailwind abajo de 4,5.
+//
+// ⚠️⚠️ "Auditado" NO puede usar `violet-500` / `violet-900`. En
+// `tailwind.config.ts` el token de marca `violet: "#9933f3"` es un color
+// PLANO, y al declararlo así borra la escala violet-50…950 de Tailwind: todas
+// las clases `violet-NNN` dejan de generarse. Estuvo escrito `bg-violet-500/40`
+// y durante quién sabe cuánto el estado se pintó con NADA -- y como en
+// producción casi todos los días son "Auditado", la grilla entera se veía
+// descolorida y un día auditado era indistinguible de uno sin datos. Ese era
+// el fondo de las dos cosas que reportó el owner el 2026-11-06: "parece que
+// noviembre y diciembre ya están subidos" y "está muy apagado".
+// Acá va el token plano (`bg-violet/45`), que sí existe. El número va en
+// tinta porque el lila no tiene escala de donde sacar un tono oscuro.
 const STATUS_STYLE: Record<string, string> = {
-  Incompleto: "bg-amber-500/40 text-amber-800 hover:bg-amber-500/55",
-  Listo: "bg-sky-500/40 text-sky-800 hover:bg-sky-500/55",
-  Auditado: "bg-violet-500/40 text-violet-800 hover:bg-violet-500/55",
-  Cerrado: "bg-emerald-500/40 text-emerald-800 hover:bg-emerald-500/55",
+  Incompleto: "bg-amber-500/85 text-amber-900 hover:bg-amber-500/95",
+  Listo: "bg-sky-500/65 text-sky-900 hover:bg-sky-500/75",
+  Auditado: "bg-violet/45 text-ink hover:bg-violet/55",
+  Cerrado: "bg-emerald-500/75 text-emerald-900 hover:bg-emerald-500/85",
 };
 const STATUS_LABEL: Record<string, string> = {
   Incompleto: "Incomplete", Listo: "Ready", Auditado: "Audited", Cerrado: "Closed",
 };
-const NO_DATA_STYLE = "bg-ink/4 text-ink/40 hover:bg-ink/5";
+// Un día SIN datos no lleva relleno: solo el número, apagado.
+//
+// ⚠️ Antes era un lavado gris (`bg-ink/4`) y, al lado de los cuatro estados
+// --que también son lavados suaves, al 40%-- se leía como un estado más. El
+// owner miró la grilla el 2026-11-06 y entendió que noviembre y diciembre ya
+// estaban subidos, cuando diciembre no tiene un solo registro. "Vacío"
+// dibujado como algo es peor que no dibujarlo. Ahora lo que está pintado es
+// lo que tiene datos, y punto. El relleno al pasar el mouse se queda para que
+// siga siendo evidente que el día se puede clickear.
+const NO_DATA_STYLE = "text-ink/40 hover:bg-ink/5 hover:text-ink/70";
 
 const MONTHS = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"];
@@ -143,7 +185,7 @@ function StatusGrid({ day, reloadKey }: { day: string; reloadKey: number }) {
             <span className={`inline-block h-3 w-3 rounded ${cls.split(" ")[0]}`} /> {STATUS_LABEL[k] || k}
           </span>
         ))}
-        <span className="flex items-center gap-1"><span className="inline-block h-3 w-3 rounded bg-ink/4" /> No data</span>
+        <span className="flex items-center gap-1"><span className="inline-block h-3 w-3 rounded border border-ink/20" /> No data</span>
       </div>
 
       {loading && <div className="text-xs text-ink/60">Loading…</div>}
