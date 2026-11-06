@@ -476,10 +476,15 @@ table, .tabular, input[inputmode="decimal"] {
     margin-bottom: 3px !important;
   }
 
-  /* Página 1 = encabezado + KPIs + tabla principal. Página 2 = todo lo demás
-     (On-Property + Room Statistics + Months to Day + Otros). Un solo corte
-     explícito -- no usar "avoid-break" en cada tabla chica, con todo tan
-     comprimido ya entran solas y forzar "avoid" puede generar una 3ra hoja. */
+  /* Hoja 1 = encabezado + KPIs + tabla principal. Hoja 2 = On-Property +
+     Room Statistics + Months to Day + Otros. Hoja 3 = History and Forecast.
+     DOS cortes explícitos, uno por hoja nueva -- no usar "avoid-break" en cada
+     tabla chica: con todo tan comprimido ya entran solas y forzar "avoid"
+     genera hojas de más.
+
+     Medido: hojas 1 y 2 al 90% y 88%; la 3 al 71,4% (550px de 770 en oficio
+     apaisado, con las dos quincenas lado a lado). ⚠️ La emulación NO fragmenta:
+     para contar hojas hay que imprimir de verdad, no alcanza con medir el alto. */
   .print-page-break {
     break-before: page;
     page-break-before: always;

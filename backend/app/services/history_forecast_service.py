@@ -40,6 +40,15 @@ from app.models import OccupancyStat, OtbDaily, Property, RoomStat
 from app.services import inventory_service, revenue_service
 
 
+# El reporte entero esta en ingles ("Daily Revenue Report", "TODAY",
+# "MONTH TO DAY") y el rotulo de esta hoja tiene que acompanarlo SIEMPRE.
+# `calendar.month_name` sigue el locale del proceso: con LANG en espanol
+# devuelve "noviembre", y el titulo de la hoja impresa cambiaria de idioma
+# segun como arranque el contenedor, sin que nadie lo toque.
+MESES_EN = ["", "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"]
+
+
 async def _property_id(session: AsyncSession, code: str):
     pid = (await session.execute(
         select(Property.id).where(Property.code == code)
@@ -154,7 +163,7 @@ async def history_forecast_report(session: AsyncSession, business_date: date_cls
     return {
         "business_date": business_date.isoformat(),
         "property": property_code,
-        "month_label": f"{calendar.month_name[business_date.month]} {business_date.year}",
+        "month_label": f"{MESES_EN[business_date.month]} {business_date.year}",
         "month_start": month_start.isoformat(),
         "month_end": month_end.isoformat(),
         # De qué corte de Opera salió el Forecast. None = no hay OTB cargado
