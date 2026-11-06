@@ -144,10 +144,32 @@ ocupación 59,1 %. Si eso cuadra, la base y el backend están bien enganchados.
 El deploy es por servicio y por separado. **Backend primero, frontend después**:
 el frontend nuevo llama endpoints que el backend viejo no tiene.
 
+Linkear la carpeta (una vez por PC; se puede sin interacción):
+
 ```powershell
-railway up backend -s backend --ci
-railway up frontend -s frontend --ci
+railway link -w "Proyectos TCRC" -p "Daily Report Corcovado"
 ```
+
+Y desplegar **desde la raíz del repo, sin pasarle una ruta**:
+
+```powershell
+railway up -s Backend-Daily-Report --ci
+railway up -s Frontend-Daily-Report --ci
+```
+
+⚠️ Los servicios se llaman `Backend-Daily-Report` y `Frontend-Daily-Report`
+(más `Postgres`), NO `backend`/`frontend`. Y cada uno **ya tiene configurado su
+directorio raíz en Railway**, así que hay que subirle el repo entero y dejar
+que él recorte. Las dos formas que estaban escritas acá antes fallan (probadas
+el 2026-11-06):
+
+| Comando | Qué pasa |
+|---|---|
+| `railway up backend -s <svc> --ci` | `prefix not found`, ni llega a buildear |
+| `railway up backend --path-as-root -s <svc> --ci` | sube, y nixpacks corta con `Failed to read app source directory` — el servicio busca `backend/` *adentro* del archivo que ya venía recortado |
+
+⚠️ `railway up` sube **la carpeta como está en el disco**, no una rama de git:
+hay que estar parado en la rama que se quiere desplegar.
 
 ### Las migraciones NO corren solas
 
@@ -171,8 +193,18 @@ de correr `alembic upgrade`. Hay dos caminos y conviene conocer los dos:
    ya hizo lo suyo no falla.
 
 `GET /health` dice en qué migración está la base (`alembic_base`) y de qué
-commit es el código (`git_sha`). Es la forma rápida de ver si el código y la
-base están en sincronía.
+commit es el código (`git_sha`).
+
+Dos cosas medidas el 2026-11-06, para que no sorprendan:
+
+- **`alembic_base` en producción es `e1f2a3b4c5d6`**, varias migraciones atrás
+  del head del repo. No está roto: ahí el esquema lo sostiene el arranque
+  (`ensure_*`), y el `alembic_version` nunca se avanzó. Correr `upgrade head`
+  contra esa base es seguro (las migraciones inspeccionan antes de crear) y
+  sirve para ponerlo al día, pero la app no lo necesita para funcionar.
+- **`git_sha` sale `null`** con este deploy: `RAILWAY_GIT_COMMIT_SHA` sólo lo
+  setea Railway cuando el deploy viene de GitHub, y acá viene de `railway up`
+  desde la PC. Se deja igual por si algún día se conecta el repo.
 
 ### Volver atrás
 
