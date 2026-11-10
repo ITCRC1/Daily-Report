@@ -61,6 +61,10 @@ type HfTotal = {
 };
 type HfReport = {
   business_date: string; month_label: string; snapshot_date: string | null;
+  /** El corte más nuevo que existe, sirva o no. */
+  snapshot_mas_reciente: string | null;
+  /** Hay un corte posterior al usado, pero no trae estos días. */
+  corte_mas_nuevo_sin_datos: boolean;
   otb_sin_revenue: boolean;
   columns: string[]; rows: HfRow[];
   totals: { history: HfTotal; forecast: HfTotal; month: HfTotal };
@@ -553,6 +557,19 @@ function HistoryForecast({ day }: { day: string }) {
         <HfHalf rows={data.rows.slice(0, mitad)} />
         <HfHalf rows={data.rows.slice(mitad)} />
       </div>
+      {/* Se IMPRIME, igual que el otro aviso. Un corte posterior que no trae
+          estos días significa que el archivo del último día no servía --
+          exportado con el rango de otro año, casi siempre. La hoja usa el
+          anterior y lo dice; callarlo sería volver al defecto de noviembre,
+          cuando tres pantallas mostraron $0,00 sin que nada lo señalara. */}
+      {data.corte_mas_nuevo_sin_datos && (
+        <div className="mt-2 border-2 border-[#8a6902] bg-[#fdf6e3] px-3 py-1.5 text-[11px] font-bold text-[#8a6902]">
+          ⚠ Using the OTB snapshot of {data.snapshot_date}, not the latest one
+          ({data.snapshot_mas_reciente}): that day&apos;s history_forecast has no
+          data for {data.month_label}, most likely exported from Opera with another
+          year&apos;s date range. Re-upload it in Tab 1 to refresh the Forecast.
+        </div>
+      )}
       {data.otb_sin_revenue && (
         // Se IMPRIME a proposito (sin print:hidden): en papel es donde el total
         // corto enganya, porque la hoja cuadra consigo misma. Lleva borde

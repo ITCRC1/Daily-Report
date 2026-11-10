@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from datetime import date as date_cls
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import BudgetMonthly, Department, OtbDaily, OtbMonthly, Property
@@ -41,12 +41,52 @@ def _occ(occ: float, avail: float) -> float:
     return round(occ / avail, 4) if avail else 0.0
 
 
-async def _resolve_snapshot(session: AsyncSession, pid, table, as_of: date_cls | None):
-    """Snapshot (corte) más reciente <= as_of; si as_of es None, el último de todos."""
+async def _resolve_snapshot(session: AsyncSession, pid, table,
+                            as_of: date_cls | None, *, tiene=None):
+    """Corte más reciente que CUMPLA `tiene`; None si ninguno la cumple.
+
+    Al meter la condición dentro del `max()`, la base devuelve el corte más
+    nuevo que sirve y descarta los que no, en orden y de una sola consulta --
+    no hace falta recorrerlos de a uno hacia atrás.
+    """
     q = select(func.max(table.snapshot_date)).where(table.property_id == pid)
     if as_of is not None:
         q = q.where(table.snapshot_date <= as_of)
+    if tiene is not None:
+        q = q.where(tiene)
     return (await session.execute(q)).scalar_one_or_none()
+
+
+async def corte_vigente(session: AsyncSession, pid, table,
+                        as_of: date_cls | None = None, *, coherente=None):
+    """El corte a usar, y el más reciente que existe. Devuelve `(usado, ultimo)`.
+
+    ⚠️ Antes esto era `max(snapshot_date)` a secas, y eso dejaba que **un corte
+    vacío tapara a uno bueno**. Pasó el 2026-11-09: se subió un
+    `history_forecast` exportado con el rango de 2025. La ingesta creó el corte
+    2026-11-09 con sus filas -- todas de 2025 -- y como era el más reciente se
+    lo llevaron puesto las tres pantallas que leen OTB. Noviembre y diciembre
+    de 2026 salieron en **$0,00** en Tab 8, en el heatmap y en la hoja 3, con
+    el corte del día 5 ahí al lado, intacto, con $243.808,44.
+
+    No había nada que mirar: ni un error, ni un cero sospechoso, sólo un mes
+    flojo. Y el archivo tampoco era basura -- era un history_forecast
+    legítimo, del año equivocado.
+
+    Owner, 2026-11-10: *«escoge el día anterior, pero si por alguna razón no
+    tiene datos debe ir al otro día, y así sucesivamente, hasta encontrar
+    datos coherentes»*. Por eso `coherente` no pregunta si el corte EXISTE
+    sino si **sirve**: que traiga el período pedido y con plata adentro. Un
+    corte con las noches pero el revenue en cero -- los de antes del
+    2026-11-06, cuando esas columnas no existían -- tampoco pasa.
+
+    Si NINGUNO sirve se devuelve el más reciente igual: la pantalla muestra lo
+    que hay y el aviso explica por qué está en cero. Quedarse sin corte sería
+    cambiar una cifra equivocada por una pantalla en blanco.
+    """
+    usado = await _resolve_snapshot(session, pid, table, as_of, tiene=coherente)
+    ultimo = await _resolve_snapshot(session, pid, table, as_of)
+    return (usado or ultimo), ultimo
 
 
 async def ontb_report(session: AsyncSession, year: int,
@@ -79,8 +119,12 @@ async def ontb_report(session: AsyncSession, year: int,
             b["guests"] = float(r.guests or 0)
 
     # --- OTB: corte FINAL (as_of) y corte INICIAL (compare_to) ---
-    latest = await _resolve_snapshot(session, pid, OtbMonthly, as_of)
-    base = await _resolve_snapshot(session, pid, OtbMonthly, compare_to) if compare_to else None
+    # Coherente = trae ESTE año y con plata adentro.
+    coherente = and_(OtbMonthly.year == year, OtbMonthly.total_revenue > 0)
+    latest, mas_reciente = await corte_vigente(session, pid, OtbMonthly, as_of,
+                                               coherente=coherente)
+    base = (await corte_vigente(session, pid, OtbMonthly, compare_to,
+                                coherente=coherente))[0] if compare_to else None
 
     async def _otb_by_month(snap):
         if snap is None:
@@ -142,6 +186,13 @@ async def ontb_report(session: AsyncSession, year: int,
     return {
         "year": year,
         "snapshot_date": latest.isoformat() if latest else None,
+        # ⚠️ Si el corte que se usó NO es el más reciente, hay que DECIRLO: el
+        # más nuevo existe pero no trae este período, y callarlo es volver al
+        # defecto que esto arregla -- una pantalla que no miente pero tampoco
+        # avisa de que el archivo de ayer no sirvió.
+        "snapshot_mas_reciente": mas_reciente.isoformat() if mas_reciente else None,
+        "corte_mas_nuevo_sin_datos": bool(
+            mas_reciente and latest and mas_reciente > latest),
         "compare_snapshot_date": base.isoformat() if base else None,
         "months": months,
         "net_gap_total": round(sum(mm["net_gap"] for mm in months), 2),
@@ -179,7 +230,10 @@ async def ontb_heatmap(session: AsyncSession, year: int,
                        as_of: date_cls | None = None) -> dict:
     pid = await _property_id(session, property_code)
     rooms_cc = await config_service.get_param(session, pid, "ontb_rooms_cost_center")
-    latest = await _resolve_snapshot(session, pid, OtbDaily, as_of)
+    ene1, dic31 = date_cls(year, 1, 1), date_cls(year, 12, 31)
+    latest, mas_reciente = await corte_vigente(
+        session, pid, OtbDaily, as_of,
+        coherente=and_(OtbDaily.the_date.between(ene1, dic31), OtbDaily.rooms_sold > 0))
 
     rows = []
     if latest is not None:
@@ -255,6 +309,9 @@ async def ontb_heatmap(session: AsyncSession, year: int,
         })
 
     return {"year": year, "snapshot_date": latest.isoformat() if latest else None,
+            "snapshot_mas_reciente": mas_reciente.isoformat() if mas_reciente else None,
+            "corte_mas_nuevo_sin_datos": bool(
+                mas_reciente and latest and mas_reciente > latest),
             "months": months}
 
 

@@ -258,6 +258,9 @@ async def ingest_day(
               "occupancy_stats": 0, "otb": 0, "room_stats": 0, "pos_checks": 0,
               "trial_balance": 0, "ledger_balances": 0, "city_ledger": 0,
               "otb_monthly": 0, "otb_daily": 0}
+    # Avisos de la carga: cosas que NO son error -- el archivo entra, las
+    # cuentas cuadran -- pero que quien sube tiene que saber antes de irse.
+    avisos: list[str] = []
 
     # --- Opera REVENUE -> fact_opera_txn + fact_opera_txn_detail ---
     if cls["revenue"]:
@@ -330,6 +333,28 @@ async def ingest_day(
                 rooms_occ=mv["rooms_occ"], guests=mv["guests"], rooms_avail=mv["rooms_avail"],
             ))
         counts["otb_monthly"] = len(monthly)
+
+        # ⚠️ CONTROL DE ORIGEN. Un `history_forecast` que no trae NI UN MES del
+        # año que se está cargando es, casi siempre, el archivo equivocado: un
+        # export de Opera con el rango de fechas de otro año. No es basura --
+        # es un history_forecast legítimo-- así que nada falla: entra, se
+        # guarda, y crea un corte nuevo que TAPA al bueno en las tres
+        # pantallas que leen OTB.
+        #
+        # Pasó el 2026-11-09 con un export de 2025: Tab 8, el heatmap y la
+        # hoja 3 mostraron noviembre y diciembre de 2026 en $0,00, teniendo el
+        # corte del día 5 al lado con $243.808,44. La lectura ahora se defiende
+        # sola (ontb_service._resolve_snapshot), pero el lugar donde esto se
+        # arregla de verdad es acá: avisar mientras la persona todavía tiene
+        # Opera abierto y puede volver a exportar con el rango correcto.
+        if monthly and not any(yr == business_date.year for (yr, _m) in monthly):
+            traidos = ", ".join(str(a) for a in sorted({yr for (yr, _m) in monthly}))
+            avisos.append(
+                f"El history_forecast no trae ningún mes de {business_date.year} "
+                f"(trae {traidos}). Parece exportado con el rango de fechas de otro "
+                f"año: On The Books y la hoja History and Forecast van a seguir "
+                f"usando el corte anterior. Volvé a exportarlo desde Opera con el "
+                f"rango que incluya {business_date.year}.")
 
         # Ocupación DIARIA del OTB -> fact_otb_daily (heatmap, Tab 8.3).
         daily = opera.history_forecast_daily(cls["history_forecast"])
@@ -443,6 +468,7 @@ async def ingest_day(
         "batch_id": str(batch.id),
         "classified": {k: (v if isinstance(v, (str, list)) else None) for k, v in cls.items()},
         "counts": counts,
+        "avisos": avisos,
     }
 
 

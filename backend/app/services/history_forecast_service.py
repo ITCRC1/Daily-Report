@@ -31,13 +31,13 @@ from collections import defaultdict
 from datetime import date as date_cls
 from datetime import timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.engine.history_forecast import armar_hoja
 from app.engine.room_stats import NON_REVENUE_MARKET_CODES, room_stats_rollup
 from app.models import OccupancyStat, OtbDaily, Property, RoomStat
-from app.services import inventory_service, revenue_service
+from app.services import inventory_service, ontb_service, revenue_service
 
 
 # El reporte entero esta en ingles ("Daily Revenue Report", "TODAY",
@@ -120,7 +120,7 @@ async def _history_by_day(session: AsyncSession, pid, start: date_cls, end: date
 
 
 async def _forecast_by_day(session: AsyncSession, pid, start: date_cls,
-                           end: date_cls) -> tuple[dict, date_cls | None]:
+                           end: date_cls) -> tuple[dict, date_cls | None, date_cls | None]:
     """Los días por venir, del `history_forecast` de Opera.
 
     Siempre el snapshot MÁS RECIENTE que haya, sin importar el día del reporte
@@ -138,13 +138,23 @@ async def _forecast_by_day(session: AsyncSession, pid, start: date_cls,
 
     De qué corte salió se devuelve igual (`snapshot_date`) y la hoja lo
     imprime al pie: tomar el más fresco no exime de decir cuál fue.
+
+    ⚠️ "El más reciente" es el más reciente **que traiga estos días**. Un corte
+    puede existir y no servir: el 2026-11-09 se subió un `history_forecast`
+    exportado con rango de 2025, la ingesta lo guardó, y como era el más nuevo
+    se lo llevó puesto la hoja -- Forecast de noviembre en $0,00 con el corte
+    del 5 intacto al lado. Al pedir el máximo YA FILTRADO por el rango de
+    días, los cortes que no sirven quedan atrás solos, en orden.
     """
-    snapshot = (await session.execute(
-        select(func.max(OtbDaily.snapshot_date)).where(
-            OtbDaily.property_id == pid)
-    )).scalar_one_or_none()
+    # Coherente = trae ESTOS días y con plata adentro. Así quedan afuera tanto
+    # el corte del año equivocado como los de antes del 2026-11-06, que traen
+    # las noches pero el revenue en cero. Si ninguno sirve, `corte_vigente`
+    # devuelve el más reciente igual y el aviso de la hoja explica el cero.
+    snapshot, mas_reciente = await ontb_service.corte_vigente(
+        session, pid, OtbDaily,
+        coherente=and_(OtbDaily.the_date.between(start, end), OtbDaily.revenue > 0))
     if snapshot is None:
-        return {}, None
+        return {}, None, mas_reciente
 
     rows = (await session.execute(
         select(OtbDaily).where(
@@ -161,7 +171,7 @@ async def _forecast_by_day(session: AsyncSession, pid, start: date_cls,
             "adr": float(r.adr or 0),
         }
         for r in rows
-    }, snapshot
+    }, snapshot, mas_reciente
 
 
 async def history_forecast_report(session: AsyncSession, business_date: date_cls,
@@ -175,9 +185,9 @@ async def history_forecast_report(session: AsyncSession, business_date: date_cls
 
     history = await _history_by_day(session, pid, month_start, business_date)
     # El Forecast arranca el día SIGUIENTE al del Daily (owner, 2026-11-06).
-    forecast, snapshot = ({}, None)
+    forecast, snapshot, mas_reciente = ({}, None, None)
     if business_date < month_end:
-        forecast, snapshot = await _forecast_by_day(
+        forecast, snapshot, mas_reciente = await _forecast_by_day(
             session, pid, business_date + timedelta(days=1), month_end)
 
     hoja = armar_hoja(dias, business_date, history, forecast,
@@ -192,5 +202,11 @@ async def history_forecast_report(session: AsyncSession, business_date: date_cls
         # hasta esa fecha, y entonces los días por venir salen en cero: la hoja
         # lo dice en vez de aparentar un mes flojo.
         "snapshot_date": snapshot.isoformat() if snapshot else None,
+        # El corte más nuevo que existe, sirva o no. Si es posterior al que se
+        # usó, el archivo de ese día no traía estos días -- y la hoja lo dice
+        # en vez de mostrar un mes flojo sin explicación.
+        "snapshot_mas_reciente": mas_reciente.isoformat() if mas_reciente else None,
+        "corte_mas_nuevo_sin_datos": bool(
+            mas_reciente and snapshot and mas_reciente > snapshot),
         **hoja,
     }

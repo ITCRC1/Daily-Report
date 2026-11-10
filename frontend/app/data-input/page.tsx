@@ -11,6 +11,8 @@ type IngestResult = {
   batch_id: string;
   classified: Record<string, string | string[] | null>;
   counts: Record<string, number>;
+  /** Cosas que no son error pero que quien sube tiene que ver antes de irse. */
+  avisos?: string[];
   uploaded_files: string[];
   audit?: { kpis: { ok: number; discrepancia: number; faltante: number; interno: number } };
 };
@@ -352,6 +354,20 @@ export default function DataInputPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Los avisos van ARRIBA de los conteos a proposito: el conteo dice
+              que entro, y el aviso dice que lo que entro no sirve. Si fuera al
+              pie, se lee despues de haber cerrado la pantalla. */}
+          {!!result.avisos?.length && (
+            <div className="rounded-lg border-2 border-warn/50 bg-warn/5 p-3">
+              <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-warn">
+                ⚠ Entro, pero revisalo
+              </div>
+              {result.avisos.map((a, i) => (
+                <div key={i} className="text-xs leading-relaxed text-ink/85">{a}</div>
+              ))}
+            </div>
+          )}
 
           <div>
             <div className="mb-1 text-[11px] uppercase tracking-wide text-ink/60">Rows loaded per table</div>
