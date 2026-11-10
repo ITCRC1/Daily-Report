@@ -32,6 +32,10 @@ type MonthData = {
 };
 type Report = {
   year: number; snapshot_date: string | null; compare_snapshot_date?: string | null;
+  /** El corte más nuevo que existe, sirva o no para este año. */
+  snapshot_mas_reciente?: string | null;
+  /** Hay un corte posterior al usado, pero no trae datos de este año. */
+  corte_mas_nuevo_sin_datos?: boolean;
   months: MonthData[];
   net_gap_total: number; budget_total_revenue: number; otb_total_revenue: number;
   otb_move_total?: number | null;
@@ -170,6 +174,17 @@ export default function OnTheBooksPage() {
           title="Tab 8 · On the Books"
           subtitle={`Corcovado Wilderness Lodge · ${year} · OTB cut ${data?.snapshot_date ?? dateTo}`} label="Excel" />
       </div>
+      {/* Mismo aviso que la hoja 3, por el mismo motivo: el 2026-11-09 un
+          history_forecast del año equivocado creó un corte que tapó al bueno
+          y este tab mostró noviembre y diciembre en $0,00 sin decir nada. */}
+      {data?.corte_mas_nuevo_sin_datos && (
+        <div className="mb-3 border-2 border-[#8a6902] bg-[#fdf6e3] px-3 py-1.5 text-[11px] font-bold text-[#8a6902]">
+          ⚠ Using the OTB cut of {data.snapshot_date}, not the latest one
+          ({data.snapshot_mas_reciente}): that day&apos;s history_forecast has no
+          data for {year}, most likely exported from Opera with another year&apos;s
+          date range. Re-upload it in Tab 1.
+        </div>
+      )}
       <div className="print:hidden">
         <h1 className="text-xl font-semibold text-ink">Tab 8 · On the Books</h1>
         <p className="text-xs text-ink/60">
