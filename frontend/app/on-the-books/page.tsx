@@ -180,9 +180,10 @@ export default function OnTheBooksPage() {
       {data?.corte_mas_nuevo_sin_datos && (
         <div className="mb-3 border-2 border-[#8a6902] bg-[#fdf6e3] px-3 py-1.5 text-[11px] font-bold text-[#8a6902]">
           ⚠ Using the OTB cut of {data.snapshot_date}, not the latest one
-          ({data.snapshot_mas_reciente}): that day&apos;s history_forecast has no
-          data for {year}, most likely exported from Opera with another year&apos;s
-          date range. Re-upload it in Tab 1.
+          ({data.snapshot_mas_reciente}): the later history_forecast files do not
+          cover {year} from January (wrong or partial Opera date range). Figures
+          are as of {data.snapshot_date}. Re-export from 01-Jan-{year} and
+          re-upload in Tab 1.
         </div>
       )}
       <div className="print:hidden">
