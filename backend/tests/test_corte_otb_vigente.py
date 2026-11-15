@@ -264,3 +264,29 @@ async def test_el_heatmap_tampoco_toma_el_corte_que_empieza_en_diciembre(ses):
         coherente=and_(OtbDaily.the_date.between(ene1, dic31), OtbDaily.rooms_sold > 0,
                        desde_el_inicio_diario(pid, ene1, dic31)))
     assert usado == VACIO
+
+
+# --- un batch sin On The Books válido no crea corte (2026-11-12) -------------
+
+def test_otb_completo_exige_enero_hasta_el_mes_en_curso():
+    from app.services.ingest_service import otb_completo
+    hoy = date(2026, 11, 12)
+    anio = {(2026, m): {} for m in range(1, 13)}
+    solo_dic = {(2026, 12): {}, (2027, 1): {}}
+    assert otb_completo(anio, hoy)
+    assert not otb_completo(solo_dic, hoy), "el paquete automático desde el 01-dic no es OTB"
+    assert not otb_completo({(2025, m): {} for m in range(1, 13)}, hoy)
+    assert not otb_completo({}, hoy)
+
+
+@pytest.mark.asyncio
+async def test_el_pacing_no_muestra_los_cortes_de_solo_diciembre(ses):
+    from app.services.ontb_service import ontb_pacing
+    pid = await _propiedad(ses)
+    for m in range(1, 13):
+        ses.add(_mes(pid, VACIO, m, 400000.0))
+    ses.add(_mes(pid, PEOR, 12, 424720.0))
+    await ses.flush()
+
+    r = await ontb_pacing(ses, "COWLCR", year=2026)
+    assert [s["snapshot_date"] for s in r["snapshots"]] == [VACIO.isoformat()]

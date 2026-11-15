@@ -64,6 +64,13 @@ def uploads_root() -> Path:
     return Path(__file__).resolve().parents[2].parent / "uploads" / "inputs"
 
 
+def otb_completo(monthly: dict, business_date: date_cls) -> bool:
+    """¿El history_forecast cubre el año del batch desde enero hasta el mes en
+    curso? Si no, NO se guarda como corte de On The Books (sólo se avisa)."""
+    return bool(monthly) and all((business_date.year, m) in monthly
+                                 for m in range(1, business_date.month + 1))
+
+
 def _is_forecast(name: str) -> bool:
     """¿Es un archivo de History/Forecast de Opera?
 
@@ -248,11 +255,9 @@ async def ingest_day(
             delete(model).where(model.property_id == pid, model.business_date == business_date)
         )
 
-    # OtbMonthly/OtbDaily usan snapshot_date (no business_date), se borran aparte
-    for _m in (OtbMonthly, OtbDaily):
-        await session.execute(
-            delete(_m).where(_m.property_id == pid, _m.snapshot_date == business_date)
-        )
+    # OtbMonthly/OtbDaily (snapshot_date) NO se borran acá: sólo se reemplazan
+    # si el batch trae un history_forecast que sirve (ver más abajo). Un batch
+    # sin On The Books válido no puede dejar el día sin su corte bueno.
 
     counts = {"opera_hdr": 0, "opera_det": 0, "integrity_lines": 0, "bills": 0,
               "occupancy_stats": 0, "otb": 0, "room_stats": 0, "pos_checks": 0,
@@ -325,14 +330,6 @@ async def ingest_day(
         # Agregado MENSUAL del history_forecast (año completo) -> fact_otb_monthly
         # (On The Books, Tab 8). Snapshot = business_date; reemplazo total del día.
         monthly = opera.history_forecast_monthly(cls["history_forecast"])
-        for (yr, mth), mv in monthly.items():
-            session.add(OtbMonthly(
-                property_id=pid, snapshot_date=business_date, year=yr, month=mth,
-                total_revenue=mv["total_revenue"], rooms_only_revenue=mv["rooms_only_revenue"],
-                rooms_only_history=mv["rooms_only_history"], rooms_only_forecast=mv["rooms_only_forecast"],
-                rooms_occ=mv["rooms_occ"], guests=mv["guests"], rooms_avail=mv["rooms_avail"],
-            ))
-        counts["otb_monthly"] = len(monthly)
 
         # ⚠️ CONTROL DE ORIGEN. Un `history_forecast` que no trae NI UN MES del
         # año que se está cargando es, casi siempre, el archivo equivocado: un
@@ -369,6 +366,24 @@ async def ingest_day(
                     f"un rango que no empieza el 01-ene: On The Books va a seguir "
                     f"usando el último corte completo. Volvé a exportarlo desde "
                     f"Opera desde el 01-ene-{business_date.year}.")
+
+    if cls["history_forecast"] and otb_completo(monthly, business_date):
+        # Sólo un On The Books que cubre el año desde enero crea (o reemplaza)
+        # el corte del día. El 2026-11-10/11/12 el paquete automático de Opera
+        # traía `OPERA_HistoryForecast_*` con rango desde el 01-dic: nadie subió
+        # un OTB, pero se creaban cortes de sólo diciembre y On The Books caía
+        # de $4,65M a $425K.
+        for _m in (OtbMonthly, OtbDaily):
+            await session.execute(
+                delete(_m).where(_m.property_id == pid, _m.snapshot_date == business_date))
+        for (yr, mth), mv in monthly.items():
+            session.add(OtbMonthly(
+                property_id=pid, snapshot_date=business_date, year=yr, month=mth,
+                total_revenue=mv["total_revenue"], rooms_only_revenue=mv["rooms_only_revenue"],
+                rooms_only_history=mv["rooms_only_history"], rooms_only_forecast=mv["rooms_only_forecast"],
+                rooms_occ=mv["rooms_occ"], guests=mv["guests"], rooms_avail=mv["rooms_avail"],
+            ))
+        counts["otb_monthly"] = len(monthly)
 
         # Ocupación DIARIA del OTB -> fact_otb_daily (heatmap, Tab 8.3).
         daily = opera.history_forecast_daily(cls["history_forecast"])

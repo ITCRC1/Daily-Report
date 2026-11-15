@@ -365,7 +365,10 @@ async def ontb_pacing(session: AsyncSession, property_code: str = "COWLCR",
                 func.sum(OtbMonthly.total_revenue).label("total"))
          .where(OtbMonthly.property_id == pid))
     if year is not None:
-        q = q.where(OtbMonthly.year == year)
+        # Los cortes que no arrancan el año desde su primer mes (p. ej. los de
+        # sólo diciembre del 10 al 12-nov-2026) no son On The Books: mostrarlos
+        # inventaba una caída de $4,2M.
+        q = q.where(OtbMonthly.year == year, desde_el_inicio_mensual(pid, year))
     rows = (await session.execute(
         q.group_by(OtbMonthly.snapshot_date)
         .order_by(OtbMonthly.snapshot_date.desc())
