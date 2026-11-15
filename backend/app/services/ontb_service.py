@@ -14,6 +14,7 @@ from datetime import date as date_cls
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 
 from app.models import BudgetMonthly, Department, OtbDaily, OtbMonthly, Property
 from app.services import config_service
@@ -55,6 +56,43 @@ async def _resolve_snapshot(session: AsyncSession, pid, table,
     if tiene is not None:
         q = q.where(tiene)
     return (await session.execute(q)).scalar_one_or_none()
+
+
+def desde_el_inicio_mensual(pid, year: int):
+    """Condición: el corte arranca el año tan temprano como el que más.
+
+    ⚠️ Pasó el 2026-11-10: se subió un `history_forecast` exportado desde el
+    **01-dic**. Traía 2026 y con plata (diciembre), así que pasaba el filtro
+    "trae el año con plata" y tapaba al corte del 09, que traía de enero a
+    diciembre. On The Books bajó de $4,65M a $425K -- enero a noviembre en
+    $0,00 -- sin ningún aviso, porque el reporte seguía cuadrando consigo mismo.
+
+    Un corte sirve sólo si su primer mes del año es el más temprano que haya
+    traído CUALQUIER corte de ese año. Los alias son a propósito: sin ellos la
+    subconsulta se correlaciona con la consulta de afuera (misma tabla).
+    """
+    todos, uno = aliased(OtbMonthly), aliased(OtbMonthly)
+    primero = (select(func.min(todos.month))
+               .where(todos.property_id == pid, todos.year == year)
+               .scalar_subquery())
+    completos = (select(uno.snapshot_date)
+                 .where(uno.property_id == pid, uno.year == year)
+                 .group_by(uno.snapshot_date)
+                 .having(func.min(uno.month) == primero))
+    return OtbMonthly.snapshot_date.in_(completos)
+
+
+def desde_el_inicio_diario(pid, desde: date_cls, hasta: date_cls):
+    """Lo mismo que `desde_el_inicio_mensual`, por días (heatmap)."""
+    todos, uno = aliased(OtbDaily), aliased(OtbDaily)
+    primero = (select(func.min(todos.the_date))
+               .where(todos.property_id == pid, todos.the_date.between(desde, hasta))
+               .scalar_subquery())
+    completos = (select(uno.snapshot_date)
+                 .where(uno.property_id == pid, uno.the_date.between(desde, hasta))
+                 .group_by(uno.snapshot_date)
+                 .having(func.min(uno.the_date) == primero))
+    return OtbDaily.snapshot_date.in_(completos)
 
 
 async def corte_vigente(session: AsyncSession, pid, table,
@@ -119,8 +157,9 @@ async def ontb_report(session: AsyncSession, year: int,
             b["guests"] = float(r.guests or 0)
 
     # --- OTB: corte FINAL (as_of) y corte INICIAL (compare_to) ---
-    # Coherente = trae ESTE año y con plata adentro.
-    coherente = and_(OtbMonthly.year == year, OtbMonthly.total_revenue > 0)
+    # Coherente = trae ESTE año, con plata adentro, y desde su primer mes.
+    coherente = and_(OtbMonthly.year == year, OtbMonthly.total_revenue > 0,
+                     desde_el_inicio_mensual(pid, year))
     latest, mas_reciente = await corte_vigente(session, pid, OtbMonthly, as_of,
                                                coherente=coherente)
     base = (await corte_vigente(session, pid, OtbMonthly, compare_to,
@@ -233,7 +272,8 @@ async def ontb_heatmap(session: AsyncSession, year: int,
     ene1, dic31 = date_cls(year, 1, 1), date_cls(year, 12, 31)
     latest, mas_reciente = await corte_vigente(
         session, pid, OtbDaily, as_of,
-        coherente=and_(OtbDaily.the_date.between(ene1, dic31), OtbDaily.rooms_sold > 0))
+        coherente=and_(OtbDaily.the_date.between(ene1, dic31), OtbDaily.rooms_sold > 0,
+                       desde_el_inicio_diario(pid, ene1, dic31)))
 
     rows = []
     if latest is not None:

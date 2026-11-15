@@ -355,6 +355,20 @@ async def ingest_day(
                 f"año: On The Books y la hoja History and Forecast van a seguir "
                 f"usando el corte anterior. Volvé a exportarlo desde Opera con el "
                 f"rango que incluya {business_date.year}.")
+        else:
+            # ⚠️ Y el otro modo del mismo error (2026-11-10): exportado desde el
+            # 01-dic -- trae el año, pero no desde enero. Pasaba el control de
+            # arriba y On The Books mostraba enero a noviembre en $0,00.
+            faltan = [m for m in range(1, business_date.month + 1)
+                      if (business_date.year, m) not in monthly]
+            if monthly and faltan:
+                avisos.append(
+                    f"El history_forecast no trae {len(faltan)} mes(es) de "
+                    f"{business_date.year} hasta la fecha "
+                    f"({', '.join(str(m) for m in faltan)}). Parece exportado con "
+                    f"un rango que no empieza el 01-ene: On The Books va a seguir "
+                    f"usando el último corte completo. Volvé a exportarlo desde "
+                    f"Opera desde el 01-ene-{business_date.year}.")
 
         # Ocupación DIARIA del OTB -> fact_otb_daily (heatmap, Tab 8.3).
         daily = opera.history_forecast_daily(cls["history_forecast"])

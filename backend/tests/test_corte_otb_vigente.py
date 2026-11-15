@@ -218,3 +218,49 @@ def test_ninguna_pantalla_resuelve_el_corte_por_su_cuenta():
             if crudo in src and f.name != "ontb_service.py":
                 pytest.fail(f"{f.name} resuelve el corte por su cuenta ({crudo}): "
                             f"tiene que pasar por ontb_service.corte_vigente")
+
+
+# --- el corte que trae el año, pero no desde enero (2026-11-10) -------------
+
+def _mes(pid, snap, mes, revenue):
+    return OtbMonthly(id=uuid.uuid4(), property_id=pid, snapshot_date=snap,
+                      year=2026, month=mes, total_revenue=revenue,
+                      rooms_only_revenue=revenue / 2, rooms_only_history=0,
+                      rooms_only_forecast=revenue / 2, rooms_occ=300,
+                      guests=600, rooms_avail=900)
+
+
+@pytest.mark.asyncio
+async def test_el_corte_que_empieza_en_diciembre_no_tapa_al_del_anio_entero(ses):
+    """El 10-nov se subió un export desde el 01-dic: trae 2026 con plata, pero
+    sólo diciembre. On The Books bajó de $4,65M a $425K sin avisar."""
+    from app.services.ontb_service import desde_el_inicio_mensual
+    pid = await _propiedad(ses)
+    for m in range(1, 13):
+        ses.add(_mes(pid, VACIO, m, 400000.0))     # 09-nov: enero a diciembre
+    ses.add(_mes(pid, PEOR, 12, 424720.0))         # 10-nov: sólo diciembre
+    await ses.flush()
+
+    usado, ultimo = await corte_vigente(
+        ses, pid, OtbMonthly,
+        coherente=and_(OtbMonthly.year == 2026, OtbMonthly.total_revenue > 0,
+                       desde_el_inicio_mensual(pid, 2026)))
+    assert usado == VACIO, "se usó el corte de diciembre: enero a noviembre en $0"
+    assert ultimo == PEOR
+
+
+@pytest.mark.asyncio
+async def test_el_heatmap_tampoco_toma_el_corte_que_empieza_en_diciembre(ses):
+    from app.services.ontb_service import desde_el_inicio_diario
+    pid = await _propiedad(ses)
+    ene1, dic31 = date(2026, 1, 1), date(2026, 12, 31)
+    ses.add(_diario(pid, VACIO, date(2026, 1, 5), 9000.0))
+    ses.add(_diario(pid, VACIO, date(2026, 12, 5), 9000.0))
+    ses.add(_diario(pid, PEOR, date(2026, 12, 5), 9000.0))
+    await ses.flush()
+
+    usado, _ = await corte_vigente(
+        ses, pid, OtbDaily,
+        coherente=and_(OtbDaily.the_date.between(ene1, dic31), OtbDaily.rooms_sold > 0,
+                       desde_el_inicio_diario(pid, ene1, dic31)))
+    assert usado == VACIO
